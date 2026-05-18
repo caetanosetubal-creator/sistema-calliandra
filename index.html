@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Comercial Calliandra</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div id="app">
+    <section class="login-screen">
+      <div class="login-card">
+        <div class="brand-mark">CALLIANDRA</div>
+        <p class="brand-subtitle">Sistema Comercial</p>
+
+        <h1>Gestão comercial, vendas e simulações</h1>
+        <p class="login-text">
+          Residencial Calliandra · Urbanizadora Paranoazinho
+        </p>
+
+        <form id="loginForm">
+          <label>
+            E-mail
+            <input type="email" id="email" placeholder="seuemail@empresa.com.br" required />
+          </label>
+
+          <label>
+            Senha
+            <input type="password" id="senha" placeholder="Digite sua senha" required />
+          </label>
+
+          <button type="submit">Entrar no sistema</button>
+        </form>
+
+        <p id="loginMessage" class="login-message"></p>
+      </div>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
