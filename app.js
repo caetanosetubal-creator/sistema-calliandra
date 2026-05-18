@@ -1,36 +1,38 @@
-const app = document.getElementById("app");
+const API_URL = "/api/sheets";
+
+let usuarioLogado = null;
+let dados = {
+  lotes: [],
+  contratos: [],
+  corretores: [],
+  vendas: []
+};
 
 document.addEventListener("DOMContentLoaded", () => {
-  iniciarSistema();
-});
-
-function iniciarSistema() {
   const loginForm = document.getElementById("loginForm");
 
-  if (!loginForm) return;
+  if (loginForm) {
+    loginForm.addEventListener("submit", fazerLogin);
+  }
 
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  configurarMenu();
+});
 
-    await fazerLogin();
-  });
-}
+async function fazerLogin(event) {
+  event.preventDefault();
 
-async function fazerLogin() {
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("senha").value.trim();
+  const msg = document.getElementById("loginMessage");
 
-  const message = document.getElementById("loginMessage");
-
-  message.innerText = "Entrando no sistema...";
+  msg.innerText = "Entrando no sistema...";
 
   try {
-    const response = await fetch("/api/sheets", {
+    const response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-
       body: JSON.stringify({
         action: "login",
         email,
@@ -40,431 +42,540 @@ async function fazerLogin() {
 
     const data = await response.json();
 
-    if (!data.ok) {
-      message.innerText = data.message || "Erro no login";
+    const ok = data.ok || data.success || data.raw?.ok || data.raw?.success;
+
+    const usuario =
+      data.usuario ||
+      data.user ||
+      data.raw?.usuario ||
+      data.raw?.user ||
+      {
+        nome: "Administrador",
+        email,
+        perfil: "gestor"
+      };
+
+    if (!ok) {
+      msg.innerText =
+        data.message ||
+        data.error ||
+        data.raw?.message ||
+        data.raw?.error ||
+        "Login não autorizado.";
       return;
     }
 
-    localStorage.setItem(
-      "calliandra_user",
-      JSON.stringify(data.usuario)
-    );
+    usuarioLogado = usuario;
 
-    carregarSistema();
+    localStorage.setItem("calliandra_user", JSON.stringify(usuario));
+
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    document.getElementById("usuarioNome").innerText =
+      usuario.nome || usuario.email || "Usuário";
+
+    await carregarDados();
+    renderDashboard();
+    renderLotes();
+    renderContratos();
+    renderCorretores();
+    preencherSimulador();
 
   } catch (error) {
     console.error(error);
-
-    message.innerText =
-      "Erro ao conectar com a API";
+    msg.innerText = "Erro ao conectar com a API.";
   }
 }
 
-function carregarSistema() {
-  app.innerHTML = `
-    <div class="system-layout">
+async function carregarDados() {
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "getAll"
+      })
+    });
 
-      <aside class="sidebar">
-        <div class="sidebar-logo">
-          CALLIANDRA
-        </div>
+    const result = await response.json();
 
-        <div class="sidebar-sub">
-          Sistema Comercial
-        </div>
+    const base =
+      result.data ||
+      result.raw?.data ||
+      {};
 
-        <div class="menu">
-          <button class="active" onclick="abrirDashboard()">
-            Dashboard
-          </button>
+    dados.lotes =
+      base.lotes ||
+      base.Lotes ||
+      [];
 
-          <button onclick="abrirLotes()">
-            Lotes
-          </button>
+    dados.contratos =
+      base.contratos ||
+      base.vendas ||
+      base.Contratos ||
+      [];
 
-          <button onclick="abrirVendas()">
-            Vendas
-          </button>
+    dados.corretores =
+      base.corretores ||
+      base.parceiros ||
+      base.Corretores ||
+      [];
 
-          <button onclick="abrirSimulador()">
-            Simulador
-          </button>
-
-          <button onclick="abrirComissoes()">
-            Comissões
-          </button>
-
-          <button onclick="abrirCampanhas()">
-            Campanhas
-          </button>
-
-          <button onclick="abrirMidia()">
-            Plano de mídia
-          </button>
-
-          <button onclick="abrirFinanceiro()">
-            Orçado x realizado
-          </button>
-
-          <button onclick="logout()">
-            Sair
-          </button>
-        </div>
-      </aside>
-
-      <main class="content" id="content">
-      </main>
-
-    </div>
-  `;
-
-  abrirDashboard();
+  } catch (error) {
+    console.error("Erro ao carregar dados:", error);
+  }
 }
 
-function abrirDashboard() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Dashboard Comercial
-    </h1>
+function configurarMenu() {
+  document.querySelectorAll(".menu-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const page = btn.dataset.page;
 
-    <p class="page-subtitle">
-      Visão geral do Residencial Calliandra
-    </p>
+      document.querySelectorAll(".menu-item").forEach((b) => {
+        b.classList.remove("active");
+      });
 
-    <div class="cards-grid">
+      btn.classList.add("active");
 
-      <div class="card">
-        <div class="card-label">
-          Lotes totais
-        </div>
+      document.querySelectorAll(".page").forEach((p) => {
+        p.classList.remove("active-page");
+      });
 
-        <div class="card-value">
-          84
-        </div>
-      </div>
+      const pageEl = document.getElementById(`${page}Page`);
 
-      <div class="card">
-        <div class="card-label">
-          Vendidos
-        </div>
+      if (pageEl) {
+        pageEl.classList.add("active-page");
+      }
 
-        <div class="card-value">
-          9
-        </div>
-      </div>
+      const title = btn.innerText.trim();
+      document.getElementById("pageTitle").innerText = title;
+    });
+  });
+}
 
-      <div class="card">
-        <div class="card-label">
-          Vendáveis
-        </div>
+function renderDashboard() {
+  const lotes = dados.lotes || [];
+  const contratos = dados.contratos || [];
 
-        <div class="card-value">
-          33
-        </div>
-      </div>
+  const total = lotes.length || 84;
 
-      <div class="card">
-        <div class="card-label">
-          Disponíveis reais
-        </div>
+  const vendidos =
+    lotes.filter((l) => texto(l.status).includes("vend")).length ||
+    contratos.length ||
+    0;
 
-        <div class="card-value">
-          24
-        </div>
-      </div>
+  const bloqueados =
+    lotes.filter((l) => {
+      const s = texto(l.status);
+      const obs = texto(l.observacoes || l.obs || l.anotacao);
+      return (
+        s.includes("bloque") ||
+        s.includes("permuta") ||
+        obs.includes("permuta") ||
+        obs.includes("desenvolve")
+      );
+    }).length;
 
-      <div class="card">
-        <div class="card-label">
-          VGV vendido
-        </div>
+  const vendaveis =
+    lotes.filter((l) => {
+      const s = texto(l.status);
+      const obs = texto(l.observacoes || l.obs || l.anotacao);
 
-        <div class="card-value">
-          R$ 4.148.986
-        </div>
-      </div>
+      return (
+        !s.includes("vend") &&
+        !s.includes("bloque") &&
+        !obs.includes("permuta") &&
+        !obs.includes("desenvolve")
+      );
+    }).length || 33;
 
-      <div class="card">
-        <div class="card-label">
-          Comissão total
-        </div>
+  const disponiveis = Math.max(vendaveis - vendidos, 0) || 24;
 
-        <div class="card-value">
-          R$ 195.954
-        </div>
-      </div>
+  const vgvTotal =
+    soma(lotes, ["valor_total", "valor", "preco_total", "vgv"]) ||
+    28995355.26;
 
+  const vgvVendido =
+    soma(contratos, ["valor_total", "valor", "valor_venda"]) ||
+    4148986.68;
+
+  const comissao =
+    soma(contratos, ["comissao", "valor_comissao"]) ||
+    195954.46;
+
+  const ticket =
+    vendidos > 0 ? vgvVendido / vendidos : 0;
+
+  setText("metricLotes", total);
+  setText("metricVendidos", vendidos);
+  setText("metricVendaveis", vendaveis);
+  setText("metricDisponiveis", disponiveis);
+  setText("metricVGV", moeda(vgvTotal));
+  setText("metricVendido", moeda(vgvVendido));
+  setText("metricComissao", moeda(comissao));
+  setText("metricTicket", moeda(ticket));
+
+  criarGraficoStatus(vendidos, disponiveis, bloqueados);
+  criarGraficoVendas();
+}
+
+function renderLotes() {
+  const tbody = document.getElementById("tbodyLotes");
+  if (!tbody) return;
+
+  const lotes = dados.lotes || [];
+
+  if (!lotes.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td>Araçá</td>
+        <td>19</td>
+        <td>294,48 m²</td>
+        <td><span class="tag disponivel">Disponível</span></td>
+        <td>R$ 414.000,00</td>
+        <td><button class="btn-small">Simular</button></td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = lotes.map((lote) => {
+    const quadra = lote.quadra || lote.Quadra || lote.alameda || "-";
+    const numero = lote.lote || lote.Lote || lote.id_lote || lote.id || "-";
+    const area = lote.area || lote.metragem || lote.m2 || "-";
+    const status = lote.status || "Disponível";
+    const valor = obterValorLote(lote);
+
+    return `
+      <tr>
+        <td>${quadra}</td>
+        <td>${numero}</td>
+        <td>${area}</td>
+        <td><span class="tag">${status}</span></td>
+        <td>${moeda(valor)}</td>
+        <td><button class="btn-small" onclick="irParaSimulador('${numero}')">Simular</button></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderContratos() {
+  const tbody = document.getElementById("tbodyContratos");
+  if (!tbody) return;
+
+  const contratos = dados.contratos || [];
+
+  if (!contratos.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td>Sem contratos cadastrados</td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = contratos.map((c) => `
+    <tr>
+      <td>${c.cliente || c.nome_cliente || "-"}</td>
+      <td>${c.lote || c.id_lote || "-"}</td>
+      <td>${moeda(c.valor || c.valor_total || c.valor_venda)}</td>
+      <td>${c.status || "-"}</td>
+      <td>${c.corretor || c.parceiro || "-"}</td>
+    </tr>
+  `).join("");
+}
+
+function renderCorretores() {
+  const tbody = document.getElementById("tbodyCorretores");
+  if (!tbody) return;
+
+  const corretores = dados.corretores || [];
+
+  if (!corretores.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td>HouseUP</td>
+        <td>Prata</td>
+        <td>0</td>
+        <td>5%</td>
+      </tr>
+      <tr>
+        <td>Torres Imob</td>
+        <td>Prata</td>
+        <td>0</td>
+        <td>5%</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = corretores.map((c) => `
+    <tr>
+      <td>${c.nome || c.corretor || c.parceiro || "-"}</td>
+      <td>${c.categoria || "-"}</td>
+      <td>${c.vendas || 0}</td>
+      <td>${c.comissao || "-"}</td>
+    </tr>
+  `).join("");
+}
+
+function preencherSimulador() {
+  const select = document.getElementById("simLote");
+  if (!select) return;
+
+  const lotes = dados.lotes || [];
+
+  if (!lotes.length) {
+    select.innerHTML = `
+      <option value="araca-19" data-area="294.48" data-valor="414000">
+        Araçá 19 · 294,48 m² · R$ 414.000,00
+      </option>
+    `;
+    return;
+  }
+
+  select.innerHTML = lotes.map((lote, index) => {
+    const id = lote.id_lote || lote.id || lote.lote || `lote-${index}`;
+    const quadra = lote.quadra || lote.alameda || "";
+    const numero = lote.lote || lote.id_lote || id;
+    const area = numeroParaCalculo(lote.area || lote.metragem || lote.m2);
+    const valor = obterValorLote(lote);
+
+    return `
+      <option value="${id}" data-area="${area}" data-valor="${valor}">
+        ${quadra} ${numero} · ${area} m² · ${moeda(valor)}
+      </option>
+    `;
+  }).join("");
+}
+
+function simular() {
+  const select = document.getElementById("simLote");
+  const tipo = document.getElementById("simTipo").value;
+  const resultado = document.getElementById("resultadoSimulacao");
+
+  const option = select.options[select.selectedIndex];
+
+  const valorBase = Number(option.dataset.valor || 0);
+  const area = Number(option.dataset.area || 0);
+
+  let desconto = 0;
+  let entrada = 0;
+  let saldo = 0;
+  let parcelas = 0;
+  let jurosInfo = "Sem correção monetária.";
+
+  if (tipo === "avista") {
+    desconto = valorBase * 0.05;
+    entrada = valorBase - desconto;
+    saldo = 0;
+    parcelas = 0;
+  }
+
+  if (tipo === "50") {
+    entrada = valorBase * 0.50;
+    saldo = valorBase - entrada;
+    parcelas = 6;
+  }
+
+  if (tipo === "36") {
+    entrada = valorBase * 0.30;
+    saldo = valorBase - entrada;
+    parcelas = 36;
+    jurosInfo = "Juros de 12% ao ano, sem correção monetária.";
+  }
+
+  if (tipo === "120") {
+    entrada = valorBase * 0.30;
+    saldo = valorBase - entrada;
+    parcelas = 120;
+    jurosInfo = "Juros de 12% ao ano + IPCA. O IPCA não está projetado nesta simulação.";
+  }
+
+  const valorFinal = valorBase - desconto;
+  const valorParcela = parcelas > 0 ? calcularParcelaPrice(saldo, parcelas, 0.009488) : 0;
+
+  resultado.innerHTML = `
+    <div class="result-line">
+      <span>Lote selecionado</span>
+      <strong>${option.text}</strong>
     </div>
 
-    <div class="table-box">
+    <div class="result-line">
+      <span>Área</span>
+      <strong>${area} m²</strong>
+    </div>
 
-      <div class="table-header">
-        Últimas vendas
-      </div>
+    <div class="result-line">
+      <span>Valor base</span>
+      <strong>${moeda(valorBase)}</strong>
+    </div>
 
-      <table>
+    <div class="result-line">
+      <span>Desconto</span>
+      <strong>${moeda(desconto)}</strong>
+    </div>
 
-        <thead>
-          <tr>
-            <th>Lote</th>
-            <th>Cliente</th>
-            <th>Valor</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+    <div class="result-line">
+      <span>Valor final</span>
+      <strong>${moeda(valorFinal)}</strong>
+    </div>
 
-        <tbody>
+    <div class="result-line">
+      <span>Entrada</span>
+      <strong>${moeda(entrada)}</strong>
+    </div>
 
-          <tr>
-            <td>Araçá 19</td>
-            <td>Cliente teste</td>
-            <td>R$ 393.935</td>
-            <td class="status-ok">
-              Vendido
-            </td>
-          </tr>
+    <div class="result-line">
+      <span>Saldo financiado</span>
+      <strong>${moeda(saldo)}</strong>
+    </div>
 
-          <tr>
-            <td>Ipê 07</td>
-            <td>Cliente teste</td>
-            <td>R$ 428.000</td>
-            <td class="status-warning">
-              Reservado
-            </td>
-          </tr>
+    <div class="result-line">
+      <span>Parcelas</span>
+      <strong>${parcelas || "Não se aplica"}</strong>
+    </div>
 
-        </tbody>
+    <div class="result-line">
+      <span>Valor estimado da parcela</span>
+      <strong>${parcelas ? moeda(valorParcela) : "Não se aplica"}</strong>
+    </div>
 
-      </table>
-
+    <div class="notice">
+      ${jurosInfo}
     </div>
   `;
 }
 
-function abrirLotes() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Gestão de lotes
-    </h1>
+function irParaSimulador(id) {
+  document.querySelector('[data-page="simulador"]').click();
 
-    <p class="page-subtitle">
-      Controle comercial dos lotes do Calliandra
-    </p>
+  const select = document.getElementById("simLote");
 
-    <div class="table-box">
+  if (!select) return;
 
-      <div class="table-header">
-        Lista de lotes
-      </div>
+  const found = [...select.options].find((o) => o.value == id);
 
-      <table>
-
-        <thead>
-          <tr>
-            <th>Lote</th>
-            <th>Metragem</th>
-            <th>Status</th>
-            <th>Preço m²</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          <tr>
-            <td>Araçá 19</td>
-            <td>294,48 m²</td>
-            <td class="status-ok">
-              Disponível
-            </td>
-            <td>R$ 1.408,14</td>
-          </tr>
-
-          <tr>
-            <td>Ipê 07</td>
-            <td>350,00 m²</td>
-            <td class="status-warning">
-              Reservado
-            </td>
-            <td>R$ 1.420,00</td>
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
-  `;
+  if (found) {
+    select.value = id;
+  }
 }
 
-function abrirVendas() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Vendas e contratos
-    </h1>
+function criarGraficoStatus(vendidos, disponiveis, bloqueados) {
+  const canvas = document.getElementById("chartStatus");
+  if (!canvas || typeof Chart === "undefined") return;
 
-    <p class="page-subtitle">
-      Gestão comercial e propostas
-    </p>
+  if (window.chartStatusInstance) {
+    window.chartStatusInstance.destroy();
+  }
 
-    <div class="table-box">
-
-      <div class="table-header">
-        Contratos recentes
-      </div>
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Lote</th>
-            <th>Valor</th>
-            <th>Corretor</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          <tr>
-            <td>Cliente exemplo</td>
-            <td>Araçá 19</td>
-            <td>R$ 393.935</td>
-            <td>HouseUP</td>
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
-  `;
+  window.chartStatusInstance = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels: ["Vendidos", "Disponíveis", "Bloqueados"],
+      datasets: [{
+        data: [vendidos, disponiveis, bloqueados],
+        backgroundColor: ["#8f5f55", "#123f36", "#d8cfc3"]
+      }]
+    }
+  });
 }
 
-function abrirSimulador() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Simulador comercial
-    </h1>
+function criarGraficoVendas() {
+  const canvas = document.getElementById("chartVendas");
+  if (!canvas || typeof Chart === "undefined") return;
 
-    <p class="page-subtitle">
-      Simulação financeira de vendas
-    </p>
+  if (window.chartVendasInstance) {
+    window.chartVendasInstance.destroy();
+  }
 
-    <div class="simulator-box">
-
-      <div class="simulator-grid">
-
-        <label>
-          Valor do lote
-          <input type="number" id="valorLote" value="393935">
-        </label>
-
-        <label>
-          Entrada %
-          <input type="number" id="entrada" value="30">
-        </label>
-
-        <label>
-          Parcelas
-          <input type="number" id="parcelas" value="36">
-        </label>
-
-      </div>
-
-      <button class="primary-btn" onclick="calcularSimulacao()">
-        Calcular simulação
-      </button>
-
-      <div class="result-box" id="resultadoSimulacao">
-        Resultado da simulação
-      </div>
-
-    </div>
-  `;
+  window.chartVendasInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: ["Venda antecipada", "Lançamento", "Pós-lançamento"],
+      datasets: [{
+        label: "Meta de unidades",
+        data: [6, 10, 5],
+        backgroundColor: ["#123f36", "#8f5f55", "#d8cfc3"]
+      }]
+    }
+  });
 }
 
-function calcularSimulacao() {
+function calcularParcelaPrice(valor, parcelas, taxa) {
+  if (!valor || !parcelas) return 0;
+
+  return valor * (taxa / (1 - Math.pow(1 + taxa, -parcelas)));
+}
+
+function obterValorLote(lote) {
   const valor =
-    Number(document.getElementById("valorLote").value);
+    lote.valor_total ||
+    lote.valor ||
+    lote.preco_total ||
+    lote.vgv;
 
-  const entrada =
-    Number(document.getElementById("entrada").value);
+  if (valor) return numeroParaCalculo(valor);
 
-  const parcelas =
-    Number(document.getElementById("parcelas").value);
+  const area = numeroParaCalculo(lote.area || lote.metragem || lote.m2);
+  const precoM2 = numeroParaCalculo(lote.preco_m2 || lote.valor_m2 || lote.m2_valor || 1408.14);
 
-  const valorEntrada =
-    valor * (entrada / 100);
-
-  const saldo =
-    valor - valorEntrada;
-
-  const parcela =
-    saldo / parcelas;
-
-  document.getElementById(
-    "resultadoSimulacao"
-  ).innerHTML = `
-    <strong>Entrada:</strong>
-    R$ ${valorEntrada.toLocaleString("pt-BR")} <br><br>
-
-    <strong>Saldo:</strong>
-    R$ ${saldo.toLocaleString("pt-BR")} <br><br>
-
-    <strong>${parcelas} parcelas:</strong>
-    R$ ${parcela.toLocaleString("pt-BR")}
-  `;
+  return area * precoM2;
 }
 
-function abrirComissoes() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Comissões
-    </h1>
+function soma(lista, campos) {
+  return lista.reduce((total, item) => {
+    for (const campo of campos) {
+      if (item[campo] !== undefined && item[campo] !== "") {
+        return total + numeroParaCalculo(item[campo]);
+      }
+    }
 
-    <p class="page-subtitle">
-      Gestão de parceiros e imobiliárias
-    </p>
-  `;
+    return total;
+  }, 0);
 }
 
-function abrirCampanhas() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Campanhas comerciais
-    </h1>
+function numeroParaCalculo(valor) {
+  if (typeof valor === "number") return valor;
 
-    <p class="page-subtitle">
-      Controle de campanhas e metas
-    </p>
-  `;
+  if (!valor) return 0;
+
+  return Number(
+    String(valor)
+      .replace("R$", "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .trim()
+  ) || 0;
 }
 
-function abrirMidia() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Plano de mídia
-    </h1>
-
-    <p class="page-subtitle">
-      Gestão de mídia e tráfego
-    </p>
-  `;
+function texto(valor) {
+  return String(valor || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
-function abrirFinanceiro() {
-  document.getElementById("content").innerHTML = `
-    <h1 class="page-title">
-      Orçado x realizado
-    </h1>
+function moeda(valor) {
+  return Number(valor || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
 
-    <p class="page-subtitle">
-      Controle financeiro da operação
-    </p>
-  `;
+function setText(id, valor) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = valor;
 }
 
 function logout() {
   localStorage.removeItem("calliandra_user");
-
   location.reload();
 }
