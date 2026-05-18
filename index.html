@@ -1,44 +1,461 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema Comercial Calliandra</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Calliandra • Sistema Comercial</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
-  <div id="app">
-    <section class="login-screen">
-      <div class="login-card">
-        <div class="brand-mark">CALLIANDRA</div>
-        <p class="brand-subtitle">Sistema Comercial</p>
 
-        <h1>Gestão comercial, vendas e simulações</h1>
-        <p class="login-text">
-          Residencial Calliandra · Urbanizadora Paranoazinho
-        </p>
+<div id="loginScreen" class="login-screen">
 
-        <form id="loginForm">
-          <label>
-            E-mail
-            <input type="email" id="email" placeholder="admin@calliandra.local" required />
-          </label>
+  <div class="login-card">
 
-          <label>
-            Senha
-            <input type="password" id="senha" placeholder="Digite sua senha" required />
-          </label>
+    <img src="logo-calliandra-white.png" class="login-logo">
 
-          <button type="submit">Entrar no sistema</button>
-        </form>
+    <h1>Sistema Comercial</h1>
 
-        <p id="loginMessage" class="login-message"></p>
+    <p>
+      Residencial Calliandra • Urbanizadora Paranoazinho
+    </p>
+
+    <form id="loginForm">
+
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="email" required>
       </div>
-    </section>
+
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="senha" required>
+      </div>
+
+      <button type="submit" class="btn-primary">
+        Entrar no sistema
+      </button>
+
+      <div id="loginMessage"></div>
+
+    </form>
+
   </div>
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+</div>
+
+<div id="app" class="hidden">
+
+  <aside class="sidebar">
+
+    <div class="sidebar-top">
+
+      <img src="logo-calliandra-white.png" class="sidebar-logo">
+
+      <div class="sidebar-subtitle">
+        Sistema Comercial
+      </div>
+
+    </div>
+
+    <nav class="menu">
+
+      <button class="menu-item active" data-page="dashboard">
+        Dashboard
+      </button>
+
+      <button class="menu-item" data-page="lotes">
+        Lotes
+      </button>
+
+      <button class="menu-item" data-page="simulador">
+        Simulador
+      </button>
+
+      <button class="menu-item" data-page="contratos">
+        Contratos
+      </button>
+
+      <button class="menu-item" data-page="corretores">
+        Corretores
+      </button>
+
+      <button class="menu-item" data-page="midia">
+        Plano de mídia
+      </button>
+
+      <button class="menu-item" data-page="orcamento">
+        Orçamento
+      </button>
+
+      <button class="menu-item" data-page="configuracoes">
+        Configurações
+      </button>
+
+    </nav>
+
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+
+      <div>
+        <h2 id="pageTitle">
+          Dashboard
+        </h2>
+      </div>
+
+      <div class="user-box">
+
+        <span id="usuarioNome">
+          Usuário
+        </span>
+
+        <button onclick="logout()" class="btn-logout">
+          Sair
+        </button>
+
+      </div>
+
+    </header>
+
+    <section id="dashboardPage" class="page active-page">
+
+      <div class="cards-grid">
+
+        <div class="card-metric">
+          <span>Lotes totais</span>
+          <strong id="metricLotes">
+            0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>Vendidos</span>
+          <strong id="metricVendidos">
+            0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>Vendáveis</span>
+          <strong id="metricVendaveis">
+            0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>Disponíveis reais</span>
+          <strong id="metricDisponiveis">
+            0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>VGV total</span>
+          <strong id="metricVGV">
+            R$ 0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>VGV vendido</span>
+          <strong id="metricVendido">
+            R$ 0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>Comissão total</span>
+          <strong id="metricComissao">
+            R$ 0
+          </strong>
+        </div>
+
+        <div class="card-metric">
+          <span>Ticket médio</span>
+          <strong id="metricTicket">
+            R$ 0
+          </strong>
+        </div>
+
+      </div>
+
+      <div class="dashboard-grid">
+
+        <div class="chart-card">
+
+          <div class="card-title">
+            Status dos lotes
+          </div>
+
+          <canvas id="chartStatus"></canvas>
+
+        </div>
+
+        <div class="chart-card">
+
+          <div class="card-title">
+            Evolução de vendas
+          </div>
+
+          <canvas id="chartVendas"></canvas>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="lotesPage" class="page">
+
+      <div class="section-header">
+
+        <h3>Lotes</h3>
+
+        <button class="btn-primary">
+          Novo lote
+        </button>
+
+      </div>
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Quadra</th>
+              <th>Lote</th>
+              <th>Área</th>
+              <th>Status</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="tbodyLotes"></tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <section id="simuladorPage" class="page">
+
+      <div class="simulador-grid">
+
+        <div class="sim-card">
+
+          <h3>Simulador Comercial</h3>
+
+          <div class="field">
+            <label>Lote</label>
+            <select id="simLote"></select>
+          </div>
+
+          <div class="field">
+            <label>Tipo de pagamento</label>
+            <select id="simTipo">
+
+              <option value="avista">
+                À vista
+              </option>
+
+              <option value="50">
+                Entrada 50%
+              </option>
+
+              <option value="36">
+                36 parcelas
+              </option>
+
+              <option value="120">
+                120 parcelas
+              </option>
+
+            </select>
+          </div>
+
+          <button class="btn-primary" onclick="simular()">
+            Calcular
+          </button>
+
+        </div>
+
+        <div class="resultado-card">
+
+          <h3>Resultado</h3>
+
+          <div id="resultadoSimulacao"></div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="contratosPage" class="page">
+
+      <div class="section-header">
+
+        <h3>Contratos</h3>
+
+        <button class="btn-primary">
+          Novo contrato
+        </button>
+
+      </div>
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Cliente</th>
+              <th>Lote</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Corretor</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="tbodyContratos"></tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <section id="corretoresPage" class="page">
+
+      <div class="section-header">
+
+        <h3>Corretores</h3>
+
+      </div>
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Vendas</th>
+              <th>Comissão</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="tbodyCorretores"></tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <section id="midiaPage" class="page">
+
+      <div class="section-header">
+
+        <h3>Plano de mídia</h3>
+
+      </div>
+
+      <div class="cards-grid">
+
+        <div class="card-metric">
+          <span>Meta Leads</span>
+          <strong>3.000</strong>
+        </div>
+
+        <div class="card-metric">
+          <span>Leads gerados</span>
+          <strong>0</strong>
+        </div>
+
+        <div class="card-metric">
+          <span>CPL médio</span>
+          <strong>R$ 0</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="orcamentoPage" class="page">
+
+      <div class="section-header">
+
+        <h3>Orçamento x realizado</h3>
+
+      </div>
+
+      <div class="dashboard-grid">
+
+        <div class="chart-card">
+
+          <canvas id="chartOrcamento"></canvas>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="configuracoesPage" class="page">
+
+      <div class="section-header">
+
+        <h3>Configurações</h3>
+
+      </div>
+
+      <div class="config-box">
+
+        <div class="field">
+          <label>Meta comercial</label>
+          <input type="text" value="R$ 10.000.000">
+        </div>
+
+        <div class="field">
+          <label>Comissão padrão</label>
+          <input type="text" value="5%">
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
