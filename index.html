@@ -1,461 +1,875 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calliandra | Sistema Comercial</title>
 
-<title>Calliandra • Sistema Comercial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    :root {
+      --verde: #173d37;
+      --verde-escuro: #0b2924;
+      --terracota: #ac4a4a;
+      --laranja: #e8924c;
+      --marfim: #f5edde;
+      --marfim-2: #eee5d7;
+      --texto: #1f2926;
+      --muted: #73736f;
+      --branco: #ffffff;
+      --borda: rgba(23, 61, 55, .14);
+      --sombra: 0 18px 46px rgba(18, 31, 28, .10);
+      --radius: 22px;
+    }
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-<link rel="stylesheet" href="style.css">
+    body {
+      font-family: "Montserrat", Arial, sans-serif;
+      background: var(--marfim);
+      color: var(--texto);
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    button, input, select, textarea {
+      font-family: inherit;
+    }
 
+    .hidden {
+      display: none !important;
+    }
+
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 34px;
+      background:
+        radial-gradient(circle at top left, rgba(23, 61, 55, .92), rgba(23, 61, 55, .92) 28%, transparent 58%),
+        linear-gradient(110deg, #173d37 0%, #56534d 52%, #ac4a4a 100%);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 590px;
+      background: #fbfaf7;
+      border-radius: 30px;
+      padding: 42px 48px 44px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.20);
+    }
+
+    .login-logo-wrap {
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .login-logo {
+      max-width: 430px;
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .login-logo-fallback {
+      display: none;
+      color: var(--terracota);
+      font-family: "Cormorant Garamond", serif;
+      font-size: 58px;
+      line-height: .9;
+      letter-spacing: .02em;
+    }
+
+    .login-title {
+      color: var(--verde);
+      font-size: 32px;
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: .05em;
+      margin-bottom: 10px;
+    }
+
+    .login-subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+
+    .login-form {
+      display: grid;
+      gap: 13px;
+    }
+
+    .login-form label {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--verde);
+      margin-top: 4px;
+    }
+
+    .login-form input {
+      height: 54px;
+      border: 1px solid var(--borda);
+      border-radius: 16px;
+      background: #fff;
+      padding: 0 16px;
+      font-size: 16px;
+      color: var(--texto);
+      outline: none;
+    }
+
+    .login-form input:focus {
+      border-color: var(--terracota);
+      box-shadow: 0 0 0 4px rgba(172,74,74,.12);
+    }
+
+    .btn-primary {
+      height: 56px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--verde);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--verde-escuro);
+      transform: translateY(-1px);
+    }
+
+    .login-message {
+      min-height: 22px;
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--terracota);
+      font-weight: 700;
+    }
+
+    #app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 286px;
+      min-height: 100vh;
+      background: var(--verde);
+      color: #fff;
+      position: fixed;
+      inset: 0 auto 0 0;
+      padding: 26px 22px;
+      z-index: 30;
+    }
+
+    .sidebar-logo {
+      width: 218px;
+      max-width: 100%;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .sidebar-logo-fallback {
+      display: none;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 38px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .25em;
+      color: rgba(255,255,255,.58);
+      padding-bottom: 25px;
+      border-bottom: 1px solid rgba(255,255,255,.13);
+      margin-bottom: 22px;
+    }
+
+    .menu {
+      display: grid;
+      gap: 8px;
+    }
+
+    .menu-item {
+      border: 0;
+      background: transparent;
+      color: rgba(255,255,255,.75);
+      text-align: left;
+      padding: 13px 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: .16s;
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      background: rgba(255,255,255,.12);
+      color: #fff;
+    }
+
+    .content {
+      width: calc(100% - 286px);
+      margin-left: 286px;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 76px;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--borda);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar h1 {
+      font-size: 24px;
+      color: var(--verde);
+      letter-spacing: .02em;
+    }
+
+    .userbox {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .btn-logout,
+    .btn-ghost,
+    .btn-small {
+      border: 1px solid var(--borda);
+      background: #fff;
+      color: var(--verde);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .btn-small {
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+    }
+
+    .btn-ghost:hover,
+    .btn-small:hover,
+    .btn-logout:hover {
+      background: var(--marfim-2);
+    }
+
+    .view {
+      padding: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .section-header h2 {
+      font-size: 28px;
+      color: var(--verde);
+      margin-bottom: 6px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .btn-fit {
+      width: auto;
+      padding: 0 20px;
+    }
+
+    .search-input,
+    .field input,
+    .field select,
+    .field textarea {
+      height: 46px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #fff;
+      padding: 0 14px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .field textarea {
+      min-height: 92px;
+      height: auto;
+      padding: 12px 14px;
+      resize: vertical;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 11px;
+      color: var(--verde);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-weight: 900;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(170px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--sombra);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 11px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--verde);
+      font-size: 27px;
+      line-height: 1.1;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .progress {
+      height: 8px;
+      background: var(--marfim-2);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 13px;
+    }
+
+    .progress i {
+      display: block;
+      height: 100%;
+      background: var(--terracota);
+      border-radius: 999px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card-title {
+      color: var(--verde);
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .pipeline-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 58px;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .pipeline-row:last-child {
+      border-bottom: 0;
+    }
+
+    .pipeline-row strong {
+      display: block;
+      color: var(--verde);
+      font-size: 13px;
+    }
+
+    .pipeline-row span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bar {
+      height: 10px;
+      background: var(--marfim-2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--verde);
+      border-radius: 999px;
+    }
+
+    .table-wrapper {
+      background: #fff;
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra);
+      overflow: auto;
+      margin-top: 22px;
+    }
+
+    .table-title {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--borda);
+      color: var(--verde);
+      font-weight: 900;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 860px;
+    }
+
+    th {
+      background: var(--verde);
+      color: #fff;
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--borda);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background: #fbf7ef;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 900;
+      background: var(--marfim-2);
+      color: var(--verde);
+    }
+
+    .tag.vendido {
+      background: rgba(172,74,74,.13);
+      color: var(--terracota);
+    }
+
+    .tag.disponivel {
+      background: rgba(23,61,55,.12);
+      color: var(--verde);
+    }
+
+    .tag.bloqueado,
+    .tag.permutante {
+      background: #eee;
+      color: #666;
+    }
+
+    .tag.reservado {
+      background: #fff2d5;
+      color: #8d6517;
+    }
+
+    .tag.garantia {
+      background: #fff0a8;
+      color: #7a5a00;
+    }
+
+    .tag.casa {
+      background: #f2d3f2;
+      color: #8b3c8c;
+    }
+
+    .simulador-grid {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 1px solid var(--borda);
+      padding: 11px 0;
+    }
+
+    .result-line span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .result-line strong {
+      color: var(--verde);
+      text-align: right;
+    }
+
+    .notice {
+      margin-top: 15px;
+      border: 1px solid rgba(232,146,76,.35);
+      background: #fff7e9;
+      color: #7a5419;
+      padding: 13px;
+      border-radius: 15px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .cond-card {
+      border: 1px solid var(--borda);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .cond-card.alert {
+      background: #fff8ed;
+      border-color: rgba(232,146,76,.45);
+    }
+
+    .cond-card h4 {
+      color: var(--verde);
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .phase-card {
+      background: #fff;
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .phase-head {
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .phase-head h3 {
+      color: var(--verde);
+      font-size: 18px;
+    }
+
+    .phase-body {
+      border-top: 1px solid var(--borda);
+      padding: 18px;
+      display: none;
+    }
+
+    .phase-card.open .phase-body {
+      display: block;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.46);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal {
+      background: #fff;
+      width: min(960px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      border-radius: 24px;
+      box-shadow: 0 28px 90px rgba(0,0,0,.25);
+    }
+
+    .modal-head {
+      background: var(--verde);
+      color: #fff;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-head h3 {
+      font-size: 20px;
+    }
+
+    .modal-head button {
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-actions {
+      border-top: 1px solid var(--borda);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .map-box {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--borda);
+      box-shadow: var(--sombra);
+      overflow: hidden;
+    }
+
+    .map-box img {
+      width: 100%;
+      display: block;
+      background: var(--verde);
+    }
+
+    .map-placeholder {
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      padding: 40px;
+      text-align: center;
+      background: #fff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 18px 20px;
+      border-top: 1px solid var(--borda);
+      background: #fff;
+    }
+
+    .legend span {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--texto);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+
+    .dot.vendido { background: var(--terracota); }
+    .dot.disponivel { background: var(--verde); }
+    .dot.bloqueado { background: #cfc7bb; }
+    .dot.garantia { background: #ffd84f; }
+    .dot.casa { background: #cf5bd7; }
+
+    .empty {
+      padding: 22px !important;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    #toastRoot {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 200;
+      display: grid;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--verde);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 13px;
+      box-shadow: var(--sombra);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .toast.err {
+      background: var(--terracota);
+    }
+
+    @media (max-width: 1180px) {
+      .cards-grid,
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-2,
+      .simulador-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 850px) {
+      #app {
+        display: block;
+      }
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+      }
+
+      .content {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .topbar {
+        height: auto;
+        padding: 18px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .view {
+        padding: 20px;
+      }
+
+      .cards-grid,
+      .grid-3,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-<div id="loginScreen" class="login-screen">
-
-  <div class="login-card">
-
-    <img src="logo-calliandra-white.png" class="login-logo">
-
-    <h1>Sistema Comercial</h1>
-
-    <p>
-      Residencial Calliandra • Urbanizadora Paranoazinho
-    </p>
-
-    <form id="loginForm">
-
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="email" required>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo-wrap">
+        <img
+          src="./assets/logo-calliandra-marsala.png"
+          alt="Residencial Calliandra"
+          class="login-logo"
+          onerror="this.style.display='none';document.getElementById('loginLogoFallback').style.display='block';"
+        />
+        <div id="loginLogoFallback" class="login-logo-fallback">Calliandra</div>
       </div>
 
-      <div class="field">
-        <label>Senha</label>
-        <input type="password" id="senha" required>
-      </div>
+      <h1 class="login-title">Sistema Comercial</h1>
+      <p class="login-subtitle">Residencial Calliandra · Urbanizadora Paranoazinho</p>
 
-      <button type="submit" class="btn-primary">
-        Entrar no sistema
-      </button>
+      <form id="loginForm" class="login-form">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" autocomplete="username" />
 
-      <div id="loginMessage"></div>
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" autocomplete="current-password" />
 
-    </form>
+        <button type="submit" class="btn-primary">Entrar no sistema</button>
+      </form>
 
-  </div>
-
-</div>
-
-<div id="app" class="hidden">
-
-  <aside class="sidebar">
-
-    <div class="sidebar-top">
-
-      <img src="logo-calliandra-white.png" class="sidebar-logo">
-
-      <div class="sidebar-subtitle">
-        Sistema Comercial
-      </div>
-
+      <div id="loginMessage" class="login-message"></div>
     </div>
+  </section>
 
-    <nav class="menu">
+  <div id="app" class="hidden"></div>
+  <div id="modalRoot"></div>
+  <div id="toastRoot"></div>
 
-      <button class="menu-item active" data-page="dashboard">
-        Dashboard
-      </button>
-
-      <button class="menu-item" data-page="lotes">
-        Lotes
-      </button>
-
-      <button class="menu-item" data-page="simulador">
-        Simulador
-      </button>
-
-      <button class="menu-item" data-page="contratos">
-        Contratos
-      </button>
-
-      <button class="menu-item" data-page="corretores">
-        Corretores
-      </button>
-
-      <button class="menu-item" data-page="midia">
-        Plano de mídia
-      </button>
-
-      <button class="menu-item" data-page="orcamento">
-        Orçamento
-      </button>
-
-      <button class="menu-item" data-page="configuracoes">
-        Configurações
-      </button>
-
-    </nav>
-
-  </aside>
-
-  <main class="content">
-
-    <header class="topbar">
-
-      <div>
-        <h2 id="pageTitle">
-          Dashboard
-        </h2>
-      </div>
-
-      <div class="user-box">
-
-        <span id="usuarioNome">
-          Usuário
-        </span>
-
-        <button onclick="logout()" class="btn-logout">
-          Sair
-        </button>
-
-      </div>
-
-    </header>
-
-    <section id="dashboardPage" class="page active-page">
-
-      <div class="cards-grid">
-
-        <div class="card-metric">
-          <span>Lotes totais</span>
-          <strong id="metricLotes">
-            0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>Vendidos</span>
-          <strong id="metricVendidos">
-            0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>Vendáveis</span>
-          <strong id="metricVendaveis">
-            0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>Disponíveis reais</span>
-          <strong id="metricDisponiveis">
-            0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>VGV total</span>
-          <strong id="metricVGV">
-            R$ 0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>VGV vendido</span>
-          <strong id="metricVendido">
-            R$ 0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>Comissão total</span>
-          <strong id="metricComissao">
-            R$ 0
-          </strong>
-        </div>
-
-        <div class="card-metric">
-          <span>Ticket médio</span>
-          <strong id="metricTicket">
-            R$ 0
-          </strong>
-        </div>
-
-      </div>
-
-      <div class="dashboard-grid">
-
-        <div class="chart-card">
-
-          <div class="card-title">
-            Status dos lotes
-          </div>
-
-          <canvas id="chartStatus"></canvas>
-
-        </div>
-
-        <div class="chart-card">
-
-          <div class="card-title">
-            Evolução de vendas
-          </div>
-
-          <canvas id="chartVendas"></canvas>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="lotesPage" class="page">
-
-      <div class="section-header">
-
-        <h3>Lotes</h3>
-
-        <button class="btn-primary">
-          Novo lote
-        </button>
-
-      </div>
-
-      <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>Quadra</th>
-              <th>Lote</th>
-              <th>Área</th>
-              <th>Status</th>
-              <th>Valor</th>
-              <th>Ações</th>
-            </tr>
-
-          </thead>
-
-          <tbody id="tbodyLotes"></tbody>
-
-        </table>
-
-      </div>
-
-    </section>
-
-    <section id="simuladorPage" class="page">
-
-      <div class="simulador-grid">
-
-        <div class="sim-card">
-
-          <h3>Simulador Comercial</h3>
-
-          <div class="field">
-            <label>Lote</label>
-            <select id="simLote"></select>
-          </div>
-
-          <div class="field">
-            <label>Tipo de pagamento</label>
-            <select id="simTipo">
-
-              <option value="avista">
-                À vista
-              </option>
-
-              <option value="50">
-                Entrada 50%
-              </option>
-
-              <option value="36">
-                36 parcelas
-              </option>
-
-              <option value="120">
-                120 parcelas
-              </option>
-
-            </select>
-          </div>
-
-          <button class="btn-primary" onclick="simular()">
-            Calcular
-          </button>
-
-        </div>
-
-        <div class="resultado-card">
-
-          <h3>Resultado</h3>
-
-          <div id="resultadoSimulacao"></div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="contratosPage" class="page">
-
-      <div class="section-header">
-
-        <h3>Contratos</h3>
-
-        <button class="btn-primary">
-          Novo contrato
-        </button>
-
-      </div>
-
-      <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>Cliente</th>
-              <th>Lote</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Corretor</th>
-            </tr>
-
-          </thead>
-
-          <tbody id="tbodyContratos"></tbody>
-
-        </table>
-
-      </div>
-
-    </section>
-
-    <section id="corretoresPage" class="page">
-
-      <div class="section-header">
-
-        <h3>Corretores</h3>
-
-      </div>
-
-      <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>Nome</th>
-              <th>Categoria</th>
-              <th>Vendas</th>
-              <th>Comissão</th>
-            </tr>
-
-          </thead>
-
-          <tbody id="tbodyCorretores"></tbody>
-
-        </table>
-
-      </div>
-
-    </section>
-
-    <section id="midiaPage" class="page">
-
-      <div class="section-header">
-
-        <h3>Plano de mídia</h3>
-
-      </div>
-
-      <div class="cards-grid">
-
-        <div class="card-metric">
-          <span>Meta Leads</span>
-          <strong>3.000</strong>
-        </div>
-
-        <div class="card-metric">
-          <span>Leads gerados</span>
-          <strong>0</strong>
-        </div>
-
-        <div class="card-metric">
-          <span>CPL médio</span>
-          <strong>R$ 0</strong>
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="orcamentoPage" class="page">
-
-      <div class="section-header">
-
-        <h3>Orçamento x realizado</h3>
-
-      </div>
-
-      <div class="dashboard-grid">
-
-        <div class="chart-card">
-
-          <canvas id="chartOrcamento"></canvas>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="configuracoesPage" class="page">
-
-      <div class="section-header">
-
-        <h3>Configurações</h3>
-
-      </div>
-
-      <div class="config-box">
-
-        <div class="field">
-          <label>Meta comercial</label>
-          <input type="text" value="R$ 10.000.000">
-        </div>
-
-        <div class="field">
-          <label>Comissão padrão</label>
-          <input type="text" value="5%">
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-</div>
-
-<script src="config.js"></script>
-<script src="app.js"></script>
-
+  <script src="./app.js"></script>
 </body>
 </html>
