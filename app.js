@@ -1120,20 +1120,78 @@ function extractSheet(base, names) {
 }
 
 function normalizarLote(row, index) {
-  if (Array.isArray(row)) {
-    return finalizarLote({
-      id: row[0] || `L${index + 1}`,
-      empreendimento: row[1] || "Residencial Calliandra",
-      quadra: row[3] || "",
-      lote: row[4] || "",
-      area: num(row[5]),
-      classificacao: row[11] || "",
-      precoM2: num(row[12]) || 1408.14,
-      anotacao: row[13] || "",
-      statusOriginal: row[14] || ""
-    });
-  }
+  const id = pick(row, ["id_lote", "id", "codigo", "código"]) || `L${index + 1}`;
 
+  const lote = {
+    id,
+    empreendimento: pick(row, ["empreendimento"]) || "Residencial Calliandra",
+    quadra: pick(row, ["quadra"]) || "",
+    rua: pick(row, ["rua"]) || "",
+    lote: pick(row, ["lote", "numero", "número"]) || "",
+    area: num(pick(row, ["area_m2", "area", "área", "metragem", "m2", "m²"])),
+    precoM2: num(pick(row, ["preco_m2_base", "preco_m2", "preço_m2", "valor_m2"])) || 1408.14,
+    valor: num(pick(row, ["valor_tabela", "valor_total", "valor", "preco_total", "preço_total"])),
+    statusComercial: pick(row, ["status_comercial", "status_venda", "status"]) || "",
+    statusLote: pick(row, ["status_lote", "situacao", "situação"]) || "",
+    proprietarioOrigem: pick(row, ["proprietario_origem", "proprietário_origem", "origem"]) || "",
+    origemStatus: pick(row, ["origem_status"]) || "",
+    anotacao: pick(row, ["observacoes", "observações", "obs", "anotacao", "anotação"]) || "",
+    raw: row
+  };
+
+  lote.valor = lote.valor || lote.area * lote.precoM2;
+
+  const textoStatus = texto([
+    lote.statusComercial,
+    lote.statusLote,
+    lote.proprietarioOrigem,
+    lote.origemStatus,
+    lote.anotacao
+  ].join(" "));
+
+  const isPermutante =
+    textoStatus.includes("permutante") ||
+    textoStatus.includes("permuta");
+
+  const isCasa =
+    textoStatus.includes("casa calliandra") ||
+    texto(lote.rua).includes("casa calliandra");
+
+  const isBloqueado =
+    textoStatus.includes("bloqueado") ||
+    textoStatus.includes("desenvolve") ||
+    textoStatus.includes("comprometido") ||
+    isPermutante ||
+    isCasa;
+
+  const isGarantiaGDF =
+    textoStatus.includes("garantia gdf") ||
+    textoStatus.includes("gdf");
+
+  const isVendido =
+    textoStatus.includes("vendido") ||
+    textoStatus.includes("contrato") ||
+    textoStatus.includes("pago");
+
+  const isReservado =
+    textoStatus.includes("reservado") ||
+    textoStatus.includes("reserva");
+
+  lote.isPermutante = isPermutante;
+  lote.isCasaCalliandra = isCasa;
+  lote.isGarantiaGDF = isGarantiaGDF;
+
+  lote.vendavel = !isBloqueado || isGarantiaGDF;
+
+  if (isVendido) lote.statusSistema = "Vendido";
+  else if (isReservado) lote.statusSistema = "Reservado";
+  else if (isCasa) lote.statusSistema = "Casa Calliandra";
+  else if (isPermutante) lote.statusSistema = "Permutante";
+  else if (isBloqueado) lote.statusSistema = "Bloqueado";
+  else lote.statusSistema = "Disponível";
+
+  return lote;
+}
   return finalizarLote({
     id: pick(row, ["id_lote", "id", "codigo", "código"]) || `L${index + 1}`,
     empreendimento: pick(row, ["empreendimento", "condominio", "condomínio"]) || "Residencial Calliandra",
@@ -1172,23 +1230,44 @@ function finalizarLote(l) {
 }
 
 function normalizarContrato(row) {
-  if (Array.isArray(row)) {
-    return {
-      id: row[0] || uid(),
-      data: row[1] || "",
-      cliente: row[2] || "",
-      quadra: row[3] || "",
-      lote: row[4] || "",
-      area: num(row[5]),
-      valorTabela: num(row[6]),
-      valorFinal: num(row[7]),
-      desconto: num(row[8]),
-      status: row[9] || "Contrato",
-      corretor: row[10] || "",
-      origem: row[11] || "",
-      comissaoValor: num(row[12])
-    };
-  }
+  const quadra = pick(row, ["quadra"]) || "";
+  const rua = pick(row, ["rua"]) || "";
+  const lote = pick(row, ["lote", "id_lote"]) || "";
+
+  const valorTabela = num(pick(row, [
+    "valor_tabela",
+    "valor_lote",
+    "valor",
+    "preco_tabela"
+  ]));
+
+  const valorFinal = num(pick(row, [
+    "valor_final",
+    "valor_negociado",
+    "valor_venda",
+    "valor"
+  ])) || valorTabela;
+
+  return {
+    id: pick(row, ["id", "id_contrato", "id_venda"]) || uid(),
+    data: pick(row, ["data", "data_venda", "criado_em"]) || "",
+    cliente: pick(row, ["cliente", "nome", "nome_cliente"]) || "",
+    quadra,
+    rua,
+    lote,
+    area: num(pick(row, ["area_m2", "area", "metragem", "m2"])),
+    valorTabela,
+    valorFinal,
+    desconto: num(pick(row, ["desconto", "desconto_concedido"])),
+    status: pick(row, ["status_venda", "status", "situacao"]) || "Contrato",
+    corretor: pick(row, ["parceiro_comercial", "corretor", "parceiro", "imobiliaria", "imobiliária"]) || "",
+    origem: pick(row, ["origem_lead", "origem", "canal"]) || "",
+    formaPagamento: pick(row, ["forma_pagamento", "pagamento"]) || "",
+    tipoOperacao: pick(row, ["tipo_operacao", "tipo_operação"]) || "",
+    comissaoValor: num(pick(row, ["comissao", "comissão", "valor_comissao"])),
+    raw: row
+  };
+}
 
   return {
     id: pick(row, ["id", "id_contrato"]) || uid(),
@@ -1208,9 +1287,31 @@ function normalizarContrato(row) {
 }
 
 function normalizarCorretor(row) {
-  if (Array.isArray(row)) {
-    return { id: row[0] || uid(), nome: row[1] || row[0] || "", categoria: row[2] || "Prata", vendas: num(row[3]), comissao: row[4] || "5%" };
+  const nome = pick(row, [
+    "parceiro_comercial",
+    "nome",
+    "corretor",
+    "parceiro",
+    "imobiliaria",
+    "imobiliária"
+  ]) || "";
+
+  const categoria = pick(row, ["categoria_parceiro", "categoria"]) || "Prata";
+
+  let comissao = pick(row, ["comissao", "comissão"]) || "";
+
+  if (!comissao) {
+    comissao = texto(categoria).includes("ouro") ? "5%" : "4,5%";
   }
+
+  return {
+    id: pick(row, ["id", "id_corretor"]) || uid(),
+    nome,
+    categoria,
+    vendas: num(pick(row, ["vendas"])),
+    comissao
+  };
+}
 
   return {
     id: pick(row, ["id", "id_corretor"]) || uid(),
