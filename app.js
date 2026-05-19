@@ -36,46 +36,77 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function fazerLogin(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
 
-  const email = document.getElementById("email").value.trim();
-  const senha = document.getElementById("senha").value.trim();
+  const email = document.getElementById("email")?.value.trim() || "";
+  const senha = document.getElementById("senha")?.value.trim() || "";
   const msg = document.getElementById("loginMessage");
 
-  msg.innerText = "Entrando no sistema...";
+  if (!email || !senha) {
+    if (msg) msg.innerText = "Informe e-mail e senha.";
+    return;
+  }
+
+  if (msg) msg.innerText = "Entrando no sistema...";
 
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "login", email, senha })
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "login",
+        email,
+        senha
+      })
     });
 
     const data = await response.json();
-    const ok = data.ok || data.success || data.raw?.ok || data.raw?.success;
 
-    if (!ok) {
-      msg.innerText = data.message || data.error || data.raw?.message || data.raw?.error || "Login não autorizado.";
-      return;
-    }
+    console.log("LOGIN RESPONSE:", data);
 
-    CURRENT_USER =
+    const ok =
+      data.ok ||
+      data.success ||
+      data.raw?.ok ||
+      data.raw?.success;
+
+    const usuario =
       data.usuario ||
       data.user ||
       data.raw?.usuario ||
       data.raw?.user ||
-      { nome: "Administrador", email, perfil: "gestor" };
+      null;
 
-    localStorage.setItem("calliandra_user", JSON.stringify(CURRENT_USER));
-    entrarNoSistema();
+    if (!ok || !usuario) {
+      if (msg) {
+        msg.innerText =
+          data.message ||
+          data.error ||
+          data.raw?.message ||
+          data.raw?.error ||
+          "Usuário ou senha inválidos.";
+      }
+      return;
+    }
+
+    CURRENT_USER = usuario;
+
+    localStorage.setItem("calliandra_user", JSON.stringify(usuario));
+
+    if (msg) msg.innerText = "Login realizado com sucesso.";
+
+    await entrarNoSistema();
 
   } catch (error) {
-    console.error(error);
-    msg.innerText = "Erro ao conectar com a API.";
+    console.error("ERRO LOGIN:", error);
+
+    if (msg) {
+      msg.innerText = "Erro ao conectar com a API.";
+    }
   }
 }
-
-async function entrarNoSistema() {
   document.getElementById("loginScreen")?.classList.add("hidden");
   document.getElementById("app")?.classList.remove("hidden");
 
