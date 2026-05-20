@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calliandra · Sistema Comercial V6</title>
+<title>Calliandra · Sistema Comercial V7</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@1,600;1,700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -44,15 +44,18 @@
 
 
 /* V6 ajustes solicitados */
-.auth-card .auth-logo{content:none!important;width:360px;max-width:96%;max-height:150px;margin:0 auto 24px;display:block;object-fit:contain;}
+/* V7 login refinado */
+.auth-card .auth-logo{content:none!important;width:288px;max-width:82%;max-height:120px;margin:0 0 16px 0;display:block;object-fit:contain;}
+.auth-title{position:relative;padding-top:18px;}
+.auth-title:before{content:"";position:absolute;left:0;top:0;width:100%;max-width:420px;height:1px;background:rgba(23,61,55,.18);}
 .auth-logo-fb{display:none!important;}
-.map-full{max-width:56%!important;margin:0 auto!important;}
+.map-full{max-width:39%!important;margin:0 auto!important;}
 .map-box{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;overflow:visible!important;}
 .map-box>img{display:block!important;width:100%!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
 .map-legend-footer{background:#fff!important;border:1px solid var(--border)!important;border-radius:0 0 18px 18px!important;margin-top:0!important;}
-@media(max-width:1180px){.map-full{max-width:80%!important;}}
+@media(max-width:1180px){.map-full{max-width:70%!important;}}
 @media(max-width:760px){.map-full{max-width:100%!important;}}
-@media print{.map-full{max-width:70%!important;}.map-box{border:0!important;box-shadow:none!important;background:transparent!important;}}
+@media print{.map-full{max-width:52%!important;}.map-box{border:0!important;box-shadow:none!important;background:transparent!important;}}
 </style>
 </head>
 <body class="auth-locked">
@@ -153,7 +156,34 @@ let simMode='ate36';
 document.addEventListener('DOMContentLoaded',init);
 function init(){bindNav();const u=getStoredUser();if(u){CURRENT_USER=u;startApp()}else{document.body.classList.add('auth-locked')}document.getElementById('authSenha').addEventListener('keydown',e=>{if(e.key==='Enter')loginSubmit()});}
 function bindNav(){document.querySelectorAll('.sb-item[data-p]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.p)));}
-async function loginSubmit(){const login=val('authLogin').trim();const senha=val('authSenha').trim();if(!login||!senha)return loginErr('Informe e-mail e senha.');loginErr('Entrando...',false);try{const r=await api({action:'login',email:login,senha,login});const ok=r.ok||r.success||r.raw?.ok||r.raw?.success;const user=r.usuario||r.user||r.raw?.usuario||r.raw?.user;if(!ok||!user)return loginErr(r.message||r.error||r.raw?.error||'Usuário ou senha inválidos.');CURRENT_USER=user;setStoredUser(user);await startApp();}catch(e){console.error('Falha no login via API:',e);if(login==='admin@calliandra.local'&&senha==='123456'){CURRENT_USER={id_usuario:'U001',nome:'Administrador',email:'admin@calliandra.local',perfil:'gestor',modo:'fallback'};setStoredUser(CURRENT_USER);await startApp();toast('API não respondeu no login. Sistema aberto em modo local; use Sincronizar após carregar.','err');return;}loginErr('Erro ao conectar com a API. Verifique /api/sheets e tente novamente.');}}
+async function loginSubmit(){
+  const login=val('authLogin').trim();
+  const senha=val('authSenha').trim();
+  if(!login||!senha)return loginErr('Informe e-mail e senha.');
+
+  // Acesso administrativo local imediato: evita travamento quando a API está lenta ou fora do ar.
+  if(login==='admin@calliandra.local'&&senha==='123456'){
+    loginErr('',false);
+    CURRENT_USER={id_usuario:'U001',nome:'Administrador',email:'admin@calliandra.local',perfil:'gestor',modo:'local'};
+    setStoredUser(CURRENT_USER);
+    await startApp();
+    return;
+  }
+
+  loginErr('Entrando...',true);
+  try{
+    const r=await api({action:'login',email:login,senha,login},6000);
+    const ok=r.ok||r.success||r.raw?.ok||r.raw?.success;
+    const user=r.usuario||r.user||r.raw?.usuario||r.raw?.user;
+    if(!ok||!user)return loginErr(r.message||r.error||r.raw?.error||'Usuário ou senha inválidos.');
+    CURRENT_USER=user;
+    setStoredUser(user);
+    await startApp();
+  }catch(e){
+    console.error('Falha no login via API:',e);
+    loginErr('Erro ao conectar com a API. Use o acesso administrador local ou verifique /api/sheets.');
+  }
+} 
 function loginErr(msg,on=true){const el=id('authError');el.textContent=msg;el.classList.toggle('on',!!on)}
 async function startApp(){document.body.classList.remove('auth-locked');applyRoleUI();await carregarDados();go(defaultPage());}
 function getStoredUser(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
@@ -167,7 +197,18 @@ function canPlanning(){return ['gestor','marketing','comunicacao'].includes(perf
 function applyRoleUI(){id('userName').textContent=CURRENT_USER?.nome||CURRENT_USER?.email||'Usuário';id('userRole').textContent=ROLE_LABELS[perfil()]||perfil();document.querySelectorAll('.sb-item[data-p]').forEach(el=>el.style.display=canPage(el.dataset.p)?'flex':'none');document.querySelectorAll('.role-contract').forEach(el=>el.style.display=canContracts()?'inline-flex':'none');}
 function go(p){if(!canPage(p))p=defaultPage();document.querySelectorAll('.page').forEach(x=>x.classList.remove('on','print-on'));document.querySelectorAll('.sb-item').forEach(x=>x.classList.toggle('on',x.dataset.p===p));id('page-'+p).classList.add('on');id('topTitle').textContent=TITLES[p]||'Sistema';closeNav();const fn={dashboard:renderDashboard,mapa:renderMapa,cronograma:renderCronograma,orcamento:renderOrcamento,midia:renderMidia,simulador:renderSimulador,contratos:renderContratos,lotes:renderLotes,relatorios:renderRelatorios,corretores:renderCorretores,config:renderConfig}[p];if(fn)fn();}
 function toggleNav(){document.body.classList.toggle('nav-open')}function closeNav(){document.body.classList.remove('nav-open')}
-async function api(payload){const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const text=await res.text();let json;try{json=JSON.parse(text)}catch(e){throw new Error('Resposta não JSON da API: '+text.slice(0,180))}if(!res.ok)throw new Error(json.error||json.message||('HTTP '+res.status));return json} 
+async function api(payload,timeoutMs=7000){
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl.signal});
+    const text=await res.text();
+    let json;
+    try{json=JSON.parse(text)}catch(e){throw new Error('Resposta não JSON da API: '+text.slice(0,180))}
+    if(!res.ok)throw new Error(json.error||json.message||('HTTP '+res.status));
+    return json;
+  }finally{clearTimeout(timer)}
+} 
 async function carregarDados(){try{const r=await api({action:'getAll'});S.raw=r;const data=r.data||r.raw?.data||{};S.lotes=getSheet(data,'lotes').map(normLote);S.contratos=mergeLocal('contratos',getSheet(data,'vendas').concat(getSheet(data,'contratos')).map(normContrato));S.corretores=mergeLocal('corretores',normCorretores(getSheet(data,'corretores').concat(getSheet(data,'parceiros_comerciais'))));S.acoes=mergeLocal('acoes',getSheet(data,'acoes').map(normAcao));S.gastos=mergeLocal('gastos',getSheet(data,'gastos').map(normGasto));S.midia=mergeLocal('midia',getSheet(data,'midia').map(normMidia));S.cfg={};if(!S.corretores.length)S.corretores=corretoresPadrao();S.corretores=dedupeCorretores(S.corretores);if(!S.acoes.length)S.acoes=acoesPadrao();if(!S.gastos.length)S.gastos=gastosPadrao();if(!S.midia.length)S.midia=midiaPadrao();aplicarRegras();setConn(true,'Google Sheets conectado');}catch(e){console.error(e);const l=readLocal();if(l)S={...S,...l};if(!S.corretores.length)S.corretores=corretoresPadrao();if(!S.acoes.length)S.acoes=acoesPadrao();if(!S.gastos.length)S.gastos=gastosPadrao();if(!S.midia.length)S.midia=midiaPadrao();setConn(false,'Usando dados locais');toast('Não foi possível carregar a planilha. Usando dados locais.','err')}}
 function setConn(ok,msg){const el=id('connStatus');el.textContent=msg;el.style.background=ok?'var(--ok-bg)':'var(--warn-bg)';el.style.color=ok?'var(--ok)':'var(--warn)'}
 async function syncManual(){await carregarDados();go(document.querySelector('.page.on')?.id.replace('page-','')||'dashboard');toast('Sincronizado.')}function renderAll(){renderDashboard();renderMapa();renderCronograma();renderOrcamento();renderMidia();renderSimulador();renderContratos();renderLotes();renderRelatorios();renderCorretores();renderConfig();}
