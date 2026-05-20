@@ -45,7 +45,11 @@
 
 /* V6 ajustes solicitados */
 /* V7 login refinado */
-.auth-card .auth-logo{content:none!important;width:288px;max-width:82%;max-height:120px;margin:0 0 16px 0;display:block;object-fit:contain;}
+.auth-card .auth-logo{content:none!important;width:230px;max-width:68%;max-height:96px;margin:0 0 14px 0;display:block;object-fit:contain;}
+.auth-card{display:block!important;text-align:left!important;}
+.auth-sub,.auth-title,.auth-field,.auth-card .btn,.auth-error{max-width:420px;}
+.auth-title:before{max-width:420px!important;}
+.map-full{max-width:32%!important;}
 .auth-title{position:relative;padding-top:18px;}
 .auth-title:before{content:"";position:absolute;left:0;top:0;width:100%;max-width:420px;height:1px;background:rgba(23,61,55,.18);}
 .auth-logo-fb{display:none!important;}
@@ -67,7 +71,7 @@
     <div class="auth-sub">Residencial Calliandra · Urbanizadora Paranoazinho</div>
     <div class="auth-field"><label>E-mail</label><input id="authLogin" autocomplete="username"></div>
     <div class="auth-field"><label>Senha</label><input id="authSenha" type="password" autocomplete="current-password"></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;height:48px" onclick="loginSubmit()">Entrar no sistema</button>
+    <button id="authBtn" type="button" class="btn btn-primary" style="width:100%;justify-content:center;height:48px" onclick="loginSubmit()">Entrar no sistema</button>
     <div class="auth-error" id="authError"></div>
   </div>
 </div>
@@ -154,7 +158,7 @@ let F={contratos:{q:'',status:'',corretor:'',origem:'',quadra:'',min:'',max:'',s
 let simMode='ate36';
 
 document.addEventListener('DOMContentLoaded',init);
-function init(){bindNav();const u=getStoredUser();if(u){CURRENT_USER=u;startApp()}else{document.body.classList.add('auth-locked')}document.getElementById('authSenha').addEventListener('keydown',e=>{if(e.key==='Enter')loginSubmit()});}
+function init(){bindNav();const u=getStoredUser();if(u){CURRENT_USER=u;startApp()}else{document.body.classList.add('auth-locked')}const senhaEl=document.getElementById('authSenha');if(senhaEl)senhaEl.addEventListener('keydown',e=>{if(e.key==='Enter')loginSubmit()});const btn=document.getElementById('authBtn');if(btn)btn.addEventListener('click',loginSubmit);window.loginSubmit=loginSubmit;}
 function bindNav(){document.querySelectorAll('.sb-item[data-p]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.p)));}
 async function loginSubmit(){
   const login=val('authLogin').trim();
@@ -162,11 +166,11 @@ async function loginSubmit(){
   if(!login||!senha)return loginErr('Informe e-mail e senha.');
 
   // Acesso administrativo local imediato: evita travamento quando a API está lenta ou fora do ar.
-  if(login==='admin@calliandra.local'&&senha==='123456'){
+  if(login.toLowerCase()==='admin@calliandra.local'&&senha==='123456'){
     loginErr('',false);
     CURRENT_USER={id_usuario:'U001',nome:'Administrador',email:'admin@calliandra.local',perfil:'gestor',modo:'local'};
     setStoredUser(CURRENT_USER);
-    await startApp();
+    startApp();
     return;
   }
 
@@ -178,14 +182,25 @@ async function loginSubmit(){
     if(!ok||!user)return loginErr(r.message||r.error||r.raw?.error||'Usuário ou senha inválidos.');
     CURRENT_USER=user;
     setStoredUser(user);
-    await startApp();
+    startApp();
   }catch(e){
     console.error('Falha no login via API:',e);
     loginErr('Erro ao conectar com a API. Use o acesso administrador local ou verifique /api/sheets.');
   }
 } 
 function loginErr(msg,on=true){const el=id('authError');el.textContent=msg;el.classList.toggle('on',!!on)}
-async function startApp(){document.body.classList.remove('auth-locked');applyRoleUI();await carregarDados();go(defaultPage());}
+async function startApp(){
+  document.body.classList.remove('auth-locked');
+  loginErr('',false);
+  applyRoleUI();
+  garantirDadosMinimos();
+  go(defaultPage());
+  carregarDados()
+    .then(()=>{aplicarRegras();go(paginaAtual()||defaultPage());})
+    .catch(e=>{console.warn('Falha ao sincronizar após login:',e);setConn(false,'Usando dados locais');});
+}
+function paginaAtual(){const p=document.querySelector('.page.on');return p?p.id.replace('page-',''):null}
+function garantirDadosMinimos(){if(!S.corretores.length)S.corretores=corretoresPadrao();if(!S.acoes.length)S.acoes=acoesPadrao();if(!S.gastos.length)S.gastos=gastosPadrao();if(!S.midia.length)S.midia=midiaPadrao();}
 function getStoredUser(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
 function setStoredUser(u){u?localStorage.setItem(AUTH_KEY,JSON.stringify(u)):localStorage.removeItem(AUTH_KEY)}
 function logout(){setStoredUser(null);location.reload()}
