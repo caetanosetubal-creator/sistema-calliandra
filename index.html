@@ -130,8 +130,57 @@ function logout(){safeRemove(USER);location.reload()}
 function go(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on','print-on'));document.querySelectorAll('.sb-item').forEach(b=>b.classList.toggle('on',b.dataset.page===page));id('page-'+page).classList.add('on');id('topTitle').textContent=titles[page]||'Sistema';document.body.classList.remove('nav-open');({dashboard:renderDashboard,mapa:renderMapa,cronograma:renderCronograma,orcamento:renderOrcamento,midia:renderMidia,simulador:renderSimulador,contratos:renderVendas,lotes:renderLotes,relatorios:renderRelatorios,corretores:renderCorretores,config:renderConfig}[page]||renderDashboard)()}
 async function syncSilent(){try{await syncData();toast('Sincronizado com planilha.');go(currentPage())}catch(e){console.warn(e);setConn(false,'Modo local seguro')}}
 async function syncManual(){try{await syncData();toast('Sincronizado.');go(currentPage())}catch(e){toast('Não consegui sincronizar com a API. O sistema segue em modo local seguro.','err');setConn(false,'Modo local seguro')}}
-async function syncData(){setConn(false,'Sincronizando...');const r=await api({action:'getAll'},8000);const data=r.data||r.raw?.data||{};const lotes=getSheet(data,'lotes').map(normLote).filter(l=>l.lote&&l.area>0);const vendas=[...getSheet(data,'vendas'),...getSheet(data,'contratos')].map(normContrato).filter(c=>c.lote||c.cliente);const corretores=[...getSheet(data,'corretores'),...getSheet(data,'parceiros_comerciais')].map(normCorretor).filter(c=>c.nome);STATE.lotes=dedupeLotes([...(lotes.length?lotes:[]),...lotesFallback()]);if(vendas.length)STATE.contratos=mergeById(readJSON('calliandra_v9_local_contratos',[]),vendas);if(corretores.length)STATE.corretores=dedupe([...corretoresPadrao(),...corretores],'nome');saveLocal();applyRules();setConn(true,'Google Sheets sincronizado')}
-async function api(payload,timeout=7000){const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),timeout);try{const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl.signal});const txt=await res.text();try{return JSON.parse(txt)}catch(e){throw new Error('Resposta inválida da API')}}finally{clearTimeout(t)}}
+async function syncData(){
+  setConn(false,'Sincronizando...');
+  const r=await apiGetAll(35000);
+  const data=r.data||r.raw?.data||{};
+
+  const lotesPlanilha=getSheet(data,'lotes').map(normLote).filter(l=>l.lote&&l.area>0);
+  const vendasPlanilha=[...getSheet(data,'vendas'),...getSheet(data,'contratos')].map(normContrato).filter(c=>c.lote||c.cliente);
+  const corretoresPlanilha=[...getSheet(data,'corretores'),...getSheet(data,'parceiros_comerciais')].map(normCorretor).filter(c=>c.nome);
+
+  if(!lotesPlanilha.length){
+    throw new Error('A API respondeu, mas não trouxe a aba lotes.');
+  }
+
+  // A partir da V16, a planilha manda no estoque. Fallback só entra se a API falhar antes desta função concluir.
+  STATE.lotes=dedupeLotes(lotesPlanilha);
+
+  // Vendas da planilha também substituem a base sincronizada. Vendas locais ficam apenas como rascunho quando não há planilha.
+  if(vendasPlanilha.length){
+    STATE.contratos=vendasPlanilha;
+    safeSet('calliandra_v9_local_contratos',JSON.stringify(vendasPlanilha));
+  }
+
+  if(corretoresPlanilha.length){
+    STATE.corretores=dedupe([...corretoresPadrao(),...corretoresPlanilha],'nome');
+  }
+
+  STATE.lastSync={
+    at:new Date().toISOString(),
+    source:'google_sheets',
+    lotes:lotesPlanilha.length,
+    vendas:vendasPlanilha.length,
+    corretores:corretoresPlanilha.length
+  };
+
+  saveLocal();
+  applyRules();
+  setConn(true,'Google Sheets sincronizado');
+}
+async function apiGetAll(timeout=35000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),timeout);
+  try{
+    const res=await fetch(API_URL+'?action=getAll&_t='+Date.now(),{method:'GET',cache:'no-store',signal:ctrl.signal});
+    const txt=await res.text();
+    let json;
+    try{json=JSON.parse(txt)}catch(e){throw new Error('Resposta inválida da API: '+txt.slice(0,160))}
+    if(json.ok===false||json.success===false){throw new Error(json.error||json.message||'API retornou erro')}
+    return json;
+  }finally{clearTimeout(t)}
+}
+async function api(payload,timeout=12000){const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),timeout);try{const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl.signal});const txt=await res.text();try{return JSON.parse(txt)}catch(e){throw new Error('Resposta inválida da API')}}finally{clearTimeout(t)}}
 async function persistRow(sheet,values,label='registro'){try{const idValue=values.id||values.id_lote||values.id_venda||values.id_contrato||'';let res=null;if(idValue){res=await api({action:'updateRowById',sheet,values,id:idValue},6000)}if(!res||res.ok===false||res.success===false){res=await api({action:'appendRow',sheet,values},6000)}if(res&&res.ok!==false&&res.success!==false){toast(label+' atualizado na planilha.')}else{toast(label+' salvo localmente. A planilha não confirmou a atualização.','err')}}catch(e){console.warn(e);toast(label+' salvo localmente. Não consegui atualizar a planilha agora.','err')}}
 function vendaToSheet(c){return{id:c.id,id_venda:c.id,data:c.data,cliente:c.cliente,quadra:c.quadra,rua:c.rua,lote:c.lote,area_m2:c.area,valor_tabela:c.valorTabela,valor_final:c.valorFinal,desconto:c.desconto,comissao_percentual:c.comissaoPct,comissao_valor:c.comissaoValor,valor_liquido_up:c.valorLiquidoUP,status:c.status,corretor:c.corretor,origem:c.origem,forma_pagamento:c.formaPagamento,recebimento_maio:c.recebimentoMaio,recebimento_junho:c.recebimentoJunho,recebimento_julho:c.recebimentoJulho,recebimento_agosto:c.recebimentoAgosto,fluxo:c.fluxo}}
 function loteToSheet(l){return{id:l.id,id_lote:l.id,quadra:l.quadra,rua:l.rua,lote:l.lote,area_m2:l.area,preco_m2_base:l.precoM2,valor_tabela:l.valorTabela,status_lote:l.status,status_comercial:l.status,vendavel:l.vendavel?'Sim':'Não',observacoes:l.obs,anotacao_lote:l.anotacao}}
@@ -225,7 +274,7 @@ function calcDescPct(c){return c.valorTabela?((c.valorTabela-c.valorFinal)/c.val
 function BRLShort(v){v=Number(v||0);if(Math.abs(v)>=1000000)return 'R$ '+(v/1000000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' mi';if(Math.abs(v)>=1000)return 'R$ '+(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil';return BRL(v)}
 function dedupeLotes(arr){const m=new Map();(arr||[]).forEach(l=>{const key=norm((l.rua||l.quadra||'')+'|'+l.lote);if(key&&!m.has(key))m.set(key,l)});return [...m.values()].sort((a,b)=>String(loteNome(a)).localeCompare(String(loteNome(b)),'pt-BR'))}
 function parseDate(v){if(typeof v==='number'){const d=new Date(Date.UTC(1899,11,30));d.setUTCDate(d.getUTCDate()+v);return d.toISOString().slice(0,10)}const s=String(v||'').trim();if(!s)return'';let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m)return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);const d=new Date(s);return isNaN(d)?s:d.toISOString().slice(0,10)}function fmtDate(d){const s=parseDate(d);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return s||'-';const [y,m,day]=s.split('-');return`${day}/${m}/${y}`}function isVendido(s){s=norm(s);if(s.includes('nao vendido')||s.includes('não vendido')||s.includes('nao vendidos')||s.includes('não vendidos'))return false;return s.includes('vend')||s.includes('pago')||s.includes('contrato')}function same(a,b){return norm(a)===norm(b)}function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()}function normKey(s){return norm(s).replace(/[^a-z0-9]/g,'')}function num(v){if(typeof v==='number')return v;if(!v)return 0;let s=String(v).replace('R$','').replace(/\s/g,'');if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');else if(s.includes(','))s=s.replace(',','.');return Number(s)||0}function BRL(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}function AREA(v){return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m²'}function sum(arr,f){return(arr||[]).reduce((s,x)=>s+num(x[f]),0)}function pct(a,b){return b?Math.round(num(a)/num(b)*100):0}function pick(o,keys){if(!o)return'';for(const k of keys){if(o[k]!==undefined&&o[k]!==null&&o[k]!=='')return o[k]}const n={};Object.keys(o).forEach(k=>n[normKey(k)]=o[k]);for(const k of keys){const v=n[normKey(k)];if(v!==undefined&&v!==null&&v!=='')return v}return''}function quadraNome(v){const t=norm(v);if(t.includes('araca'))return'Araçá';if(t.includes('baru'))return'Baru';if(t.includes('araticum'))return'Araticum';if(t.includes('murici'))return'Murici';if(t.includes('pequi'))return'Pequi';if(t.includes('buriti'))return'Buriti';return String(v||'')}function escAttr(v){return esc(v).replace(/'/g,'&#39;')}
-function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function opts(arr,sel){return(arr||[]).filter(Boolean).map(x=>`<option value="${esc(x)}" ${same(x,sel)?'selected':''}>${esc(x)}</option>`).join('')}function unique(a){return[...new Set((a||[]).filter(Boolean))].sort((x,y)=>String(x).localeCompare(String(y),'pt-BR'))}function empty(n){return`<tr><td colspan="${n}" style="text-align:center;color:var(--muted);padding:20px">Nenhum registro encontrado.</td></tr>`}function val(x){return id(x)?.value||''}function id(x){return document.getElementById(x)}function uid(){return'D'+Date.now()+Math.floor(Math.random()*9999)}function today(){return new Date().toISOString().slice(0,10)}function safeSet(k,v){try{localStorage.setItem(k,v)}catch(e){console.warn('localStorage bloqueado:',e)}}function safeRemove(k){try{localStorage.removeItem(k)}catch(e){console.warn('localStorage bloqueado:',e)}}function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||'null')??f}catch(e){return f}}function mergeById(local,remote){const r=[...local];remote.forEach(x=>{if(!r.some(y=>y.id===x.id))r.push(x)});return r}function dedupe(arr,k){const m=new Map();arr.forEach(x=>{const key=norm(x[k]);if(key&&!m.has(key))m.set(key,x)});return[...m.values()]}function toast(msg,type='ok'){const e=document.createElement('div');e.className='toast '+(type==='err'?'err':'');e.textContent=msg;id('toasts').appendChild(e);setTimeout(()=>e.remove(),3200)}function closeModal(){id('modalBack').classList.remove('on')}function exportJSON(){const blob=new Blob([JSON.stringify({CFG,STATE},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='calliandra-sistema-export.json';a.click()}function clearCache(){if(confirm('Limpar cache local?')){safeRemove(STORE);safeRemove('calliandra_v9_local_contratos');safeRemove('calliandra_v9_cfg');location.reload()}}
+function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function opts(arr,sel){return(arr||[]).filter(Boolean).map(x=>`<option value="${esc(x)}" ${same(x,sel)?'selected':''}>${esc(x)}</option>`).join('')}function unique(a){return[...new Set((a||[]).filter(Boolean))].sort((x,y)=>String(x).localeCompare(String(y),'pt-BR'))}function empty(n){return`<tr><td colspan="${n}" style="text-align:center;color:var(--muted);padding:20px">Nenhum registro encontrado.</td></tr>`}function val(x){return id(x)?.value||''}function id(x){return document.getElementById(x)}function uid(){return'D'+Date.now()+Math.floor(Math.random()*9999)}function today(){return new Date().toISOString().slice(0,10)}function safeSet(k,v){try{localStorage.setItem(k,v)}catch(e){console.warn('localStorage bloqueado:',e)}}function safeRemove(k){try{localStorage.removeItem(k)}catch(e){console.warn('localStorage bloqueado:',e)}}function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||'null')??f}catch(e){return f}}function mergeById(local,remote){const r=[...local];remote.forEach(x=>{if(!r.some(y=>y.id===x.id))r.push(x)});return r}function dedupe(arr,k){const m=new Map();arr.forEach(x=>{const key=norm(x[k]);if(key&&!m.has(key))m.set(key,x)});return[...m.values()]}function toast(msg,type='ok'){const e=document.createElement('div');e.className='toast '+(type==='err'?'err':'');e.textContent=msg;id('toasts').appendChild(e);setTimeout(()=>e.remove(),3200)}function closeModal(){id('modalBack').classList.remove('on')}function exportJSON(){const blob=new Blob([JSON.stringify({CFG,STATE},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='calliandra-sistema-export.json';a.click()}function clearCache(){if(confirm('Limpar cache local?')){safeRemove(STORE);safeRemove('calliandra_v9_local_contratos');safeRemove('calliandra_v9_deleted_vendas');safeRemove('calliandra_v9_cfg');location.reload()}}
 
 
 /* === V14 · Auditoria executiva, cenários de preço e correções comerciais === */
