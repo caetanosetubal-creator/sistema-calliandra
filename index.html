@@ -587,7 +587,236 @@ function renderConfig(){
   const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 })();
 
+
+/* =========================
+   V17 OVERRIDES · CENÁRIOS, DESCONTOS, VSO E DASHBOARD
+   ========================= */
+function moneyShortSafe(v){return BRLShort(v).replace(/\s/g,'&nbsp;')}
+
+function renderDashboard(){
+  const s=stats();
+  id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">Régua principal: estoque comercial da UP. Permutante fora do VGV e da meta.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="go('cenarios')">💹 Cenários de preço</button></div></div>
+  <div class="kpi-row">${kpi('Estoque UP',CFG.estoqueUP,'base comercial')}${kpi('Comercializáveis',CFG.disponiveis,'disponíveis + garantia GDF','g',pct(CFG.disponiveis,CFG.estoqueUP))}${kpi('Comercializados UP',CFG.comercializados,'9 vendidos + 1 permuta','o',pct(CFG.comercializados,CFG.estoqueUP))}${kpi('Restritos UP',s.restritos,'fora da venda imediata','l',pct(s.restritos,CFG.estoqueUP))}</div>
+  <div class="kpi-row">${kpi('Realizado no período',BRL(s.real),s.pctFin+'% de '+BRL(CFG.metaFinanceira),'g',s.pctFin)}${kpi('Unidades no período',s.unidades+'/'+CFG.metaLotes,s.pctLot+'% da meta','o',s.pctLot)}${kpi('Faltam vender',s.faltam,'até 30/06','l')}${kpi('Falta financeiro','<span class="money-inline">'+moneyShortSafe(s.faltaFin)+'</span>','faltam para bater a meta de '+BRL(CFG.metaFinanceira),'b compact-money')}</div>
+  <div class="g2"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',s.real,CFG.metaFinanceira,true)}${progress('Meta de unidades',s.unidades,CFG.metaLotes,false)}<div class="info"><b>Leitura objetiva:</b> faltam ${s.faltam} lotes e ${BRL(s.faltaFin)}. A pressão principal continua sendo volume de contratos e velocidade de fechamento.</div></div></div><div class="card"><div class="ch"><div class="ch-ttl">Composição do estoque UP</div>${badge('base 53')}</div><div class="cb" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">${donut([{v:CFG.disponiveis,c:'#173d37'},{v:CFG.comercializados,c:'#ac4a4a'},{v:s.restritos,c:'#d7cdbd'}])}<div class="legend" style="flex:1">${legend('#173d37','Comercializáveis',CFG.disponiveis)}${legend('#ac4a4a','Comercializados',CFG.comercializados)}${legend('#d7cdbd','Restritos UP',s.restritos)}${legend('#6e6760','Permutante fora da régua',CFG.permutante)}</div></div></div></div>
+  <div class="g2" style="margin-top:16px"><div class="card"><div class="ch"><div class="ch-ttl">Cenários de preço, desconto e VGV</div><button class="btn btn-ghost btn-sm" onclick="go('cenarios')">Abrir painel →</button></div><div class="cb">${scenarioMini()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Caixa do trimestre</div>${badge('fluxo')}</div><div class="cb">${progress('Caixa até junho',s.caixa,s.real,true)}<div class="success"><b>Atualização:</b> venda da Eliana considerada à vista no caixa acumulado até junho.</div></div></div></div>
+  <div class="table-card" style="margin-top:16px"><div class="ch"><div class="ch-ttl">Vendas consideradas na meta</div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${tabelaVendas(s.vp)}</div>`;
+}
+
+function scenarioInputs(){
+  const saved=readJSON('calliandra_v17_cenarios',readJSON('calliandra_v15_cenarios',{}));
+  return {
+    preco1: num(saved.preco1)||1429.27,
+    preco2: num(saved.preco2)||1445.67,
+    preco3: num(saved.preco3)||1500,
+    comissao: num(saved.comissao)||5.5,
+    descAvista: saved.descAvista!==undefined?num(saved.descAvista):10,
+    descEntrada50: saved.descEntrada50!==undefined?num(saved.descEntrada50):5,
+    descEntrada30: saved.descEntrada30!==undefined?num(saved.descEntrada30):3,
+    descCurto36: saved.descCurto36!==undefined?num(saved.descCurto36):2,
+    mixAvista: saved.mixAvista!==undefined?num(saved.mixAvista):25,
+    mixEntrada50: saved.mixEntrada50!==undefined?num(saved.mixEntrada50):25,
+    mixEntrada30: saved.mixEntrada30!==undefined?num(saved.mixEntrada30):25,
+    mixCurto36: saved.mixCurto36!==undefined?num(saved.mixCurto36):25,
+    ativo: saved.ativo || '1',
+    junho: num(saved.junho)||21,
+    velocidade: num(saved.velocidade)||4,
+    inicio: saved.inicio || '2026-07',
+    fim: saved.fim || '2027-03'
+  };
+}
+function saveScenarioInputs(){
+  const base=scenarioInputs();
+  if(!id('scPreco1')) return base;
+  const data={
+    preco1:num(val('scPreco1'))||base.preco1,
+    preco2:num(val('scPreco2'))||base.preco2,
+    preco3:num(val('scPreco3'))||base.preco3,
+    comissao:num(val('scComissao'))||base.comissao,
+    descAvista:num(val('scDescAvista')),
+    descEntrada50:num(val('scDescEntrada50')),
+    descEntrada30:num(val('scDescEntrada30')),
+    descCurto36:num(val('scDescCurto36')),
+    mixAvista:num(val('scMixAvista')),
+    mixEntrada50:num(val('scMixEntrada50')),
+    mixEntrada30:num(val('scMixEntrada30')),
+    mixCurto36:num(val('scMixCurto36')),
+    ativo:val('scAtivo')||base.ativo,
+    junho:num(val('scJunho'))||base.junho,
+    velocidade:num(val('scVelocidade'))||base.velocidade,
+    inicio:val('scInicio')||base.inicio,
+    fim:val('scFim')||base.fim
+  };
+  safeSet('calliandra_v17_cenarios',JSON.stringify(data));
+  return data;
+}
+function getScenarioConfig(){
+  const base=scenarioInputs();
+  const read=(idName, fallback)=>id(idName)?num(val(idName)):fallback;
+  return {
+    preco1:read('scPreco1',base.preco1),
+    preco2:read('scPreco2',base.preco2),
+    preco3:read('scPreco3',base.preco3),
+    comissao:read('scComissao',base.comissao),
+    descAvista:read('scDescAvista',base.descAvista),
+    descEntrada50:read('scDescEntrada50',base.descEntrada50),
+    descEntrada30:read('scDescEntrada30',base.descEntrada30),
+    descCurto36:read('scDescCurto36',base.descCurto36),
+    mixAvista:read('scMixAvista',base.mixAvista),
+    mixEntrada50:read('scMixEntrada50',base.mixEntrada50),
+    mixEntrada30:read('scMixEntrada30',base.mixEntrada30),
+    mixCurto36:read('scMixCurto36',base.mixCurto36),
+    ativo:id('scAtivo')?val('scAtivo'):base.ativo,
+    junho:id('scJunho')?num(val('scJunho')):base.junho,
+    velocidade:id('scVelocidade')?num(val('scVelocidade')):base.velocidade,
+    inicio:id('scInicio')?val('scInicio'):base.inicio,
+    fim:id('scFim')?val('scFim'):base.fim
+  };
+}
+function discountMixPct(cfg){
+  const rows=[
+    {mix:cfg.mixAvista,desc:cfg.descAvista},
+    {mix:cfg.mixEntrada50,desc:cfg.descEntrada50},
+    {mix:cfg.mixEntrada30,desc:cfg.descEntrada30},
+    {mix:cfg.mixCurto36,desc:cfg.descCurto36}
+  ];
+  const total=rows.reduce((s,r)=>s+Math.max(num(r.mix),0),0);
+  if(!total) return 0;
+  return rows.reduce((s,r)=>s+(Math.max(num(r.mix),0)*num(r.desc)),0)/total;
+}
+function scenarioMetrics(areaTotal,preco,cfg){
+  const bruto=areaTotal*preco;
+  const descontoPct=discountMixPct(cfg);
+  const desconto=bruto*(descontoPct/100);
+  const aposDesconto=bruto-desconto;
+  const comissao=aposDesconto*(num(cfg.comissao)/100);
+  const liquido=aposDesconto-comissao;
+  return {bruto,descontoPct,desconto,aposDesconto,comissao,liquido};
+}
+function scenarioData(){
+  const cfg=getScenarioConfig();
+  const lotes=lotesComercializaveis();
+  const areaTotal=sum(lotes,'area');
+  const baseVGV=sum(lotes,'valorTabela');
+  const precos=[
+    {id:'base',nome:'Base atual',preco:PRECO_M2,obs:'preço m² de referência'},
+    {id:'1',nome:'Cenário 1',preco:cfg.preco1,obs:'preço editável'},
+    {id:'2',nome:'Cenário 2',preco:cfg.preco2,obs:'preço editável'},
+    {id:'3',nome:'Cenário 3',preco:cfg.preco3,obs:'preço editável'}
+  ];
+  return {lotes,areaTotal,baseVGV,precos,cfg,descontoMedio:discountMixPct(cfg)};
+}
+function scenarioMini(){
+  const d=scenarioData();
+  return d.precos.slice(1).map(p=>{const m=scenarioMetrics(d.areaTotal,p.preco,d.cfg);return `<div class="scenario-mini"><b>${p.nome}</b><span>${BRL(p.preco)}/m² · desc. médio ${d.descontoMedio.toFixed(1).replace('.',',')}%</span><strong>${BRLShort(m.bruto)}</strong><em>${BRLShort(m.liquido)} líquido UP</em></div>`}).join('');
+}
+function buildSalesProjection(lotes,preco,cfg){
+  const rows=[];
+  let index=0, acumBruto=0, acumDesconto=0, acumLiquido=0;
+  const pushMonth=(ym,qtd,rotulo)=>{
+    const n=Math.max(0,Math.min(Math.floor(qtd||0),lotes.length-index));
+    const loteSlice=lotes.slice(index,index+n);
+    const area=loteSlice.reduce((s,l)=>s+num(l.area),0);
+    const m=scenarioMetrics(area,preco,cfg);
+    acumBruto+=m.bruto;acumDesconto+=m.desconto;acumLiquido+=m.liquido;index+=n;
+    if(n>0)rows.push({mes:monthLabel(ym),ym,rotulo,qtd:n,area,bruto:m.bruto,desconto:m.desconto,comissao:m.comissao,liquido:m.liquido,acumBruto,acumDesconto,acumLiquido});
+  };
+  pushMonth('2026-06',cfg.junho,'Fechamento do trimestre');
+  let ym=cfg.inicio||'2026-07';
+  let guard=0;
+  while(index<lotes.length && guard<36){
+    pushMonth(ym,cfg.velocidade,'Velocidade mensal');
+    if((cfg.fim||'') && ym===cfg.fim && index<lotes.length){
+      pushMonth(addMonth(ym,1),lotes.length-index,'Saldo após meta final');
+      break;
+    }
+    ym=addMonth(ym,1);guard++;
+  }
+  return rows;
+}
+function projectionSummary(rows,totalLots){
+  if(!rows.length)return `<div class="warnbox">Não há lotes suficientes para montar a projeção.</div>`;
+  const last=rows[rows.length-1];
+  return `<div class="g3 projection-summary"><div class="card"><div class="cb"><span class="mini-lbl">Prazo projetado</span><b>${last.mes}</b><small>mês de esgotamento do estoque simulado</small></div></div><div class="card"><div class="cb"><span class="mini-lbl">Unidades distribuídas</span><b>${rows.reduce((s,r)=>s+r.qtd,0)}/${totalLots}</b><small>conforme velocidade informada</small></div></div><div class="card"><div class="cb"><span class="mini-lbl">Receita líquida UP</span><b>${BRLShort(last.acumLiquido)}</b><small>após desconto médio e comissão</small></div></div></div>`;
+}
+function vsoChart(rows,totalLots){
+  if(!rows.length)return '';
+  const max=Math.max(...rows.map(r=>r.qtd),1);
+  const total=rows.reduce((s,r)=>s+r.qtd,0)||1;
+  return `<div class="vso-panel"><div class="vso-head"><div><b>VSO projetado</b><span>Velocidade mensal de absorção do estoque comercial</span></div><strong>${Math.round((total/Math.max(totalLots,1))*100)}%</strong></div><div class="vso-bars">${rows.map(r=>`<div class="vso-col" title="${r.mes}: ${r.qtd} unidade(s)"><div class="vso-bar" style="height:${Math.max(14,(r.qtd/max)*150)}px"><span>${r.qtd}</span></div><small>${r.mes}</small></div>`).join('')}</div></div>`;
+}
+function renderCenarios(){
+  const d=scenarioData();
+  saveScenarioInputs();
+  const ativo=d.precos.find(p=>p.id===d.cfg.ativo)||d.precos[1];
+  const proj=buildSalesProjection(d.lotes,ativo.preco,d.cfg);
+  const baseM=scenarioMetrics(d.areaTotal,PRECO_M2,d.cfg);
+  id('page-cenarios').innerHTML=`
+  <div class="sh"><div><div class="ttl">Cenários e projeções</div><div class="sub">Simulação permanente de preço, descontos, VGV, comissão e velocidade de vendas do estoque comercial.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('cenarios')">🖨 Imprimir / PDF</button></div></div>
+
+  <div class="card"><div class="ch"><div class="ch-ttl">Parâmetros comerciais editáveis</div>${badge('sistema')}</div><div class="cb">
+    <div class="fr c4">
+      <div class="field"><label>Cenário 1 · R$/m²</label><input id="scPreco1" type="number" step="0.01" value="${d.cfg.preco1.toFixed(2)}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Cenário 2 · R$/m²</label><input id="scPreco2" type="number" step="0.01" value="${d.cfg.preco2.toFixed(2)}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Cenário 3 · R$/m²</label><input id="scPreco3" type="number" step="0.01" value="${d.cfg.preco3.toFixed(2)}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Comissão média (%)</label><input id="scComissao" type="number" step="0.1" value="${d.cfg.comissao}" oninput="renderCenarios()"></div>
+    </div>
+    <div class="section-mini-title">Política máxima de descontos</div>
+    <div class="fr c4">
+      <div class="field"><label>À vista (%)</label><input id="scDescAvista" type="number" step="0.1" value="${d.cfg.descAvista}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Entrada 50% (%)</label><input id="scDescEntrada50" type="number" step="0.1" value="${d.cfg.descEntrada50}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Entrada 30% (%)</label><input id="scDescEntrada30" type="number" step="0.1" value="${d.cfg.descEntrada30}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Plano até 36x (%)</label><input id="scDescCurto36" type="number" step="0.1" value="${d.cfg.descCurto36}" oninput="renderCenarios()"></div>
+    </div>
+    <div class="section-mini-title">Mix estimado de formas de pagamento</div>
+    <div class="fr c4">
+      <div class="field"><label>À vista · mix (%)</label><input id="scMixAvista" type="number" step="1" value="${d.cfg.mixAvista}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Entrada 50% · mix (%)</label><input id="scMixEntrada50" type="number" step="1" value="${d.cfg.mixEntrada50}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Entrada 30% · mix (%)</label><input id="scMixEntrada30" type="number" step="1" value="${d.cfg.mixEntrada30}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Até 36x · mix (%)</label><input id="scMixCurto36" type="number" step="1" value="${d.cfg.mixCurto36}" oninput="renderCenarios()"></div>
+    </div>
+    <div class="info"><b>Base de cálculo:</b> ${d.lotes.length} lotes comercializáveis, ${AREA(d.areaTotal)} de área e VGV base de ${BRL(d.baseVGV)}. O desconto médio ponderado usado nas projeções é de <b>${d.descontoMedio.toFixed(2).replace('.',',')}%</b>.</div>
+  </div></div>
+
+  <div class="kpi-row" style="margin-top:16px">
+    ${kpi('Lotes projetados',d.lotes.length,'estoque comercial recalculado')}
+    ${kpi('Área simulada',AREA(d.areaTotal),'somatório dos lotes')}
+    ${kpi('Desconto médio',d.descontoMedio.toFixed(2).replace('.',',')+'%','ponderado pelo mix')}
+    ${kpi('VGV base',BRLShort(d.baseVGV),'preço m² atual')}
+  </div>
+
+  <div class="table-card"><div class="ch"><div class="ch-ttl">Comparativo de cenários</div><span>bruto, desconto, comissão e líquido UP</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV bruto</th><th>Desconto projetado</th><th>Base pós-desconto</th><th>Comissão</th><th>Líquido UP</th><th>Delta líquido vs. base</th><th>Ticket líquido</th></tr></thead><tbody>
+  ${d.precos.map((p,i)=>{const m=scenarioMetrics(d.areaTotal,p.preco,d.cfg);const delta=m.liquido-baseM.liquido;return `<tr><td><b>${p.nome}</b><br><small>${p.obs}</small></td><td>${BRL(p.preco)}</td><td><b>${BRL(m.bruto)}</b></td><td>${BRL(m.desconto)}<br><small>${m.descontoPct.toFixed(2).replace('.',',')}%</small></td><td>${BRL(m.aposDesconto)}</td><td>${BRL(m.comissao)}</td><td><b>${BRL(m.liquido)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td><td>${BRL(d.lotes.length?m.liquido/d.lotes.length:0)}</td></tr>`}).join('')}
+  </tbody></table></div></div>
+
+  <div class="card"><div class="ch"><div class="ch-ttl">Velocidade de vendas</div>${badge('projeção mensal')}</div><div class="cb">
+    <div class="fr c4">
+      <div class="field"><label>Cenário usado na projeção</label><select id="scAtivo" onchange="renderCenarios()">${['1','2','3'].map(x=>`<option value="${x}" ${d.cfg.ativo===x?'selected':''}>Cenário ${x}</option>`).join('')}</select></div>
+      <div class="field"><label>Unidades em junho</label><input id="scJunho" type="number" value="${d.cfg.junho}" min="0" oninput="renderCenarios()"></div>
+      <div class="field"><label>Unidades/mês após junho</label><input id="scVelocidade" type="number" value="${d.cfg.velocidade}" min="1" oninput="renderCenarios()"></div>
+      <div class="field"><label>Meta final</label><input id="scFim" type="month" value="${d.cfg.fim}" onchange="renderCenarios()"></div>
+    </div>
+    <div class="fr c2"><div class="field"><label>Início pós-junho</label><input id="scInicio" type="month" value="${d.cfg.inicio}" onchange="renderCenarios()"></div><div class="field"><label>Preço ativo</label><input value="${ativo.nome} · ${BRL(ativo.preco)}/m²" disabled></div></div>
+    ${projectionSummary(proj,d.lotes.length)}
+    ${vsoChart(proj,d.lotes.length)}
+  </div></div>
+
+  <div class="table-card"><div class="ch"><div class="ch-ttl">Calendário de projeção</div><span>${ativo.nome} · ${BRL(ativo.preco)}/m²</span></div><div class="tw"><table><thead><tr><th>Mês</th><th>Diretriz</th><th>Unidades</th><th>Área</th><th>Receita bruta</th><th>Desconto</th><th>Comissão</th><th>Líquido UP</th><th>Acum. líquido</th></tr></thead><tbody>
+  ${proj.map(r=>`<tr><td><b>${r.mes}</b></td><td>${r.rotulo}</td><td>${r.qtd}</td><td>${AREA(r.area)}</td><td>${BRL(r.bruto)}</td><td>${BRL(r.desconto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td>${BRL(r.acumLiquido)}</td></tr>`).join('')||empty(9)}
+  </tbody></table></div></div>
+
+  <div class="table-card"><div class="ch"><div class="ch-ttl">Distribuição por lote</div><span>valores brutos individuais por cenário</span></div><div class="tw"><table><thead><tr><th>Lote</th><th>Área</th><th>Base</th><th>Cenário 1</th><th>Cenário 2</th><th>Cenário 3</th></tr></thead><tbody>${d.lotes.map(l=>`<tr><td>${loteNome(l)}</td><td>${AREA(l.area)}</td><td>${BRL(l.valorTabela)}</td><td>${BRL(l.area*d.cfg.preco1)}</td><td>${BRL(l.area*d.cfg.preco2)}</td><td>${BRL(l.area*d.cfg.preco3)}</td></tr>`).join('')||empty(6)}</tbody></table></div></div>`;
+}
+
+(function(){
+  const css=`
+    .money-inline{display:inline-block;white-space:nowrap;letter-spacing:-.03em}.kpi.compact-money{overflow:hidden}.kpi.compact-money .val{font-size:clamp(20px,1.35vw,25px)!important;white-space:nowrap!important;line-height:1.05!important}.kpi.compact-money .hint{font-size:11px;line-height:1.25;max-width:100%}
+    .section-mini-title{margin:18px 0 9px;color:var(--verde);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:900}.vso-panel{margin-top:16px;background:#fbf7ef;border:1px solid var(--borda);border-radius:18px;padding:16px}.vso-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}.vso-head b{display:block;color:var(--verde);font-size:15px}.vso-head span{display:block;color:var(--muted);font-size:12px}.vso-head strong{font-size:24px;color:var(--marsala);white-space:nowrap}.vso-bars{display:flex;align-items:flex-end;gap:10px;min-height:182px;overflow:auto;padding:8px 4px 2px}.vso-col{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:56px}.vso-bar{width:36px;background:linear-gradient(180deg,var(--marsala),#7e3131);border-radius:12px 12px 6px 6px;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-size:11px;font-weight:900;padding-top:7px;box-shadow:0 6px 15px rgba(172,74,74,.22)}.vso-col small{font-size:11px;color:var(--muted);font-weight:800;white-space:nowrap}@media print{.vso-panel{break-inside:avoid}.vso-bars{min-height:140px;overflow:visible}.vso-col{min-width:42px}.vso-bar{width:28px}.kpi.compact-money .val{font-size:18px!important}}
+  `;
+  const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+})();
+
 </script>
-<!-- V13: edição de vendas e lotes, persistência na planilha e comissionamento comercial. -->
+<!-- V17: cenários com descontos editáveis, mix de pagamento, VSO e correção do dashboard. -->
 </body>
 </html>
