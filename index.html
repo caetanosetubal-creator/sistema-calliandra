@@ -80,9 +80,10 @@
 <div id="app" class="app hidden">
   <aside class="sb">
     <div class="sb-head"><img src="./assets/logo-calliandra-white.png" class="sb-logo" alt="Calliandra" onerror="this.style.display='none';document.getElementById('sbFb').style.display='block'"><div id="sbFb" class="sb-fallback hidden">Calliandra</div><div class="sb-sub">Sistema comercial</div></div>
-    <div class="sb-section">Visão geral</div><button class="sb-item" data-page="dashboard">📊 Dashboard</button><button class="sb-item" data-page="mapa">🗺️ Mapa Comercial</button>
+    <button class="sb-item" data-page="dashboard">📊 Dashboard</button>
     <div class="sb-section">Planejamento</div><button class="sb-item" data-page="cronograma">▦ Cronograma</button><button class="sb-item" data-page="orcamento">💰 Orçamento</button><button class="sb-item" data-page="midia">📡 Plano de Mídia</button>
-    <div class="sb-section">Resultados</div><button class="sb-item" data-page="simulador">🧮 Simulador</button><button class="sb-item" data-page="contratos">💰 Vendas</button><button class="sb-item" data-page="lotes">🏡 Lotes</button><button class="sb-item" data-page="relatorios">📈 Relatórios</button><button class="sb-item" data-page="cenarios">💹 Cenários</button><button class="sb-item" data-page="corretores">🤝 Corretores</button>
+    <div class="sb-section">Vendas e resultados</div><button class="sb-item" data-page="simulador">🧮 Simulador</button><button class="sb-item" data-page="contratos">💰 Vendas</button><button class="sb-item" data-page="lotes">🏡 Lotes</button><button class="sb-item" data-page="mapa">🗺️ Mapa Comercial</button><button class="sb-item" data-page="corretores">🤝 Corretores</button>
+    <div class="sb-section">Report executivo</div><button class="sb-item" data-page="relatorios">📈 Relatórios</button><button class="sb-item" data-page="cenarios">💹 Cenários e Projeções</button>
     <div class="sb-section">Sistema</div><button class="sb-item" data-page="config">⚙️ Configurações</button>
     <div class="sb-kpi"><div class="lbl">Realizado no período</div><div id="sideReal" class="val">R$ 860.000,00</div><div id="sidePct" class="sub">22% da meta</div></div>
   </aside>
@@ -289,7 +290,7 @@ function renderDashboard(){
   <div class="kpi-row">${kpi('Estoque UP',CFG.estoqueUP,'base comercial')}${kpi('Comercializáveis',CFG.disponiveis,'disponíveis + garantia GDF','g',pct(CFG.disponiveis,CFG.estoqueUP))}${kpi('Comercializados UP',CFG.comercializados,'9 vendidos + 1 permuta','o',pct(CFG.comercializados,CFG.estoqueUP))}${kpi('Restritos UP',s.restritos,'fora da venda imediata','l',pct(s.restritos,CFG.estoqueUP))}</div>
   <div class="kpi-row">${kpi('Realizado no período',BRL(s.real),s.pctFin+'% de '+BRL(CFG.metaFinanceira),'g',s.pctFin)}${kpi('Unidades no período',s.unidades+'/'+CFG.metaLotes,s.pctLot+'% da meta','o',s.pctLot)}${kpi('Faltam vender',s.faltam,'até 30/06','l')}${kpi('Falta financeiro',BRLShort(s.faltaFin),'faltam para bater a meta de R$ 4 mi','b compact-money')}</div>
   <div class="g2"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',s.real,CFG.metaFinanceira,true)}${progress('Meta de unidades',s.unidades,CFG.metaLotes,false)}<div class="info"><b>Leitura objetiva:</b> faltam ${s.faltam} lotes e ${BRL(s.faltaFin)}. A pressão principal continua sendo volume de contratos e velocidade de fechamento.</div></div></div><div class="card"><div class="ch"><div class="ch-ttl">Composição do estoque UP</div>${badge('base 53')}</div><div class="cb" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">${donut([{v:CFG.disponiveis,c:'#173d37'},{v:CFG.comercializados,c:'#ac4a4a'},{v:s.restritos,c:'#d7cdbd'}])}<div class="legend" style="flex:1">${legend('#173d37','Comercializáveis',CFG.disponiveis)}${legend('#ac4a4a','Comercializados',CFG.comercializados)}${legend('#d7cdbd','Restritos UP',s.restritos)}${legend('#6e6760','Permutante fora da régua',CFG.permutante)}</div></div></div></div>
-  <div class="g2" style="margin-top:16px"><div class="card"><div class="ch"><div class="ch-ttl">Cenários para reunião de lançamento</div><button class="btn btn-ghost btn-sm" onclick="go('cenarios')">Abrir painel →</button></div><div class="cb">${scenarioMini()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Caixa do trimestre</div>${badge('fluxo')}</div><div class="cb">${progress('Caixa até junho',s.caixa,s.real,true)}<div class="success"><b>Atualização:</b> venda da Eliana considerada à vista no caixa acumulado até junho.</div></div></div></div>
+  <div class="g2" style="margin-top:16px"><div class="card"><div class="ch"><div class="ch-ttl">Cenários de preço e VGV</div><button class="btn btn-ghost btn-sm" onclick="go('cenarios')">Abrir painel →</button></div><div class="cb">${scenarioMini()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Caixa do trimestre</div>${badge('fluxo')}</div><div class="cb">${progress('Caixa até junho',s.caixa,s.real,true)}<div class="success"><b>Atualização:</b> venda da Eliana considerada à vista no caixa acumulado até junho.</div></div></div></div>
   <div class="table-card" style="margin-top:16px"><div class="ch"><div class="ch-ttl">Vendas consideradas na meta</div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${tabelaVendas(s.vp)}</div>`;
 }
 
@@ -323,7 +324,7 @@ function scenarioMini(){
 }
 function renderCenarios(){
   const d=scenarioData();
-  id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Cenários de preço para lançamento</div><div class="sub">Simulação executiva sobre os lotes comercializáveis. Vendas realizadas e permuta ficam fora do recálculo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('cenarios')">🖨 Imprimir / PDF</button></div></div><div class="card"><div class="ch"><div class="ch-ttl">Parâmetros editáveis da reunião</div>${badge('sem abrir planilha')}</div><div class="cb"><div class="fr c3"><div class="field"><label>Cenário 1 · R$/m²</label><input id="scPreco1" type="number" step="0.01" value="1429.27" oninput="renderCenarios()"></div><div class="field"><label>Cenário 2 · R$/m²</label><input id="scPreco2" type="number" step="0.01" value="1445.67" oninput="renderCenarios()"></div><div class="field"><label>Cenário 3 · R$/m²</label><input id="scPreco3" type="number" step="0.01" value="1500.00" oninput="renderCenarios()"></div></div><div class="info"><b>Base de cálculo:</b> ${d.lotes.length} lotes comercializáveis carregados no sistema, ${AREA(d.areaTotal)} de área total e VGV base de ${BRL(d.baseVGV)}.</div></div></div><div class="kpi-row" style="margin-top:16px">${kpi('Lotes recalculados',d.lotes.length,'disponíveis + garantia GDF')}${kpi('Área simulada',AREA(d.areaTotal),'somatório dos lotes')}${kpi('VGV base',BRLShort(d.baseVGV),'preço atual médio')}${kpi('Ticket médio base',BRLShort(d.lotes.length?d.baseVGV/d.lotes.length:0),'por lote')}</div><div class="table-card"><div class="ch"><div class="ch-ttl">Comparativo dos cenários</div><span>valores brutos antes de desconto e comissão</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV projetado</th><th>Delta vs. base</th><th>Ticket médio</th><th>Leitura executiva</th></tr></thead><tbody>${d.precos.map((p,i)=>{const v=d.areaTotal*p.preco,delta=v-d.baseVGV,ticket=d.lotes.length?v/d.lotes.length:0;return `<tr><td><b>${p.nome}</b><br><small>${p.obs}</small></td><td>${BRL(p.preco)}</td><td><b>${BRL(v)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td><td>${BRL(ticket)}</td><td>${i===0?'Referência atual para comparação.':delta>0?'Eleva VGV sem alterar lotes já vendidos.':'Cenário abaixo da base.'}</td></tr>`}).join('')}</tbody></table></div></div><div class="g2"><div class="card"><div class="ch"><div class="ch-ttl">Resumo para diretoria</div></div><div class="cb"><div class="success"><b>Recomendação:</b> apresentar os cenários como aumento apenas para estoque remanescente. As 9 vendas e a permuta permanecem congeladas no histórico.</div><div class="info" style="margin-top:10px"><b>Uso na reunião:</b> compare impacto em VGV, ticket médio e diferença contra a base atual sem abrir planilha.</div></div></div><div class="card"><div class="ch"><div class="ch-ttl">Distribuição por lote</div></div><div class="cb" style="max-height:310px;overflow:auto"><table><thead><tr><th>Lote</th><th>Área</th><th>Base</th><th>Cenário 1</th><th>Cenário 2</th></tr></thead><tbody>${d.lotes.map(l=>`<tr><td>${loteNome(l)}</td><td>${AREA(l.area)}</td><td>${BRL(l.valorTabela)}</td><td>${BRL(l.area*(num(val('scPreco1'))||1429.27))}</td><td>${BRL(l.area*(num(val('scPreco2'))||1445.67))}</td></tr>`).join('')||empty(5)}</tbody></table></div></div></div>`;
+  id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Cenários de preço e velocidade de vendas</div><div class="sub">Simulação executiva sobre os lotes comercializáveis. Vendas realizadas e permuta ficam fora do recálculo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('cenarios')">🖨 Imprimir / PDF</button></div></div><div class="card"><div class="ch"><div class="ch-ttl">Parâmetros de projeção comercial</div>${badge('projeção editável')}</div><div class="cb"><div class="fr c3"><div class="field"><label>Cenário 1 · R$/m²</label><input id="scPreco1" type="number" step="0.01" value="1429.27" oninput="renderCenarios()"></div><div class="field"><label>Cenário 2 · R$/m²</label><input id="scPreco2" type="number" step="0.01" value="1445.67" oninput="renderCenarios()"></div><div class="field"><label>Cenário 3 · R$/m²</label><input id="scPreco3" type="number" step="0.01" value="1500.00" oninput="renderCenarios()"></div></div><div class="info"><b>Base de cálculo:</b> ${d.lotes.length} lotes comercializáveis carregados no sistema, ${AREA(d.areaTotal)} de área total e VGV base de ${BRL(d.baseVGV)}.</div></div></div><div class="kpi-row" style="margin-top:16px">${kpi('Lotes recalculados',d.lotes.length,'disponíveis + garantia GDF')}${kpi('Área simulada',AREA(d.areaTotal),'somatório dos lotes')}${kpi('VGV base',BRLShort(d.baseVGV),'preço atual médio')}${kpi('Ticket médio base',BRLShort(d.lotes.length?d.baseVGV/d.lotes.length:0),'por lote')}</div><div class="table-card"><div class="ch"><div class="ch-ttl">Comparativo dos cenários</div><span>valores brutos antes de desconto e comissão</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV projetado</th><th>Delta vs. base</th><th>Ticket médio</th><th>Leitura executiva</th></tr></thead><tbody>${d.precos.map((p,i)=>{const v=d.areaTotal*p.preco,delta=v-d.baseVGV,ticket=d.lotes.length?v/d.lotes.length:0;return `<tr><td><b>${p.nome}</b><br><small>${p.obs}</small></td><td>${BRL(p.preco)}</td><td><b>${BRL(v)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td><td>${BRL(ticket)}</td><td>${i===0?'Referência atual para comparação.':delta>0?'Eleva VGV sem alterar lotes já vendidos.':'Cenário abaixo da base.'}</td></tr>`}).join('')}</tbody></table></div></div><div class="g2"><div class="card"><div class="ch"><div class="ch-ttl">Resumo para diretoria</div></div><div class="cb"><div class="success"><b>Recomendação:</b> apresentar os cenários como aumento apenas para estoque remanescente. As 9 vendas e a permuta permanecem congeladas no histórico.</div><div class="info" style="margin-top:10px"><b>Uso na reunião:</b> compare impacto em VGV, ticket médio e diferença contra a base atual sem abrir planilha.</div></div></div><div class="card"><div class="ch"><div class="ch-ttl">Distribuição por lote</div></div><div class="cb" style="max-height:310px;overflow:auto"><table><thead><tr><th>Lote</th><th>Área</th><th>Base</th><th>Cenário 1</th><th>Cenário 2</th></tr></thead><tbody>${d.lotes.map(l=>`<tr><td>${loteNome(l)}</td><td>${AREA(l.area)}</td><td>${BRL(l.valorTabela)}</td><td>${BRL(l.area*(num(val('scPreco1'))||1429.27))}</td><td>${BRL(l.area*(num(val('scPreco2'))||1445.67))}</td></tr>`).join('')||empty(5)}</tbody></table></div></div></div>`;
 }
 
 function tabelaComparativa(pv,n){
@@ -345,6 +346,195 @@ function renderConfig(){
 (function(){
   const css=`
   .map-wrap{max-width:980px;margin:0 auto 16px;background:transparent;border:0;box-shadow:none}.map-img{width:100%;max-height:none}.map-legend.one-line{display:flex;flex-wrap:nowrap;gap:16px;justify-content:center;white-space:nowrap;overflow:auto;padding:10px 14px;background:#fff;border:1px solid var(--borda);border-radius:0 0 16px 16px}.compact-money .val{font-size:clamp(18px,1.05vw,22px);line-height:1.04;word-break:keep-all}.scenario-mini{display:grid;grid-template-columns:1fr auto;gap:4px 10px;border-bottom:1px solid var(--borda);padding:8px 0}.scenario-mini:last-child{border-bottom:0}.scenario-mini b{color:var(--verde)}.scenario-mini span{color:var(--muted);font-size:12px}.scenario-mini strong{grid-column:1/2;font-size:18px;color:var(--marsala)}.scenario-mini em{grid-column:2/3;font-style:normal;color:var(--ok);font-weight:900;font-size:12px}.pos{color:var(--ok);font-weight:900}.neg{color:var(--bad);font-weight:900}.parcelas-full{max-height:460px;overflow:auto}.parcelas-full table{min-width:420px}.print-brand{display:none}@media print{.no-print,.sim-form,.top,.sb,.sh-r,.mobile-menu{display:none!important}.main{margin:0!important}.page{display:none!important}.page.print-on{display:block!important;padding:0!important}.table-card,.card,.map-wrap{box-shadow:none!important;break-inside:avoid}.parcelas-full{max-height:none!important;overflow:visible!important}.parcelas-full table{font-size:10px;min-width:0!important}.parcelas-full th,.parcelas-full td{padding:4px 6px}.map-wrap{max-width:100%!important}.map-legend.one-line{white-space:normal;flex-wrap:wrap}.kpi-row{grid-template-columns:repeat(4,1fr)!important;gap:8px}.kpi .val{font-size:18px!important}.g2,.g3{grid-template-columns:1fr 1fr!important;gap:10px}.page.print-on:before{content:'Residencial Calliandra · Sistema Comercial';display:block;font-weight:900;font-size:16px;color:#173d37;border-bottom:2px solid #ac4a4a;margin-bottom:10px;padding-bottom:6px}}`;
+  const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+})();
+
+
+
+/* V15 · arquitetura executiva, cenários editáveis e velocidade de vendas */
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on','print-on'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.toggle('on',b.dataset.page===page));
+  const target=id('page-'+page) || id('page-dashboard');
+  target.classList.add('on');
+  const localTitles={
+    dashboard:'Dashboard',
+    cronograma:'Cronograma',
+    orcamento:'Orçamento',
+    midia:'Plano de Mídia',
+    simulador:'Simulador de Preços',
+    contratos:'Vendas',
+    lotes:'Lotes',
+    mapa:'Mapa Comercial',
+    corretores:'Corretores',
+    relatorios:'Relatórios',
+    cenarios:'Cenários e Projeções',
+    config:'Configurações'
+  };
+  id('topTitle').textContent=localTitles[page]||'Sistema';
+  document.body.classList.remove('nav-open');
+  ({dashboard:renderDashboard,cronograma:renderCronograma,orcamento:renderOrcamento,midia:renderMidia,simulador:renderSimulador,contratos:renderVendas,lotes:renderLotes,mapa:renderMapa,corretores:renderCorretores,relatorios:renderRelatorios,cenarios:renderCenarios,config:renderConfig}[page]||renderDashboard)();
+}
+
+function scenarioInputs(){
+  const saved=readJSON('calliandra_v15_cenarios',{});
+  return {
+    preco1: num(saved.preco1)||1429.27,
+    preco2: num(saved.preco2)||1445.67,
+    preco3: num(saved.preco3)||1500,
+    comissao: num(saved.comissao)||5.5,
+    ativo: saved.ativo || '1',
+    junho: num(saved.junho)||21,
+    velocidade: num(saved.velocidade)||4,
+    inicio: saved.inicio || '2026-07',
+    fim: saved.fim || '2027-03'
+  };
+}
+function saveScenarioInputs(){
+  const data={
+    preco1:num(val('scPreco1'))||1429.27,
+    preco2:num(val('scPreco2'))||1445.67,
+    preco3:num(val('scPreco3'))||1500,
+    comissao:num(val('scComissao'))||5.5,
+    ativo:val('scAtivo')||'1',
+    junho:num(val('scJunho'))||21,
+    velocidade:num(val('scVelocidade'))||4,
+    inicio:val('scInicio')||'2026-07',
+    fim:val('scFim')||'2027-03'
+  };
+  safeSet('calliandra_v15_cenarios',JSON.stringify(data));
+  return data;
+}
+function getScenarioConfig(){
+  const base=scenarioInputs();
+  return {
+    preco1:num(val('scPreco1'))||base.preco1,
+    preco2:num(val('scPreco2'))||base.preco2,
+    preco3:num(val('scPreco3'))||base.preco3,
+    comissao:num(val('scComissao'))||base.comissao,
+    ativo:val('scAtivo')||base.ativo,
+    junho:num(val('scJunho'))||base.junho,
+    velocidade:num(val('scVelocidade'))||base.velocidade,
+    inicio:val('scInicio')||base.inicio,
+    fim:val('scFim')||base.fim
+  };
+}
+function scenarioData(){
+  const cfg=getScenarioConfig();
+  const lotes=lotesComercializaveis();
+  const areaTotal=sum(lotes,'area');
+  const baseVGV=sum(lotes,'valorTabela');
+  const precos=[
+    {id:'base',nome:'Base atual',preco:PRECO_M2,obs:'preço m² de referência'},
+    {id:'1',nome:'Cenário 1',preco:cfg.preco1,obs:'preço editável'},
+    {id:'2',nome:'Cenário 2',preco:cfg.preco2,obs:'preço editável'},
+    {id:'3',nome:'Cenário 3',preco:cfg.preco3,obs:'preço editável'}
+  ];
+  return {lotes,areaTotal,baseVGV,precos,cfg};
+}
+function scenarioMini(){
+  const d=scenarioData();
+  return d.precos.slice(1).map(p=>{const bruto=d.areaTotal*p.preco;const com=bruto*(d.cfg.comissao/100);const liq=bruto-com;return `<div class="scenario-mini"><b>${p.nome}</b><span>${BRL(p.preco)}/m²</span><strong>${BRLShort(bruto)}</strong><em>${BRLShort(liq)} líquido</em></div>`}).join('');
+}
+function monthLabel(ym){
+  const [y,m]=String(ym).split('-').map(Number);
+  if(!y||!m)return ym;
+  const nomes=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return `${nomes[m-1]}/${String(y).slice(2)}`;
+}
+function addMonth(ym,inc=1){
+  let [y,m]=String(ym).split('-').map(Number);
+  if(!y||!m){y=2026;m=7;}
+  m+=inc;
+  while(m>12){m-=12;y++;}
+  while(m<1){m+=12;y--;}
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function buildSalesProjection(lotes,preco,cfg){
+  const rows=[];
+  let index=0, acumBruto=0, acumLiquido=0;
+  const pushMonth=(ym,qtd,rotulo)=>{
+    const n=Math.max(0,Math.min(Math.floor(qtd||0),lotes.length-index));
+    const loteSlice=lotes.slice(index,index+n);
+    const area=loteSlice.reduce((s,l)=>s+num(l.area),0);
+    const bruto=area*preco;
+    const comissao=bruto*(cfg.comissao/100);
+    const liquido=bruto-comissao;
+    acumBruto+=bruto;acumLiquido+=liquido;index+=n;
+    if(n>0)rows.push({mes:monthLabel(ym),rotulo,qtd:n,area,bruto,comissao,liquido,acumBruto,acumLiquido});
+  };
+  pushMonth('2026-06',cfg.junho,'Fechamento do trimestre');
+  let ym=cfg.inicio||'2026-07';
+  let guard=0;
+  while(index<lotes.length && guard<36){
+    pushMonth(ym,cfg.velocidade,'Velocidade mensal');
+    if((cfg.fim||'') && ym===cfg.fim && index<lotes.length){
+      pushMonth(addMonth(ym,1),lotes.length-index,'Saldo após meta final');
+      break;
+    }
+    ym=addMonth(ym,1);guard++;
+  }
+  return rows;
+}
+function projectionSummary(rows,totalLots){
+  if(!rows.length)return `<div class="warnbox">Não há lotes suficientes para montar a projeção.</div>`;
+  const last=rows[rows.length-1];
+  return `<div class="g3 projection-summary"><div class="card"><div class="cb"><span class="mini-lbl">Prazo projetado</span><b>${last.mes}</b><small>mês de esgotamento do estoque simulado</small></div></div><div class="card"><div class="cb"><span class="mini-lbl">Unidades distribuídas</span><b>${rows.reduce((s,r)=>s+r.qtd,0)}/${totalLots}</b><small>conforme velocidade informada</small></div></div><div class="card"><div class="cb"><span class="mini-lbl">Receita líquida UP</span><b>${BRLShort(last.acumLiquido)}</b><small>após comissão média</small></div></div></div>`;
+}
+function renderCenarios(){
+  const d=scenarioData();
+  saveScenarioInputs();
+  const ativo=d.precos.find(p=>p.id===d.cfg.ativo)||d.precos[1];
+  const proj=buildSalesProjection(d.lotes,ativo.preco,d.cfg);
+  id('page-cenarios').innerHTML=`
+  <div class="sh"><div><div class="ttl">Cenários e projeções</div><div class="sub">Simulação permanente de preço, VGV, comissão média e velocidade de vendas do estoque comercial.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('cenarios')">🖨 Imprimir / PDF</button></div></div>
+
+  <div class="card"><div class="ch"><div class="ch-ttl">Parâmetros comerciais editáveis</div>${badge('sistema')}</div><div class="cb">
+    <div class="fr c4">
+      <div class="field"><label>Cenário 1 · R$/m²</label><input id="scPreco1" type="number" step="0.01" value="${d.cfg.preco1.toFixed(2)}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Cenário 2 · R$/m²</label><input id="scPreco2" type="number" step="0.01" value="${d.cfg.preco2.toFixed(2)}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Cenário 3 · R$/m²</label><input id="scPreco3" type="number" step="0.01" value="${d.cfg.preco3.toFixed(2)}" oninput="renderCenarios()"></div>
+      <div class="field"><label>Comissão média (%)</label><input id="scComissao" type="number" step="0.1" value="${d.cfg.comissao}" oninput="renderCenarios()"></div>
+    </div>
+    <div class="info"><b>Base de cálculo:</b> ${d.lotes.length} lotes comercializáveis, ${AREA(d.areaTotal)} de área e VGV base de ${BRL(d.baseVGV)}. Vendas já realizadas e permuta permanecem congeladas no histórico.</div>
+  </div></div>
+
+  <div class="kpi-row" style="margin-top:16px">
+    ${kpi('Lotes projetados',d.lotes.length,'estoque comercial recalculado')}
+    ${kpi('Área simulada',AREA(d.areaTotal),'somatório dos lotes')}
+    ${kpi('Comissão média',d.cfg.comissao.toFixed(1).replace('.',',')+'%','aplicada aos cenários')}
+    ${kpi('VGV base',BRLShort(d.baseVGV),'preço m² atual')}
+  </div>
+
+  <div class="table-card"><div class="ch"><div class="ch-ttl">Comparativo de cenários</div><span>bruto, comissão e líquido UP</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV bruto</th><th>Comissão estimada</th><th>VGV líquido UP</th><th>Delta líquido vs. base</th><th>Ticket médio líquido</th></tr></thead><tbody>
+  ${d.precos.map((p,i)=>{const bruto=d.areaTotal*p.preco,com=bruto*(d.cfg.comissao/100),liq=bruto-com;const baseLiq=d.baseVGV-(d.baseVGV*d.cfg.comissao/100);const delta=liq-baseLiq;return `<tr><td><b>${p.nome}</b><br><small>${p.obs}</small></td><td>${BRL(p.preco)}</td><td><b>${BRL(bruto)}</b></td><td>${BRL(com)}</td><td><b>${BRL(liq)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td><td>${BRL(d.lotes.length?liq/d.lotes.length:0)}</td></tr>`}).join('')}
+  </tbody></table></div></div>
+
+  <div class="card"><div class="ch"><div class="ch-ttl">Velocidade de vendas</div>${badge('projeção mensal')}</div><div class="cb">
+    <div class="fr c4">
+      <div class="field"><label>Cenário usado na projeção</label><select id="scAtivo" onchange="renderCenarios()">${['1','2','3'].map(x=>`<option value="${x}" ${d.cfg.ativo===x?'selected':''}>Cenário ${x}</option>`).join('')}</select></div>
+      <div class="field"><label>Unidades em junho</label><input id="scJunho" type="number" value="${d.cfg.junho}" min="0" oninput="renderCenarios()"></div>
+      <div class="field"><label>Unidades/mês após junho</label><input id="scVelocidade" type="number" value="${d.cfg.velocidade}" min="1" oninput="renderCenarios()"></div>
+      <div class="field"><label>Meta final</label><input id="scFim" type="month" value="${d.cfg.fim}" onchange="renderCenarios()"></div>
+    </div>
+    <div class="fr c2"><div class="field"><label>Início pós-junho</label><input id="scInicio" type="month" value="${d.cfg.inicio}" onchange="renderCenarios()"></div><div class="field"><label>Preço ativo</label><input value="${ativo.nome} · ${BRL(ativo.preco)}/m²" disabled></div></div>
+    ${projectionSummary(proj,d.lotes.length)}
+  </div></div>
+
+  <div class="table-card"><div class="ch"><div class="ch-ttl">Calendário de projeção</div><span>${ativo.nome} · ${BRL(ativo.preco)}/m²</span></div><div class="tw"><table><thead><tr><th>Mês</th><th>Diretriz</th><th>Unidades</th><th>Área</th><th>Receita bruta</th><th>Comissão</th><th>Líquido UP</th><th>Acum. líquido</th></tr></thead><tbody>
+  ${proj.map(r=>`<tr><td><b>${r.mes}</b></td><td>${r.rotulo}</td><td>${r.qtd}</td><td>${AREA(r.area)}</td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td>${BRL(r.acumLiquido)}</td></tr>`).join('')||empty(8)}
+  </tbody></table></div></div>
+
+  <div class="table-card"><div class="ch"><div class="ch-ttl">Distribuição por lote</div><span>comparativo individual dos três preços</span></div><div class="tw"><table><thead><tr><th>Lote</th><th>Área</th><th>Base</th><th>Cenário 1</th><th>Cenário 2</th><th>Cenário 3</th></tr></thead><tbody>${d.lotes.map(l=>`<tr><td>${loteNome(l)}</td><td>${AREA(l.area)}</td><td>${BRL(l.valorTabela)}</td><td>${BRL(l.area*d.cfg.preco1)}</td><td>${BRL(l.area*d.cfg.preco2)}</td><td>${BRL(l.area*d.cfg.preco3)}</td></tr>`).join('')||empty(6)}</tbody></table></div></div>`;
+}
+
+function renderConfig(){
+  id('page-config').innerHTML=`<div class="sh"><div><div class="ttl">Configurações</div><div class="sub">Parâmetros comerciais editáveis e integração.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="clearCache()">🧹 Limpar cache local</button><button class="btn btn-terra" onclick="exportJSON()">⬇ Exportar JSON</button></div></div><div class="card"><div class="ch"><div class="ch-ttl">Parâmetros editáveis</div><button class="btn btn-terra btn-sm" onclick="saveConfig()">Salvar configurações</button></div><div class="cb"><div class="fr c4">${cfgInput('total','Total do empreendimento')}${cfgInput('estoqueUP','Estoque UP')}${cfgInput('permutante','Permutante')}${cfgInput('disponiveis','Comercializáveis')}${cfgInput('comercializados','Comercializados')}${cfgInput('reservados','Reservados')}${cfgInput('metaFinanceira','Meta financeira')}${cfgInput('metaLotes','Meta de lotes')}${cfgInput('verbaMidia','Verba de mídia')}<div class="field"><label>Início da meta</label><input id="cfgInicio" type="date" value="${CFG.inicio}"></div><div class="field"><label>Fim da meta</label><input id="cfgFim" type="date" value="${CFG.fim}"></div><div class="field"><label>Preço m² base</label><input value="${BRL(PRECO_M2)}" disabled></div></div><div class="info" style="margin-top:14px">A régua comercial atual considera ${CFG.disponiveis} lotes comercializáveis. As alterações ficam salvas no navegador e orientam dashboard, relatórios, cenários e simulador.</div></div></div>`;
+}
+
+(function(){
+  const css=`
+    .projection-summary{margin-top:12px}.projection-summary .card{box-shadow:none}.projection-summary b{display:block;color:var(--verde);font-size:24px}.projection-summary small{display:block;color:var(--muted);font-size:12px;margin-top:4px}.mini-lbl{display:block;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-size:10px;font-weight:900;margin-bottom:5px}.sb>.sb-item:first-of-type{margin-top:8px}.sb-section{margin-top:8px}.page#page-cenarios .table-card table{min-width:940px}@media print{#page-cenarios .fr input,#page-cenarios .fr select{border:0!important;background:#fff!important;padding:0!important;height:auto!important}.projection-summary{grid-template-columns:repeat(3,1fr)!important}}`;
   const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 })();
 
