@@ -1934,5 +1934,121 @@ function renderDashboard(){
 
 </script>
 <!-- V18: dashboard corrigido, caixa Eric, comissões, projeções, velocidade de vendas e impressão. -->
+
+<!-- V23: vendas acumuladas x período, caixa cadastrado e curva econômico-financeira -->
+<style id="v23-style">
+.v23-section{margin-top:18px}.v23-note{margin-top:12px}.v23-kpi-stack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:15px 0}.v23-kpi-stack .kpi{min-height:116px}.v23-table-sub{font-size:12px;color:var(--muted);font-weight:700}.v23-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;background:#eef7f1;color:#176943;font-size:10px;font-weight:900}.v23-missing{color:#946124;font-weight:800;font-size:12px}.v23-finance-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}.v23-curve{border:1px solid var(--borda);border-radius:16px;padding:12px;background:#fff;margin:16px 0}.v23-curve svg{display:block;width:100%;height:auto}.v23-curve .grid{stroke:#ede3d5;stroke-width:1}.v23-curve .economic-line{fill:none;stroke:#e8924c;stroke-width:3.5}.v23-curve .cash-line{fill:none;stroke:#173d37;stroke-width:3.5}.v23-curve .work-line{fill:none;stroke:#ac4a4a;stroke-width:3.5}.v23-curve .economic-dot{fill:#e8924c}.v23-curve .cash-dot{fill:#173d37}.v23-curve .work-dot{fill:#ac4a4a}.v23-curve text{font-size:10px;fill:#7d756d;font-family:var(--font)}.v23-legend{display:flex;justify-content:center;gap:25px;flex-wrap:wrap;color:var(--verde);font-size:11px;font-weight:800;margin-top:7px}.v23-legend i{display:inline-block;width:22px;height:3px;vertical-align:middle;margin-right:7px}.v23-lg-economic{background:#e8924c}.v23-lg-cash{background:#173d37}.v23-lg-obra{background:#ac4a4a}.v23-input-card{padding:14px;background:#fbf7ef;border:1px solid var(--borda);border-radius:14px;margin-top:14px}.v23-input-card .fr{margin-top:10px}.v23-input-card .info{margin-top:12px}.v23-cash-table{max-height:420px;overflow:auto}.v23-statusline{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}.v23-statusline strong{color:var(--verde)}
+@media(max-width:1100px){.v23-kpi-stack,.v23-finance-grid{grid-template-columns:repeat(2,1fr)}}
+@media print{.v23-kpi-stack,.v23-finance-grid{grid-template-columns:repeat(4,1fr)!important}.v23-curve{break-inside:avoid;page-break-inside:avoid}.v23-cash-table{max-height:none!important;overflow:visible!important}.v23-cash-table table{font-size:8px!important}.v23-input-card input{border:0!important;background:transparent!important;padding:0!important;height:auto!important}}
+</style>
+<script id="v23-patch">
+const V23_FIN_KEY='calliandra_v23_caixa_realizado';
+function soldV23(){return vendasGerenciais().filter(v=>isVendido(v.status));}
+function periodV23(){return vendasPeriodo().filter(v=>isVendido(v.status));}
+function monthKeyV23(data){return String(data||'').slice(0,7);}
+function sumV23(arr,key){return arr.reduce((t,v)=>t+num(typeof key==='function'?key(v):v[key]),0);}
+function financeStateV23(){
+  const saved=readJSON(V23_FIN_KEY,{});
+  return {caixaAnterior:num(saved.caixaAnterior)||0,comissaoAnterior:num(saved.comissaoAnterior)||0};
+}
+function currentFinanceV23(){
+  const s=financeStateV23();
+  if(id('v23CaixaAnterior'))s.caixaAnterior=Math.max(0,num(val('v23CaixaAnterior')));
+  if(id('v23ComissaoAnterior'))s.comissaoAnterior=Math.max(0,num(val('v23ComissaoAnterior')));
+  safeSet(V23_FIN_KEY,JSON.stringify(s));
+  return s;
+}
+function fluxoValidadoV23(v){
+  return isElianaVenda(v)||isEricVenda(v)||v.fluxoValidado===true||String(v.id||'').indexOf('FIX-')!==0;
+}
+function recebimentosV23(v){
+  if(!fluxoValidadoV23(v))return {mai:0,jun:0,jul:0,ago:0,cadastrado:false};
+  return {mai:num(v.recebimentoMaio),jun:num(v.recebimentoJunho),jul:num(v.recebimentoJulho),ago:num(v.recebimentoAgosto),cadastrado:true};
+}
+function caixaBrutoRegistradoV23(limite='2026-05'){
+  const f=currentFinanceV23(); let total=f.caixaAnterior;
+  soldV23().forEach(v=>{const r=recebimentosV23(v);if(!r.cadastrado)return;if(limite>='2026-05')total+=r.mai;if(limite>='2026-06')total+=r.jun;if(limite>='2026-07')total+=r.jul;if(limite>='2026-08')total+=r.ago;});
+  return total;
+}
+function vendasResumoV23(arr){
+  const vgv=sumV23(arr,'valorFinal'), com=sumV23(arr,v=>comissaoValorVenda(v)), liq=vgv-com;
+  return {unidades:arr.length,vgv,comissao:com,liquido:liq};
+}
+function cadastroFluxoPendenteV23(){return soldV23().filter(v=>!fluxoValidadoV23(v)).length;}
+function cashPeriodV23(){return {maio:caixaBrutoRegistradoV23('2026-05'),junho:caixaBrutoRegistradoV23('2026-06')};}
+function fluxoCellV23(v,limite){
+  const r=recebimentosV23(v); if(!r.cadastrado)return '<span class="v23-missing">A cadastrar</span>';
+  let n=r.mai; if(limite>='2026-06')n+=r.jun; if(limite>='2026-07')n+=r.jul; if(limite>='2026-08')n+=r.ago;
+  return `<b>${BRL(n)}</b>`;
+}
+function tabelaVendasV23(arr,withActions=true){
+  return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>VGV contratado</th><th>Comissão</th><th>Líquido econômico UP</th><th>Caixa cadastrado até maio</th><th>Caixa até junho</th><th>Forma pgto.</th><th>Parceiro</th><th>Status</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>`<tr><td><b>${esc((v.quadra||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}</td><td>${BRL(v.valorFinal)}</td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(valorLiquidoUP(v))}</b></td><td>${fluxoCellV23(v,'2026-05')}</td><td>${fluxoCellV23(v,'2026-06')}</td><td>${esc(v.formaPagamento||'-')}</td><td>${esc(v.corretor||'-')}</td><td>${badge(v.status)}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`).join('')||empty(withActions?11:10)}</tbody></table></div>`;
+}
+function renderVendas(){
+  const todas=soldV23(), periodo=periodV23(), total=vendasResumoV23(todas), tri=vendasResumoV23(periodo), cash=cashPeriodV23(), pend=cadastroFluxoPendenteV23();
+  id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Leitura separada de VGV contratado, líquido econômico e entrada efetiva de caixa cadastrada.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+  <div class="section-mini-title">Visão total acumulada</div><div class="v23-kpi-stack">${kpi('Unidades vendidas',total.unidades,'+ 1 permuta fora do VGV')}${kpi('VGV contratado total',BRL(total.vgv),'vendas fechadas','g')}${kpi('Comissão total',BRL(total.comissao),'conforme regras cadastradas','o')}${kpi('Líquido econômico UP',BRL(total.liquido),'VGV menos comissão','l')}</div>
+  <div class="section-mini-title">Meta vigente · abril a junho</div><div class="v23-kpi-stack">${kpi('VGV no período',BRL(tri.vgv),periodo.length+'/'+CFG.metaLotes+' unidades','g')}${kpi('Líquido econômico do período',BRL(tri.liquido),'após comissão provisionada')}${kpi('Caixa cadastrado até maio',BRL(cash.maio),'recebimentos registrados','o')}${kpi('Caixa cadastrado até junho',BRL(cash.junho),'recebido + previsto confirmado','l')}</div>
+  <div class="warnbox v23-note"><b>Controle de caixa:</b> ${pend} venda(s) histórica(s) ainda não possuem cronograma validado de recebimento no sistema. Elas compõem o VGV e o líquido econômico, mas não entram no caixa até o fluxo ser cadastrado.</div>
+  <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas totais acumuladas</div><div class="v23-table-sub">9 vendas fechadas · VGV ${BRL(total.vgv)} · líquido econômico ${BRL(total.liquido)}</div></div></div>${tabelaVendasV23(todas)}</div>
+  <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas da meta atual</div><div class="v23-table-sub">01/04 a 30/06 · ${periodo.length} de ${CFG.metaLotes} unidades</div></div></div>${tabelaVendasV23(periodo,false)}</div>`;
+}
+function renderRelatorios(){
+  const todas=soldV23(), periodo=periodV23(), total=vendasResumoV23(todas), tri=vendasResumoV23(periodo), cash=cashPeriodV23(), s=stats(), pend=cadastroFluxoPendenteV23();
+  id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo</div><div class="sub">Resultado acumulado, desempenho da meta atual e caixa efetivamente cadastrado.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+  <div class="card"><div class="ch"><div class="ch-ttl">Acumulado comercial</div>${badge('histórico')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas fechadas',total.unidades,'lotes')}${kpi('VGV contratado',BRL(total.vgv),'total acumulado','g')}${kpi('Comissão',BRL(total.comissao),'provisionada','o')}${kpi('Líquido econômico',BRL(total.liquido),'após comissão','l')}</div></div></div>
+  <div class="card v23-section"><div class="ch"><div class="ch-ttl">Meta vigente · abril-junho</div>${badge('2 de 23')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('VGV vendido',BRL(tri.vgv),s.pctFin+'% de '+BRL(CFG.metaFinanceira),'g',s.pctFin)}${kpi('Líquido econômico',BRL(tri.liquido),'após comissão')}${kpi('Caixa até maio',BRL(cash.maio),'cadastrado','o')}${kpi('Caixa até junho',BRL(cash.junho),'cadastrado/confirmado','l')}</div>${progress('Meta financeira',tri.vgv,CFG.metaFinanceira,true)}${progress('Meta quantitativa',periodo.length,CFG.metaLotes,false)}</div></div>
+  <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas no período por parceiro</div></div><div class="cb">${ranking(group(periodo,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas no período por origem</div></div><div class="cb">${ranking(group(periodo,'origem'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Conciliação de caixa</div></div><div class="cb"><div class="info"><b>Fluxo cadastrado:</b> ${BRL(cash.maio)} até maio e ${BRL(cash.junho)} até junho.</div><div class="warnbox" style="margin-top:10px"><b>Pendente:</b> ${pend} venda(s) históricas sem recebimentos validados.</div></div></div></div>
+  <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas totais</div><span>${BRL(total.liquido)} líquido econômico</span></div>${tabelaVendasV23(todas,false)}</div>
+  <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas do período da meta</div><span>${BRL(tri.liquido)} líquido econômico</span></div>${tabelaVendasV23(periodo,false)}</div>`;
+}
+function knownCashV23(cfg){
+  const fin=currentFinanceV23(), map={};
+  addCashV22(map,'2026-04','historico',fin.caixaAnterior); if(cfg.deduzComissao) addCashV22(map,'2026-04','comissao',fin.comissaoAnterior);
+  addCashV22(map,'2026-05','historico',530000);addCashV22(map,'2026-06','historico',30000);addCashV22(map,'2026-07','historico',30000);addCashV22(map,'2026-08','historico',270000);
+  if(cfg.deduzComissao){const vp=periodV23(), provision=vp.reduce((s,v)=>s+comissaoValorVenda(v),0);addCashV22(map,'2026-05','comissao',provision);}
+  return map;
+}
+function contractedHistoryMapV23(){
+  const map={};soldV23().forEach(v=>{const ym=monthKeyV23(v.data)||'2026-05';map[ym]=(map[ym]||0)+valorLiquidoUP(v);});return map;
+}
+function cashProjectionV23(lotes,preco,cfg){
+  const cash=knownCashV23(cfg), economic=contractedHistoryMapV23(), area=lotes.reduce((s,l)=>s+num(l.area),0), avgArea=lotes.length?area/lotes.length:0; let contracted=0,discount=0,comm=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return; const bruto=avgArea*r.qtd*preco, desc=bruto*r.desconto/100, contrato=bruto-desc, comissao=contrato*cfg.comissao/100, liquidoEconomico=contrato-comissao, entrada=contrato*r.entrada/100, saldo=Math.max(contrato-entrada,0);
+    contracted+=contrato;discount+=desc;comm+=comissao; economic[r.mes]=(economic[r.mes]||0)+liquidoEconomico;
+    addCashV22(cash,r.mes,'entrada',entrada); if(cfg.deduzComissao)addCashV22(cash,r.mes,'comissao',comissao);
+    if(saldo>0&&r.parcelas>0){const parcela=calcPrice(saldo,r.parcelas,JUROS_MES); for(let i=1;i<=r.parcelas;i++)addCashV22(cash,addMonthV21(r.mes,i),'parcela',parcela);}
+  });
+  let caixaAcum=0,economicAcum=0;
+  const timeline=OBRA_DESEMBOLSO_V19.map(o=>{const c=cash[o.ym]||{historico:0,entrada:0,parcela:0,comissao:0};economicAcum+=num(economic[o.ym]);const bruto=c.historico+c.entrada+c.parcela,liq=bruto-c.comissao;caixaAcum+=liq;return {...o,...c,bruto,liquido:liq,receitaLiquidaAcum:economicAcum,caixaAcum,coberturaCaixa:caixaAcum-o.acum,coberturaEconomica:economicAcum-o.acum};});
+  return {timeline,area,avgArea,contracted,discount,commission:comm,final:timeline[timeline.length-1]};
+}
+function curveSvgV23(rows){
+  const w=1120,h=312,p={l:76,r:26,t:22,b:42},max=Math.max(...rows.map(r=>Math.max(r.receitaLiquidaAcum,r.caixaAcum,r.acum)),1)*1.08, X=i=>p.l+i*((w-p.l-p.r)/(rows.length-1||1)), Y=v=>p.t+(h-p.t-p.b)*(1-v/max), path=key=>rows.map((r,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(r[key]).toFixed(1)).join(' '), ticks=[0,.25,.5,.75,1];
+  return `<div class="v23-curve"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Receita contratada, caixa acumulado e desembolso da obra">${ticks.map(t=>`<line class="grid" x1="${p.l}" y1="${Y(max*t)}" x2="${w-p.r}" y2="${Y(max*t)}"></line><text x="7" y="${Y(max*t)+4}">${BRLShort(max*t)}</text>`).join('')}<path class="economic-line" d="${path('receitaLiquidaAcum')}"></path><path class="cash-line" d="${path('caixaAcum')}"></path><path class="work-line" d="${path('acum')}"></path>${rows.map((r,i)=>`<circle class="economic-dot" cx="${X(i)}" cy="${Y(r.receitaLiquidaAcum)}" r="3"></circle><circle class="cash-dot" cx="${X(i)}" cy="${Y(r.caixaAcum)}" r="3"></circle><circle class="work-dot" cx="${X(i)}" cy="${Y(r.acum)}" r="3"></circle><text x="${X(i)-16}" y="${h-10}">${r.mes}</text>`).join('')}</svg><div class="v23-legend"><span><i class="v23-lg-economic"></i>Receita líquida contratada acumulada</span><span><i class="v23-lg-cash"></i>Caixa líquido cadastrado/projetado</span><span><i class="v23-lg-obra"></i>Desembolso acumulado da obra</span></div></div>`;
+}
+function cashPanelV23(model,cfg){
+  const fin=currentFinanceV23(), final=model.final, tot=vendasResumoV23(soldV23()), cashMai=caixaBrutoRegistradoV23('2026-05'), cashJun=caixaBrutoRegistradoV23('2026-06'), pend=cadastroFluxoPendenteV23();
+  return `<div class="card scenario-section cash-curve-section"><div class="ch"><div><div class="ch-ttl">Curva econômico-financeira x desembolso da obra</div><div class="sub">Três leituras independentes: contrato vendido, entrada de caixa e obra.</div></div>${badge('diretoria')}</div><div class="cb">
+  <div class="v23-finance-grid">${kpi('Líquido econômico já vendido',BRL(tot.liquido),'9 vendas fechadas','g')}${kpi('Caixa cadastrado até maio',BRL(cashMai),'fluxos validados')}${kpi('Caixa cadastrado até junho',BRL(cashJun),'fluxos confirmados','o')}${kpi(final.coberturaCaixa>=0?'Cobertura de caixa final':'Necessidade de caixa final',BRL(Math.abs(final.coberturaCaixa)),final.coberturaCaixa>=0?'caixa projetado acima da obra':'obra acima do caixa projetado','l')}</div>
+  <div class="v23-input-card no-print"><b>Base de caixa das vendas anteriores ao trimestre</b><div class="sub">As sete vendas anteriores já compõem o líquido econômico. Para entrarem na linha de caixa, informe abaixo somente o valor efetivamente recebido até 31/03.</div><div class="fr c2"><div class="field"><label>Caixa recebido até 31/03 · bruto (R$)</label><input id="v23CaixaAnterior" type="number" step="0.01" value="${fin.caixaAnterior}" onchange="renderCenarios()"></div><div class="field"><label>Comissões pagas/provisionadas até 31/03 (R$)</label><input id="v23ComissaoAnterior" type="number" step="0.01" value="${fin.comissaoAnterior}" onchange="renderCenarios()"></div></div><div class="info"><b>Leitura técnica:</b> o sistema não assume que VGV vendido virou caixa. Ao preencher a base recebida, a linha de caixa passa a refletir o histórico real sem alterar as vendas contratadas.</div></div>
+  <div class="warnbox curve-premise-v22"><b>Conciliação pendente:</b> ${pend} venda(s) histórica(s) ainda não têm cronograma validado de recebimento. O gráfico econômico parte do líquido já contratado; o gráfico de caixa só considera recebimentos cadastrados e projeções das novas vendas.</div>
+  ${curveSvgV23(model.timeline)}
+  <div class="tw v23-cash-table"><table><thead><tr><th>Mês</th><th>Líquido econômico contratado acumulado</th><th>Caixa histórico cadastrado</th><th>Entradas novas</th><th>Parcelas novas</th><th>Comissão provisionada</th><th>Caixa líquido acumulado</th><th>Obra acumulada</th><th>Cobertura de caixa</th></tr></thead><tbody>${model.timeline.map(r=>`<tr><td><b>${r.mes}</b></td><td><b>${BRL(r.receitaLiquidaAcum)}</b></td><td>${BRL(r.historico)}</td><td>${BRL(r.entrada)}</td><td>${BRL(r.parcela)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.caixaAcum)}</b></td><td>${BRL(r.acum)}</td><td class="${r.coberturaCaixa>=0?'pos':'neg'}">${r.coberturaCaixa>=0?'+ ':''}${BRL(r.coberturaCaixa)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+}
+function renderCenarios(){
+  const cfg=currentScenarioV22(), lotes=scenarioLotsV21(), area=lotes.reduce((s,l)=>s+num(l.area),0), conciliado=lotes.length===CFG.disponiveis, total=totalRowsV22(cfg), junho=rowsJunhoV22(cfg), mixOk=total===CFG.disponiveis, prices=priceScenariosV22(cfg), ativo=prices.find(p=>p.id===cfg.ativo)||prices[1], base=metricsV22(area,PRECO_M2,cfg), model=conciliado&&mixOk?cashProjectionV23(lotes,ativo.preco,cfg):null;
+  const totalAlert=mixOk?`<div class="success"><b>Estoque distribuído:</b> ${total} de ${CFG.disponiveis} lotes projetados.</div>`:`<div class="warnbox"><b>Distribuição incompleta:</b> ${total} de ${CFG.disponiveis} lotes alocados. Complete a distribuição para calcular caixa e obra.</div>`;
+  const metaAlert=junho===stats().faltam?`<div class="success"><b>Meta trimestral projetada:</b> ${stats().unidades} vendas já fechadas + ${junho} novas vendas até 30/06 = ${CFG.metaLotes}/${CFG.metaLotes} unidades.</div>`:`<div class="warnbox"><b>Meta de junho:</b> estão projetadas ${junho} novas vendas até 30/06, mas são necessárias ${stats().faltam} para completar as ${CFG.metaLotes} unidades.</div>`;
+  const baseAlert=conciliado?'':`<div class="warnbox"><b>Base de lotes divergente:</b> o sistema leu ${lotes.length} de ${CFG.disponiveis} comercializáveis. Sincronize a planilha.</div>`;
+  const comparativo=conciliado&&mixOk?`<div class="table-card scenario-section"><div class="ch"><div class="ch-ttl">Comparativo econômico do estoque remanescente</div><span>38 lotes ainda disponíveis · sem alterar as 9 vendas fechadas</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV bruto</th><th>Desconto médio</th><th>VGV contratado</th><th>Comissão</th><th>Líquido econômico UP</th><th>Variação vs. base</th></tr></thead><tbody>${prices.map(p=>{const m=metricsV22(area,p.preco,cfg),delta=m.liquido-base.liquido;return `<tr><td><b>${p.nome}</b></td><td>${BRL(p.preco)}</td><td>${BRL(m.bruto)}</td><td>${m.descontoPct.toFixed(2).replace('.',',')}%<br><small>${BRL(m.desconto)}</small></td><td><b>${BRL(m.contratado)}</b></td><td>${BRL(m.comissao)}</td><td><b>${BRL(m.liquido)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td></tr>`}).join('')}</tbody></table></div></div>`:'';
+  const hist=vendasResumoV23(soldV23());
+  id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Cenários e projeções</div><div class="sub">Preço, condições comerciais, caixa projetado e suficiência financeira frente à obra.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+  <div class="card scenario-section"><div class="ch"><div class="ch-ttl">Parâmetros comerciais</div>${badge('editável')}</div><div class="cb"><div class="fr c4"><div class="field"><label>Cenário 1 · R$/m²</label><input id="sc_preco1" type="number" step="0.01" value="${cfg.preco1.toFixed(2)}" onchange="renderCenarios()"></div><div class="field"><label>Cenário 2 · R$/m²</label><input id="sc_preco2" type="number" step="0.01" value="${cfg.preco2.toFixed(2)}" onchange="renderCenarios()"></div><div class="field"><label>Cenário 3 · R$/m²</label><input id="sc_preco3" type="number" step="0.01" value="${cfg.preco3.toFixed(2)}" onchange="renderCenarios()"></div><div class="field"><label>Comissão padrão estimada (%)</label><input id="sc_comissao" type="number" step="0.01" value="${cfg.comissao.toFixed(2)}" onchange="renderCenarios()"></div></div><div class="info"><b>Comissão padrão:</b> Bronze 4,0%, Prata 4,5%, Ouro 5,0% e Platina 5,5%. O campo permanece editável para representar o mix esperado das novas vendas.</div><div class="section-mini-title">Tetos de desconto</div><div class="fr c3"><div class="field"><label>À vista</label><input id="sc_tetoAvista" type="number" step="0.1" value="${cfg.tetoAvista}" onchange="renderCenarios()"></div><div class="field"><label>Entrada a partir de 50%</label><input id="sc_teto50" type="number" step="0.1" value="${cfg.teto50}" onchange="renderCenarios()"></div><div class="field"><label>Entrada a partir de 30%</label><input id="sc_teto30" type="number" step="0.1" value="${cfg.teto30}" onchange="renderCenarios()"></div><div class="field"><label>Plano até 12x</label><input id="sc_teto12" type="number" step="0.1" value="${cfg.teto12}" onchange="renderCenarios()"></div><div class="field"><label>Plano até 24x</label><input id="sc_teto24" type="number" step="0.1" value="${cfg.teto24}" onchange="renderCenarios()"></div><div class="field"><label>Plano até 36x</label><input id="sc_teto36" type="number" step="0.1" value="${cfg.teto36}" onchange="renderCenarios()"></div></div><div class="section-mini-title">Distribuição de vendas e recebimentos futuros</div>${mixTableV22(cfg)}<div class="fr c2 v22-premise-controls"><div class="field"><label>Cenário de preço usado na curva</label><select id="sc_ativo" onchange="renderCenarios()">${['1','2','3'].map(x=>`<option value="${x}" ${cfg.ativo===x?'selected':''}>Cenário ${x}</option>`).join('')}</select></div><div class="field"><label>Tratamento da comissão no caixa projetado</label><select id="sc_deduz" onchange="renderCenarios()"><option value="sim" ${cfg.deduzComissao?'selected':''}>Provisionar no mês da venda</option><option value="nao" ${!cfg.deduzComissao?'selected':''}>Não deduzir na curva</option></select></div></div>${baseAlert}${totalAlert}${metaAlert}</div></div>
+  <div class="kpi-row scenario-section">${kpi('Estoque remanescente',CFG.disponiveis,'lotes comercializáveis')}${kpi('Novas vendas até 30/06',junho,'necessárias: '+stats().faltam,'g')}${kpi('Líquido econômico vendido',BRLShort(hist.liquido),'9 vendas já fechadas','o')}${kpi('Preço ativo na curva',BRL(ativo.preco)+'/m²',ativo.nome,'l')}</div>${comparativo}${model?cashPanelV23(model,cfg):''}`;
+}
+</script>
+
 </body>
 </html>
