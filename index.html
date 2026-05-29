@@ -1329,6 +1329,131 @@ function renderRelatorios(){
   window.addEventListener('beforeprint',()=>{const el=document.getElementById('v19-orient-css');if(el){el.textContent=document.body.classList.contains('print-portrait')?'@media print{@page{size:A4 portrait;margin:10mm} body.print-portrait .page.print-on{max-width:190mm;margin:0 auto!important}}':'@media print{@page{size:A4 landscape;margin:10mm}}';}});
 })();
 
+
+/* ==========================================================================
+   V20 — auditoria de base comercial, projeções e estabilidade visual
+   Correção-raiz: "Sem anotação bloqueante" não pode ser interpretado
+   como bloqueio real. O parser anterior eliminava os lotes livres da projeção.
+   ========================================================================== */
+
+function normLote(r,i){
+  const idL=pick(r,['id_lote','id','codigo','código','#'])||'L'+String(i+1).padStart(3,'0');
+  const ruaRaw=pick(r,['rua','logradouro','quadra'])||'';
+  const quadra=quadraNome(ruaRaw);
+  const rua=String(ruaRaw||quadra).toUpperCase()===String(ruaRaw||'')?('Rua '+quadra):String(ruaRaw||quadra);
+  const lote=String(pick(r,['lote','numero','número'])||'').replace(/\.0$/,'').trim();
+  const area=num(pick(r,['area_m2','area','área','metragem','m2','m²']));
+  const preco=num(pick(r,['preco_m2_base','preco_m2','preço_m2','valor_m2','valor do m²','valor do m2','valor final m²','valor final m2']))||PRECO_M2;
+  const valor=num(pick(r,['valor_tabela','valor_total','valor','preco_total','total','total ']))||area*preco;
+  const statusVenda=norm(pick(r,['status_venda','status_comercial','status'])||'');
+  const statusLote=norm(pick(r,['status_lote','situacao','situação'])||'');
+  const propriedade=norm(pick(r,['propriedade','proprietario_origem','proprietário_origem'])||'');
+  const tipoAnotacao=String(pick(r,['tipo_anotacao','tipo anotacao','tipo_anotação','tipo de anotação'])||'');
+  const tipoNorm=norm(tipoAnotacao);
+  const vendavelRaw=norm(pick(r,['vendavel','vendável'])||'');
+  const motivo=norm(pick(r,['motivo_bloqueio','motivo bloqueio'])||'');
+  const estoque=norm(pick(r,['estoque_comercial','estoque comercial'])||'');
+  const contexto=norm([propriedade,tipoAnotacao,motivo,estoque,pick(r,['origem_status','anotacao_lote','anotacao','observacoes','obs'])].join(' '));
+  const semBloqueio=tipoNorm.includes('sem anotacao bloqueante')||contexto.includes('sem anotacao bloqueante')||contexto.includes('sem restricao');
+  const garantia=contexto.includes('garantia gdf')||contexto.includes('garantia ao gdf');
+  const proibicaoExplicita=vendavelRaw==='nao'||vendavelRaw==='não'||motivo.includes('nao comercializ')||motivo.includes('não comercializ')||motivo.includes('fora da venda');
+  const bloqueioReal=(!semBloqueio&&(contexto.includes('comprometido')||contexto.includes('desenvolve')||contexto.includes('indisponivel')||contexto.includes('restrito')||contexto.includes('bloqueio definitivo')))||proibicaoExplicita;
+  let status='Restrito', vendavel=false;
+
+  if(propriedade.includes('vendida')||isAffirmativeSold(statusVenda)||isAffirmativeSold(statusLote)){
+    status='Vendido'; vendavel=false;
+  } else if(propriedade.includes('permuta')||statusLote.includes('permuta')||contexto.includes('permutante')){
+    status='Permutado'; vendavel=false;
+  } else if(contexto.includes('casa calliandra')){
+    status='Casa Calliandra'; vendavel=false;
+  } else if(garantia && !proibicaoExplicita){
+    status='Garantia GDF'; vendavel=true;
+  } else if(bloqueioReal){
+    status='Restrito'; vendavel=false;
+  } else if(statusVenda.includes('dispon')||vendavelRaw.startsWith('sim')||semBloqueio||propriedade==='up'||estoque.includes('estoque comercial')){
+    status='Disponível'; vendavel=true;
+  }
+
+  return {
+    id:String(idL).replace(/\.0$/,''),quadra,rua,lote,area,precoM2:preco,valorTabela:valor,
+    status,vendavel,obs:pick(r,['observacoes','observações','obs'])||'',
+    anotacao:tipoAnotacao||pick(r,['propriedade','anotacao_lote','anotacao','anotação'])||'',raw:r
+  };
+}
+
+/* Não apresentar cenário parcial como projeção válida. */
+function scenarioMini(){
+  const d=scenarioData();
+  if(d.lotes.length!==CFG.disponiveis){
+    return `<div class="warnbox"><b>Base de projeção em conciliação.</b> Foram reconhecidos ${d.lotes.length} de ${CFG.disponiveis} lotes comercializáveis. Clique em <b>Sincronizar</b> para recalcular a base antes de utilizar os cenários.</div>`;
+  }
+  return d.precos.slice(1).map(p=>{
+    const m=scenarioMetrics(d.areaTotal,p.preco,d.cfg);
+    return `<div class="scenario-mini"><b>${p.nome}</b><span>${BRL(p.preco)}/m² · desc. médio ${d.descontoMedio.toFixed(1).replace('.',',')}%</span><strong>${BRLShort(m.bruto)}</strong><em>${BRLShort(m.liquido)} líquido UP</em></div>`;
+  }).join('');
+}
+
+function projectionSummary(rows,totalLots){
+  const s=stats();
+  if(!rows.length){
+    return `<div class="warnbox"><b>Curva não calculada.</b> A projeção somente será apresentada quando os ${CFG.disponiveis} lotes comercializáveis estiverem conciliados na aba Lotes.</div>`;
+  }
+  const last=rows[rows.length-1];
+  const junho=(rows.find(r=>r.ym==='2026-06')||{}).qtd||0;
+  const saldoPosJunho=Math.max(totalLots-junho,0);
+  return `<div class="g3 projection-summary">
+    <div class="card"><div class="cb"><span class="mini-lbl">Meta até 30/06</span><b>${s.unidades}+${junho} = ${s.unidades+junho}/${CFG.metaLotes}</b><small>${s.unidades} vendas realizadas e ${junho} novas vendas previstas em junho</small></div></div>
+    <div class="card"><div class="cb"><span class="mini-lbl">Saldo pós-junho</span><b>${saldoPosJunho} lotes</b><small>do estoque comercializável remanescente após a meta trimestral</small></div></div>
+    <div class="card"><div class="cb"><span class="mini-lbl">Esgotamento projetado</span><b>${last.mes}</b><small>${totalLots}/${totalLots} lotes distribuídos conforme a velocidade informada</small></div></div>
+  </div>`;
+}
+
+/* Render executivo com régua trimestral e régua global claramente separadas. */
+function renderCenarios(){
+  const d=scenarioData(), cfg=d.cfg;
+  saveScenarioInputs();
+  const conciliado=d.lotes.length===CFG.disponiveis;
+  const ativo=d.precos.find(p=>p.id===cfg.ativo)||d.precos[1];
+  const proj=conciliado?buildSalesProjection(d.lotes,ativo.preco,cfg):[];
+  const baseM=scenarioMetrics(d.areaTotal,PRECO_M2,cfg);
+  const totalQ=qtdMixV19(cfg);
+  const mixAlert=!conciliado?'':(totalQ===d.lotes.length
+    ?`<div class="success"><b>Distribuição completa:</b> ${totalQ} lotes alocados nas condições comerciais.</div>`
+    :`<div class="warnbox"><b>Distribuição incompleta:</b> foram alocados ${totalQ} lotes, mas o estoque comercializável é de ${d.lotes.length}. Ajuste as quantidades.</div>`);
+  const baseAlert=conciliado
+    ?`<div class="success"><b>Base conciliada:</b> ${d.lotes.length} lotes remanescentes reconhecidos para projeção comercial.</div>`
+    :`<div class="warnbox"><b>Base não conciliada:</b> a planilha deve retornar ${CFG.disponiveis} lotes comercializáveis, mas o sistema reconheceu ${d.lotes.length}. A curva e os valores projetados ficam suspensos até nova sincronização.</div>`;
+  const comparativo=conciliado?`<div class="table-card scenario-section"><div class="ch"><div class="ch-ttl">Comparativo dos cenários do estoque remanescente</div><span>desconto e comissão aplicados apenas às novas vendas projetadas</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV bruto</th><th>Desconto projetado</th><th>Base pós-desconto</th><th>Comissão</th><th>Líquido UP</th><th>Acréscimo líquido sobre base atual</th></tr></thead><tbody>${d.precos.map(p=>{const m=scenarioMetrics(d.areaTotal,p.preco,cfg), delta=m.liquido-baseM.liquido;return `<tr><td><b>${p.nome}</b><br><small>${p.obs}</small></td><td>${BRL(p.preco)}</td><td><b>${BRL(m.bruto)}</b></td><td>${BRL(m.desconto)}<br><small>${m.descontoPct.toFixed(2).replace('.',',')}%</small></td><td>${BRL(m.aposDesconto)}</td><td>${BRL(m.comissao)}</td><td><b>${BRL(m.liquido)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td></tr>`}).join('')}</tbody></table></div></div>`:'';
+  const curva=conciliado?obraPanelV19(proj):`<div class="card scenario-section"><div class="ch"><div class="ch-ttl">Curva financeira comercial x desembolso da obra</div>${badge('aguardando conciliação')}</div><div class="cb"><div class="warnbox">A curva foi bloqueada para evitar a apresentação de valores incorretos. Após a sincronização reconhecer os ${CFG.disponiveis} lotes comercializáveis, o gráfico voltará a mostrar VGV contratado + novas vendas projetadas em comparação com o desembolso acumulado da obra.</div></div></div>`;
+  const calendario=conciliado?`<div class="table-card scenario-section"><div class="ch"><div class="ch-ttl">Calendário comercial projetado</div><span>${ativo.nome} · ${BRL(ativo.preco)}/m²</span></div><div class="tw"><table><thead><tr><th>Mês</th><th>Diretriz</th><th>Unidades</th><th>Área</th><th>Receita bruta</th><th>Desconto</th><th>Comissão</th><th>Líquido UP</th><th>Acum. novas vendas</th></tr></thead><tbody>${proj.map(r=>`<tr><td><b>${r.mes}</b></td><td>${r.rotulo}</td><td>${r.qtd}</td><td>${AREA(r.area)}</td><td>${BRL(r.bruto)}</td><td>${BRL(r.desconto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td>${BRL(r.acumLiquido)}</td></tr>`).join('')||empty(9)}</tbody></table></div></div>`:'';
+
+  id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Cenários e projeções</div><div class="sub">Preço, política de descontos, velocidade de vendas e cobertura financeira da obra.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+  <div class="card scenario-section"><div class="ch"><div class="ch-ttl">Parâmetros comerciais editáveis</div>${badge('sistema')}</div><div class="cb">
+    <div class="fr c4"><div class="field"><label>Cenário 1 · R$/m²</label><input id="scPreco1" type="number" step="0.01" value="${cfg.preco1.toFixed(2)}" oninput="renderCenarios()"></div><div class="field"><label>Cenário 2 · R$/m²</label><input id="scPreco2" type="number" step="0.01" value="${cfg.preco2.toFixed(2)}" oninput="renderCenarios()"></div><div class="field"><label>Cenário 3 · R$/m²</label><input id="scPreco3" type="number" step="0.01" value="${cfg.preco3.toFixed(2)}" oninput="renderCenarios()"></div><div class="field"><label>Comissão média (%)</label><input id="scComissao" type="number" step="0.1" value="${cfg.comissao}" oninput="renderCenarios()"></div></div>
+    <div class="section-mini-title">Política máxima de descontos</div>
+    <div class="fr c4"><div class="field"><label>À vista (%)</label><input id="scDescAvista" type="number" step="0.1" value="${cfg.descAvista}" oninput="renderCenarios()"></div><div class="field"><label>Entrada 50% (%)</label><input id="scDescEntrada50" type="number" step="0.1" value="${cfg.descEntrada50}" oninput="renderCenarios()"></div><div class="field"><label>Entrada 30% (%)</label><input id="scDescEntrada30" type="number" step="0.1" value="${cfg.descEntrada30}" oninput="renderCenarios()"></div><div class="field"><label>Plano até 36x (%)</label><input id="scDescCurto36" type="number" step="0.1" value="${cfg.descCurto36}" oninput="renderCenarios()"></div></div>
+    <div class="section-mini-title">Distribuição estimada por número de lotes</div>
+    <div class="fr c4"><div class="field"><label>À vista · lotes</label><input id="scQAvista" type="number" min="0" step="1" value="${cfg.qAvista}" oninput="renderCenarios()"></div><div class="field"><label>Entrada 50% · lotes</label><input id="scQEntrada50" type="number" min="0" step="1" value="${cfg.qEntrada50}" oninput="renderCenarios()"></div><div class="field"><label>Entrada 30% · lotes</label><input id="scQEntrada30" type="number" min="0" step="1" value="${cfg.qEntrada30}" oninput="renderCenarios()"></div><div class="field"><label>Até 36x · lotes</label><input id="scQCurto36" type="number" min="0" step="1" value="${cfg.qCurto36}" oninput="renderCenarios()"></div></div>
+    ${baseAlert}${mixAlert}
+    <div class="info"><b>Leitura correta das metas:</b> a meta abril-junho é vender ${CFG.metaLotes} unidades; ${stats().unidades} já foram vendidas no período e faltam ${stats().faltam} novas unidades até 30/06. A curva global projeta separadamente a venda dos ${CFG.disponiveis} lotes que permanecem comercializáveis até março de 2027.</div>
+  </div></div>
+  <div class="kpi-row scenario-section">${kpi('Estoque projetável',conciliado?d.lotes.length:CFG.disponiveis,'lotes remanescentes para venda')}${kpi('Novas vendas até 30/06',stats().faltam,'para atingir 23 unidades','g')}${kpi('VGV já contratado',BRLShort(historicoVGVV19()),'9 vendas fechadas')}${kpi('VGV da meta vigente',BRLShort(stats().real),'Eric + Eliana no período')}</div>
+  ${comparativo}
+  <div class="card scenario-section"><div class="ch"><div class="ch-ttl">Ritmo previsto de comercialização</div>${badge('projeção mensal')}</div><div class="cb"><div class="fr c4"><div class="field"><label>Cenário usado</label><select id="scAtivo" onchange="renderCenarios()">${['1','2','3'].map(x=>`<option value="${x}" ${cfg.ativo===x?'selected':''}>Cenário ${x}</option>`).join('')}</select></div><div class="field"><label>Novas vendas até 30/06</label><input id="scJunho" type="number" value="${cfg.junho}" min="0" oninput="renderCenarios()"></div><div class="field"><label>Novas vendas/mês após junho</label><input id="scVelocidade" type="number" value="${cfg.velocidade}" min="1" oninput="renderCenarios()"></div><div class="field"><label>Data limite do estoque</label><input id="scFim" type="month" value="${cfg.fim}" onchange="renderCenarios()"></div></div><div class="fr c2"><div class="field"><label>Início da projeção pós-junho</label><input id="scInicio" type="month" value="${cfg.inicio}" onchange="renderCenarios()"></div><div class="field"><label>Preço ativo</label><input value="${ativo.nome} · ${BRL(ativo.preco)}/m²" disabled></div></div>${projectionSummary(proj,conciliado?d.lotes.length:CFG.disponiveis)}</div></div>
+  ${curva}${calendario}`;
+}
+
+/* Corrige conflito entre a classe de cor azul dos KPIs e a classe de badges. */
+(function(){
+  const css=`
+    .kpi.b{display:block!important;background:#fff!important;color:inherit!important;padding:18px!important;font-size:inherit!important;font-weight:inherit!important;border-radius:20px!important;align-items:initial!important;}
+    .kpi.b .lbl,.kpi.b .val,.kpi.b .hint{color:inherit}
+    .kpi.b .lbl,.kpi.b .hint{color:var(--muted)!important}
+    .kpi.b .val{color:var(--verde)!important}
+  `;
+  const st=document.createElement('style');st.id='v20-kpi-stability';st.textContent=css;document.head.appendChild(st);
+})();
+
 </script>
 <!-- V18: dashboard corrigido, caixa Eric, comissões, projeções, velocidade de vendas e impressão. -->
 </body>
