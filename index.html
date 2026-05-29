@@ -2177,5 +2177,270 @@ function renderCenarios(){
 }
 </script>
 
+
+<!-- V25: auditoria executiva, conciliação histórica, horizonte de recuperação e plano-base -->
+<style id="v25-style">
+.v25-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:12px 0 14px;padding:14px;border:1px solid var(--borda);border-radius:16px;background:#fbf7ef}
+.v25-toolbar b{display:block;color:var(--verde);font-size:13px}.v25-toolbar span{display:block;color:var(--muted);font-size:12px;line-height:1.45;max-width:740px}
+.v25-toolbar .buttons{display:flex;gap:8px;flex-wrap:wrap}
+.v25-audit{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:15px}
+.v25-audit-item{border:1px solid var(--borda);border-radius:14px;padding:12px;background:#fff}
+.v25-audit-item small{display:block;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.07em;font-size:9px}
+.v25-audit-item b{display:block;color:var(--verde);font-size:16px;margin-top:6px}
+.v25-audit-item span{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.35}
+.v25-recovery{margin-top:16px;border:1px solid var(--borda);border-radius:16px;overflow:hidden;background:#fff}
+.v25-recovery-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px 16px;background:#fbf7ef;border-bottom:1px solid var(--borda)}
+.v25-recovery-head b{display:block;color:var(--verde);font-size:14px}
+.v25-recovery-head span{display:block;color:var(--muted);font-size:12px;line-height:1.45;margin-top:3px}
+.v25-status-ok{color:#1c7c4a;font-weight:900}.v25-status-bad{color:var(--marsala);font-weight:900}
+.v25-muted{color:var(--muted);font-size:11px}
+.v25-source{margin-top:10px;font-size:11px;color:var(--muted);line-height:1.45}
+.v25-flowtag{display:inline-flex;border-radius:999px;padding:4px 9px;background:#eef8f2;color:#1c7c4a;font-weight:900;font-size:10px}
+.v25-flowtag.plan{background:#fff1d5;color:#8b5b13}
+.v25-flowtag.concil{background:#e9f2fb;color:#195e9c}
+.v25-board-note{margin-top:14px}
+@media(max-width:1100px){.v25-audit{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{
+  .v25-toolbar.no-print{display:none!important}
+  .v25-audit{grid-template-columns:repeat(4,1fr)!important}
+  .v25-recovery{break-inside:auto!important;page-break-inside:auto!important}
+  .v25-recovery-head{break-after:avoid!important;page-break-after:avoid!important}
+}
+</style>
+<script id="v25-patch">
+const V25_CAIXA_KEY='calliandra_v25_caixa_conciliado';
+const V25_RECOMMENDED_PRICE='2';
+const V25_OBRA_END='2027-12';
+const V25_STAGE_RANK={'Venda antecipada · até 19/06':0,'Dia do lançamento · 20/06':1,'Lançamento · 21/06 a 20/07':2,'Pós-lançamento · após 20/07':3};
+
+function ymLabelV25(ym){
+  const [y,m]=String(ym).split('-'), nomes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  return (nomes[(parseInt(m,10)||1)-1]||m)+'/'+String(y).slice(-2);
+}
+function monthsBetweenV25(start,end){
+  const arr=[];let ym=start;while(ym<=end){arr.push(ym);ym=addMonthV21(ym,1);}return arr;
+}
+function compareRowsV25(a,b){
+  const month=String(a.mes||'').localeCompare(String(b.mes||''));
+  if(month)return month;
+  const stage=(V25_STAGE_RANK[a.etapa]??99)-(V25_STAGE_RANK[b.etapa]??99);
+  if(stage)return stage;
+  return (a._seq||0)-(b._seq||0);
+}
+function historicalNetV25(){const h=resumoAteMarcoV24();return {bruto:h.vgv,comissao:h.comissao,liquido:h.liquido};}
+function cashPremissaV24(){
+  const h=historicalNetV25(), saved=readJSON(V25_CAIXA_KEY,{});
+  const manual=!!saved.manual;
+  return {manual, incluir:true, bruto:manual?num(saved.bruto):h.bruto, comissao:manual?num(saved.comissao):h.comissao};
+}
+function currentCashPremissaV24(){
+  const h=historicalNetV25(), s=cashPremissaV24();
+  if(id('v25ManualBase'))s.manual=id('v25ManualBase').checked;
+  if(s.manual&&id('v25BaseBruta'))s.bruto=Math.max(0,num(val('v25BaseBruta')));
+  if(s.manual&&id('v25BaseComissao'))s.comissao=Math.max(0,num(val('v25BaseComissao')));
+  if(!s.manual){s.bruto=h.bruto;s.comissao=h.comissao;}
+  safeSet(V25_CAIXA_KEY,JSON.stringify({manual:s.manual,bruto:s.bruto,comissao:s.comissao}));
+  return {...s,incluir:true};
+}
+
+/* Conciliação: as sete vendas já estão no histórico e são classificadas como caixa recebido até 31/03. */
+function fluxoValidadoV23(v){return !!(v&&isVendido(v.status));}
+function caixaLiquidoVendaAteV25(v,limite){
+  if(!v||!isVendido(v.status))return 0;
+  const data=String(v.data||'');
+  if(data<'2026-04-01')return limite>='2026-03'?valorLiquidoUP(v):0;
+  if(isElianaVenda(v))return limite>='2026-05'?valorLiquidoUP(v):0;
+  if(isEricVenda(v)){
+    let n=0;
+    if(limite>='2026-05')n+=50000-comissaoValorVenda(v);
+    if(limite>='2026-06')n+=30000;
+    if(limite>='2026-07')n+=30000;
+    if(limite>='2026-08')n+=270000;
+    return n;
+  }
+  const saleMonth=String(v.data||'').slice(0,7), parcelas=[
+    ['2026-05',num(v.recebimentoMaio)],['2026-06',num(v.recebimentoJunho)],['2026-07',num(v.recebimentoJulho)],['2026-08',num(v.recebimentoAgosto)]
+  ];
+  let bruto=parcelas.filter(x=>x[0]<=limite).reduce((s,x)=>s+x[1],0);
+  if(saleMonth&&saleMonth<=limite)bruto-=comissaoValorVenda(v);
+  return bruto;
+}
+function caixaConsolidadoAteV25(limite){
+  return soldV23().reduce((s,v)=>s+caixaLiquidoVendaAteV25(v,limite),0);
+}
+function cadastroFluxoPendenteV23(){return 0;}
+function cashPeriodV23(){return {maio:caixaConsolidadoAteV25('2026-05'),junho:caixaConsolidadoAteV25('2026-06')};}
+function fluxoCellV23(v,limite){
+  const n=caixaLiquidoVendaAteV25(v,limite);
+  if(String(v.data||'')<'2026-04-01')return `<b>${BRL(n)}</b><br><small>até 31/03</small>`;
+  return `<b>${BRL(n)}</b>`;
+}
+function tabelaVendasV23(arr,withActions=true){
+  return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>VGV contratado</th><th>Comissão</th><th>Líquido econômico UP</th><th>Caixa líquido até maio</th><th>Caixa líquido até junho</th><th>Forma pgto.</th><th>Parceiro</th><th>Status</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>`<tr><td><b>${esc((v.quadra||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}</td><td>${BRL(v.valorFinal)}</td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(valorLiquidoUP(v))}</b></td><td>${fluxoCellV23(v,'2026-05')}</td><td>${fluxoCellV23(v,'2026-06')}</td><td>${esc(v.formaPagamento||'-')}</td><td>${esc(v.corretor||'-')}</td><td>${badge(v.status)}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`).join('')||empty(withActions?11:10)}</tbody></table></div>`;
+}
+function renderVendas(){
+  const todas=soldV23(), periodo=periodV23(), total=vendasResumoV23(todas), tri=vendasResumoV23(periodo), cash=cashPeriodV23(), pre=resumoAteMarcoV24();
+  id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">VGV contratado, líquido econômico e caixa efetivamente reconhecido em leituras separadas.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+  <div class="section-mini-title">Visão acumulada</div><div class="v23-kpi-stack">${kpi('Unidades vendidas',total.unidades,'+ 1 permuta fora do VGV')}${kpi('VGV contratado total',BRL(total.vgv),'9 vendas fechadas','g')}${kpi('Comissão total',BRL(total.comissao),'regras conciliadas','o')}${kpi('Líquido econômico UP',BRL(total.liquido),'VGV menos comissão','l')}</div>
+  <div class="section-mini-title">Caixa reconhecido</div><div class="v23-kpi-stack">${kpi('Base líquida até 31/03',BRL(pre.liquido),'7 vendas consolidadas','g')}${kpi('Caixa líquido até maio',BRL(cash.maio),'base + Eliana + Eric')}${kpi('Caixa líquido até junho',BRL(cash.junho),'inclui R$ 30 mil de Eric','o')}${kpi('VGV da meta atual',BRL(tri.vgv),periodo.length+'/'+CFG.metaLotes+' unidades','l')}</div>
+  <div class="success v23-note"><b>Conciliação histórica aplicada:</b> as sete vendas anteriores à meta estão classificadas como realizadas até 31/03 e reconhecidas no caixa líquido de abertura. Eliana entra à vista em maio; Eric segue o fluxo de maio a agosto.</div>
+  <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas totais acumuladas</div><div class="v23-table-sub">9 vendas fechadas · VGV ${BRL(total.vgv)} · líquido econômico ${BRL(total.liquido)}</div></div></div>${tabelaVendasV23(todas)}</div>
+  <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas consideradas na meta atual</div><div class="v23-table-sub">01/04 a 30/06 · ${periodo.length} de ${CFG.metaLotes} unidades</div></div></div>${tabelaVendasV23(periodo,false)}</div>`;
+}
+function renderRelatorios(){
+  const todas=soldV23(), periodo=periodV23(), total=vendasResumoV23(todas), tri=vendasResumoV23(periodo), cash=cashPeriodV23(), s=stats(), pre=resumoAteMarcoV24();
+  id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo</div><div class="sub">Resultado comercial, caixa reconhecido e desempenho específico da meta abril-junho.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+  <div class="card"><div class="ch"><div class="ch-ttl">Acumulado comercial</div>${badge('histórico conciliado')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas fechadas',total.unidades,'lotes')}${kpi('VGV contratado',BRL(total.vgv),'total acumulado','g')}${kpi('Comissão',BRL(total.comissao),'provisionada','o')}${kpi('Líquido econômico',BRL(total.liquido),'após comissão','l')}</div></div></div>
+  <div class="card v23-section"><div class="ch"><div class="ch-ttl">Fluxo financeiro reconhecido</div>${badge('caixa')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Até 31/03',BRL(pre.liquido),'7 vendas recebidas','g')}${kpi('Até maio',BRL(cash.maio),'inclui Eliana e 1º fluxo Eric')}${kpi('Até junho',BRL(cash.junho),'inclui 2º fluxo Eric','o')}${kpi('Saldo Eric após junho',BRL(300000),'julho + agosto','l')}</div><div class="info"><b>Leitura correta:</b> VGV e líquido econômico medem contratos fechados. Caixa reconhecido mede o recurso disponível para confrontar com a execução das obras.</div></div></div>
+  <div class="card v23-section"><div class="ch"><div class="ch-ttl">Meta vigente · abril-junho</div>${badge(periodo.length+' de '+CFG.metaLotes)}</div><div class="cb"><div class="v23-kpi-stack">${kpi('VGV vendido',BRL(tri.vgv),s.pctFin+'% de '+BRL(CFG.metaFinanceira),'g',s.pctFin)}${kpi('Líquido econômico',BRL(tri.liquido),'após comissão')}${kpi('Unidades vendidas',periodo.length+'/'+CFG.metaLotes,'meta vigente','o')}${kpi('VGV restante',BRL(s.faltaFin),s.faltam+' unidades','l')}</div>${progress('Meta financeira',tri.vgv,CFG.metaFinanceira,true)}${progress('Meta quantitativa',periodo.length,CFG.metaLotes,false)}</div></div>
+  <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas no período por parceiro</div></div><div class="cb">${ranking(group(periodo,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas no período por origem</div></div><div class="cb">${ranking(group(periodo,'origem'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Validação do caixa</div></div><div class="cb"><div class="success"><b>Base conciliada:</b> 7 vendas anteriores classificadas até março.</div><div class="info" style="margin-top:10px"><b>Fluxo trimestral:</b> Eliana à vista e Eric parcelado curto já refletidos na projeção.</div></div></div></div>
+  <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas totais</div><span>${BRL(total.liquido)} líquido econômico</span></div>${tabelaVendasV23(todas,false)}</div>
+  <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas da meta atual</div><span>${BRL(tri.liquido)} líquido econômico</span></div>${tabelaVendasV23(periodo,false)}</div>`;
+}
+
+/* Ordenação automática: qualquer condição nova entra no calendário na posição cronológica correta. */
+function normalizeRowsV24(cfg){
+  cfg.rows=(cfg.rows||[]).map((r,i)=>{
+    const n={...r,_seq:i,etapa:r.etapa||V24_ETAPAS[2],mes:r.mes||'2026-07',qtd:Math.max(0,Math.floor(num(r.qtd))),entrada:Math.min(100,Math.max(0,num(r.entrada))),parcelas:Math.min(120,Math.max(0,Math.floor(num(r.parcelas)))),desconto:Math.max(0,num(r.desconto))};
+    n.desconto=Math.min(n.desconto,tetoDescontoV24(n,cfg));
+    return n;
+  }).sort(compareRowsV25).map(({_seq,...r})=>r);
+  return cfg;
+}
+function addRowV24(){
+  const cfg=currentScenarioV24(), ordered=[...(cfg.rows||[])].sort(compareRowsV25), last=ordered[ordered.length-1];
+  cfg.rows.push({etapa:V24_ETAPAS[3],mes:last?addMonthV21(last.mes,1):'2026-07',qtd:0,entrada:20,parcelas:120,desconto:0});
+  normalizeRowsV24(cfg);safeSet(V24_SCENARIO_KEY,JSON.stringify(cfg));renderCenarios();
+}
+function planoBaseV25(){return[
+  {etapa:V24_ETAPAS[0],mes:'2026-06',qtd:2,entrada:50,parcelas:120,desconto:2.5},
+  {etapa:V24_ETAPAS[1],mes:'2026-06',qtd:7,entrada:15,parcelas:120,desconto:0},
+  {etapa:V24_ETAPAS[1],mes:'2026-06',qtd:2,entrada:30,parcelas:120,desconto:2},
+  {etapa:V24_ETAPAS[1],mes:'2026-06',qtd:1,entrada:100,parcelas:0,desconto:6},
+  {etapa:V24_ETAPAS[2],mes:'2026-06',qtd:3,entrada:20,parcelas:120,desconto:0},
+  {etapa:V24_ETAPAS[2],mes:'2026-06',qtd:1,entrada:100,parcelas:0,desconto:5},
+  {etapa:V24_ETAPAS[2],mes:'2026-06',qtd:2,entrada:100,parcelas:0,desconto:6},
+  {etapa:V24_ETAPAS[2],mes:'2026-06',qtd:1,entrada:30,parcelas:120,desconto:2},
+  {etapa:V24_ETAPAS[2],mes:'2026-06',qtd:2,entrada:50,parcelas:120,desconto:2.5},
+  {etapa:V24_ETAPAS[3],mes:'2026-09',qtd:2,entrada:20,parcelas:120,desconto:0},
+  {etapa:V24_ETAPAS[3],mes:'2026-09',qtd:2,entrada:50,parcelas:120,desconto:2.5},
+  {etapa:V24_ETAPAS[3],mes:'2026-10',qtd:2,entrada:20,parcelas:120,desconto:0},
+  {etapa:V24_ETAPAS[3],mes:'2026-10',qtd:1,entrada:50,parcelas:120,desconto:2.5},
+  {etapa:V24_ETAPAS[3],mes:'2026-10',qtd:1,entrada:100,parcelas:0,desconto:5},
+  {etapa:V24_ETAPAS[3],mes:'2026-11',qtd:3,entrada:20,parcelas:120,desconto:0},
+  {etapa:V24_ETAPAS[3],mes:'2026-11',qtd:1,entrada:100,parcelas:0,desconto:5},
+  {etapa:V24_ETAPAS[3],mes:'2026-12',qtd:2,entrada:20,parcelas:120,desconto:0},
+  {etapa:V24_ETAPAS[3],mes:'2026-12',qtd:1,entrada:30,parcelas:120,desconto:2},
+  {etapa:V24_ETAPAS[3],mes:'2027-01',qtd:1,entrada:30,parcelas:120,desconto:2},
+  {etapa:V24_ETAPAS[3],mes:'2027-02',qtd:1,entrada:20,parcelas:120,desconto:0}
+];}
+function aplicarPlanoBaseV25(){
+  if(!confirm('Aplicar o plano-base de cobertura financeira? A distribuição atual de vendas será substituída.'))return;
+  const cfg=currentScenarioV24();cfg.rows=planoBaseV25();cfg.ativo=V25_RECOMMENDED_PRICE;normalizeRowsV24(cfg);
+  safeSet(V24_SCENARIO_KEY,JSON.stringify(cfg));renderCenarios();toast('Plano-base de cobertura aplicado.');
+}
+
+/* Extensão financeira: o gráfico permanece no período da obra; a tabela identifica o retorno ao positivo após o término. */
+function cashProjectionV24(lotes,preco,cfg){
+  const cash=knownCashV24(cfg),economic=contractedHistoryV24(),area=lotes.reduce((s,l)=>s+num(l.area),0),avg=lotes.length?area/lotes.length:0;
+  let contratado=0,desconto=0,comissao=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return;
+    const bruto=avg*r.qtd*preco,desc=bruto*r.desconto/100,valor=bruto-desc,com=valor*cfg.comissao/100,liq=valor-com,entrada=valor*r.entrada/100,saldo=Math.max(0,valor-entrada);
+    contratado+=valor;desconto+=desc;comissao+=com;
+    economic[r.mes]=(economic[r.mes]||0)+liq;addFlowV24(cash,r.mes,'entrada',entrada);
+    if(cfg.deduzComissao)addFlowV24(cash,r.mes,'comissao',com);
+    if(saldo>0&&r.parcelas>0){
+      const parcela=calcPrice(saldo,r.parcelas,JUROS_MES);
+      for(let n=1;n<=r.parcelas;n++)addFlowV24(cash,addMonthV21(r.mes,n),'parcela',parcela);
+    }
+  });
+  const obraRows=obraTimelineV24(), obraMap=Object.fromEntries(obraRows.map(o=>[o.ym,o])), finalObra=obraRows[obraRows.length-1].acum;
+  const cashLast=Object.keys(cash).sort().slice(-1)[0]||V25_OBRA_END;
+  const end=cashLast>V25_OBRA_END?cashLast:V25_OBRA_END;
+  let caixaAcum=0,receitaAcum=0;
+  const extended=monthsBetweenV25('2026-03',end).map(ym=>{
+    const c=cash[ym]||{historico:0,entrada:0,parcela:0,comissao:0}, obra=obraMap[ym]||{ym,mes:ymLabelV25(ym),mensal:0,acum:finalObra};
+    receitaAcum+=num(economic[ym]);
+    const bruto=c.historico+c.entrada+c.parcela, liquido=bruto-c.comissao;caixaAcum+=liquido;
+    return {...obra,...c,bruto,liquido,receitaLiquidaAcum:receitaAcum,caixaAcum,coberturaCaixa:caixaAcum-obra.acum,coberturaEconomica:receitaAcum-obra.acum};
+  });
+  const timeline=extended.filter(r=>r.ym<=V25_OBRA_END), final=timeline[timeline.length-1];
+  const firstNegative=timeline.find(r=>r.coberturaCaixa<0);
+  const worst=timeline.reduce((a,b)=>b.coberturaCaixa<a.coberturaCaixa?b:a,timeline[0]);
+  const recovery=firstNegative?extended.find(r=>r.ym>firstNegative.ym&&r.coberturaCaixa>=0):null;
+  const afterWork=extended.filter(r=>r.ym>V25_OBRA_END);
+  const saldoReceberDepoisObra=afterWork.reduce((s,r)=>s+r.liquido,0);
+  return {timeline,extended,area,avg,contratado,desconto,comissao,final,firstNegative,worst,recovery,saldoReceberDepoisObra};
+}
+function forecastModelPlanoV25(cfg){
+  const lotes=scenarioLotsV21();if(lotes.length!==CFG.disponiveis)return null;
+  const test={...cfg,rows:planoBaseV25(),ativo:V25_RECOMMENDED_PRICE};
+  normalizeRowsV24(test);return cashProjectionV24(lotes,test.preco2,test);
+}
+function mixTableV24(cfg){
+  const plan=forecastModelPlanoV25(cfg), min=plan?.worst, fin=plan?.final;
+  return `<div class="v25-toolbar no-print"><div><b>Plano-base para discussão de caixa</b><span>Simulação de equilíbrio com 21 novas vendas até 30/06, preservando os 38 lotes projetados e usando o Cenário 2. ${min&&fin?`Pelas premissas atuais, cobertura mínima durante a obra de ${BRL(min.coberturaCaixa)} em ${min.mes} e cobertura ao fim da obra de ${BRL(fin.coberturaCaixa)}.`:''}</span></div><div class="buttons"><button class="btn btn-terra" onclick="aplicarPlanoBaseV25()">Aplicar plano-base</button></div></div>
+  <div class="tw"><table class="v24-table v24-flow"><thead><tr><th>Etapa comercial</th><th>Mês da venda</th><th>Lotes</th><th>Entrada</th><th>Prazo</th><th>Teto desconto</th><th>Desconto aplicado</th><th></th></tr></thead><tbody>${cfg.rows.map((r,i)=>`<tr><td><select class="v24-stage" onchange="editRowV24(${i},'etapa',this.value)">${etapaOptionsV24(r.etapa)}</select></td><td><input class="v24-month" type="month" value="${r.mes}" onchange="editRowV24(${i},'mes',this.value)"></td><td><input class="v24-input-inline" type="number" min="0" value="${r.qtd}" onchange="editRowV24(${i},'qtd',this.value)"></td><td><div class="v24-pay"><input type="number" min="0" max="100" value="${r.entrada}" onchange="editRowV24(${i},'entrada',this.value)">%</div></td><td><div class="v24-pay"><input type="number" min="0" max="120" value="${r.parcelas}" onchange="editRowV24(${i},'parcelas',this.value)">x</div></td><td><b>${tetoDescontoV24(r,cfg).toFixed(1).replace('.',',')}%</b></td><td><div class="v24-pay"><input type="number" step="0.1" min="0" max="${tetoDescontoV24(r,cfg)}" value="${r.desconto}" onchange="editRowV24(${i},'desconto',this.value)">%</div></td><td><button class="icon del" onclick="delRowV24(${i})" title="Excluir">🗑</button></td></tr>`).join('')}</tbody></table></div><button class="btn btn-ghost btn-sm no-print" style="margin-top:10px" onclick="addRowV24()">+ Adicionar mês subsequente</button><div class="v25-source"><b>Ordenação automática ativa:</b> ao incluir ou alterar uma linha, o sistema reposiciona a venda cronologicamente pelo mês e pela etapa comercial.</div>`;
+}
+function historyTableV24(cfg){
+ const pre=resumoAteMarcoV24(),tri=resumoPeriodoV24(), caixaMai=caixaConsolidadoAteV25('2026-05'), caixaJun=caixaConsolidadoAteV25('2026-06');
+ return `<div class="table-card v24-section"><div class="ch"><div><div class="ch-ttl">Vendas contratadas e caixa reconhecido</div><div class="v24-compact">Base comercial conciliada antes da projeção dos 38 lotes remanescentes</div></div>${badge('base validada')}</div><div class="tw"><table class="v24-table"><thead><tr><th>Período / venda</th><th>Unidades</th><th>VGV contratado</th><th>Comissão</th><th>Líquido econômico</th><th>Caixa líquido reconhecido</th><th>Critério</th></tr></thead><tbody><tr><td><b>Até 31/03</b></td><td>${pre.unidades}</td><td>${BRL(pre.vgv)}</td><td>${BRL(pre.comissao)}</td><td><b>${BRL(pre.liquido)}</b></td><td><b>${BRL(pre.liquido)}</b></td><td><span class="v25-flowtag concil">Recebido até março</span></td></tr><tr><td><b>Eliana · Maio</b></td><td>1</td><td>${BRL(480000)}</td><td>${BRL(comissaoValorVenda(periodV23().find(isElianaVenda)))}</td><td>${BRL(480000-comissaoValorVenda(periodV23().find(isElianaVenda)))}</td><td>${BRL(480000-comissaoValorVenda(periodV23().find(isElianaVenda)))}</td><td><span class="v25-flowtag">À vista</span></td></tr><tr><td><b>Eric · Maio a agosto</b></td><td>1</td><td>${BRL(380000)}</td><td>${BRL(comissaoValorVenda(periodV23().find(isEricVenda)))}</td><td>${BRL(380000-comissaoValorVenda(periodV23().find(isEricVenda)))}</td><td>R$ 29.100,00 maio; R$ 30.000,00 jun/jul; R$ 270.000,00 ago</td><td><span class="v25-flowtag plan">Fluxo parcelado</span></td></tr><tr><td><b>Total até junho</b></td><td>9</td><td>${BRL(pre.vgv+tri.vgv)}</td><td>${BRL(pre.comissao+tri.comissao)}</td><td><b>${BRL(pre.liquido+tri.liquido)}</b></td><td><b>${BRL(caixaJun)}</b></td><td><span class="v25-flowtag concil">Caixa confirmado</span></td></tr></tbody></table></div></div>`;
+}
+function auditPanelV25(model,cfg){
+ const total=totalRowsV24(cfg), junho=qtdAteJunhoV24(cfg), tetoOk=cfg.rows.every(r=>num(r.desconto)<=tetoDescontoV24(r,cfg)+0.0001), pre=resumoAteMarcoV24();
+ const statusCobertura=model.firstNegative?`${model.worst.mes}: ${BRL(model.worst.coberturaCaixa)}`:`Sem ruptura`;
+ return `<div class="v25-audit">${[
+  ['Base histórica',pre.unidades===7?'OK':'Revisar',pre.unidades+' vendas até 31/03'],
+  ['Estoque projetado',total===CFG.disponiveis?'OK':'Revisar',total+' de '+CFG.disponiveis+' lotes'],
+  ['Meta até junho',junho===stats().faltam?'OK':'Revisar',junho+' novas de '+stats().faltam+' necessárias'],
+  ['Cobertura durante obra',model.firstNegative?'Atenção':'OK',statusCobertura],
+  ['Limites de desconto',tetoOk?'OK':'Revisar',tetoOk?'nenhum teto excedido':'há desconto acima do teto'],
+  ['Base de caixa',BRL(historicalNetV25().liquido),'reconhecida em março'],
+  ['Fim da obra',BRL(model.final.coberturaCaixa),model.final.coberturaCaixa>=0?'sobra projetada':'necessidade projetada'],
+  ['Pós-obra',model.recovery?model.recovery.mes:'- ',model.recovery?'retorno ao positivo':'sem necessidade de recuperação']
+ ].map(([a,b,c])=>`<div class="v25-audit-item"><small>${a}</small><b class="${String(b).includes('Atenção')||String(b).includes('Revisar')?'v25-status-bad':'v25-status-ok'}">${b}</b><span>${c}</span></div>`).join('')}</div>`;
+}
+function recoveryTableV25(model){
+ if(!model.firstNegative)return `<div class="success v25-board-note"><b>Cobertura preservada:</b> o caixa projetado permanece acima do desembolso acumulado em todo o período da obra, sob as premissas selecionadas.</div>`;
+ const start=model.worst.ym, end=model.recovery?model.recovery.ym:addMonthV21(V25_OBRA_END,12);
+ const rows=model.extended.filter(r=>r.ym>=start&&r.ym<=end);
+ return `<div class="v25-recovery"><div class="v25-recovery-head"><div><b>Recuperação após eventual necessidade de caixa</b><span>A obra termina em dezembro de 2027; as parcelas contratadas continuam entrando no caixa depois desse marco.</span></div><div><b class="${model.recovery?'v25-status-ok':'v25-status-bad'}">${model.recovery?'Retorna ao positivo em '+model.recovery.mes:'Não recupera no horizonte'}</b></div></div><div class="tw"><table><thead><tr><th>Mês</th><th>Parcelas/entradas líquidas</th><th>Caixa acumulado</th><th>Obra acumulada</th><th>Cobertura</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.liquido)}</td><td>${BRL(r.caixaAcum)}</td><td>${BRL(r.acum)}</td><td class="${r.coberturaCaixa>=0?'pos':'neg'}">${r.coberturaCaixa>=0?'+ ':''}${BRL(r.coberturaCaixa)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function cashPanelV24(model,cfg){
+ const pre=resumoAteMarcoV24(),tri=resumoPeriodoV24(),cash=currentCashPremissaV24(),baseLiquida=cash.bruto-cash.comissao,confirmedJun=caixaConsolidadoAteV25('2026-06'),projectedJun=model.timeline.find(r=>r.ym==='2026-06');
+ const endStatus=model.final.coberturaCaixa>=0?'Cobertura no fim da obra':'Necessidade no fim da obra';
+ const afterReceivable=model.saldoReceberDepoisObra;
+ return `<div class="card scenario-section cash-curve-section v24-section"><div class="ch"><div><div class="ch-ttl">Caixa projetado x desembolso das obras</div><div class="sub">Contrato mede receita; caixa líquido mede capacidade de executar a obra.</div></div>${badge('diretoria')}</div><div class="cb"><div class="v24-curvesummary">${kpi('Líquido vendido até maio',BRL(pre.liquido+tri.liquido),'9 vendas contratadas','g')}${kpi('Caixa base · 31/03',BRL(baseLiquida),'7 vendas conciliadas')}${kpi('Caixa confirmado · jun',BRL(confirmedJun),'sem novas vendas projetadas','o')}${kpi('Caixa projetado · jun',BRL(projectedJun?projectedJun.caixaAcum:confirmedJun),'com novas vendas')}${kpi(endStatus,BRL(Math.abs(model.final.coberturaCaixa)),model.final.coberturaCaixa>=0?'caixa acima da obra':'obra acima do caixa','l')}</div>
+ <details class="v23-input-card no-print"><summary><b>Ajuste manual da conciliação histórica</b></summary><div class="sub" style="margin-top:10px">A base das sete vendas já foi preenchida automaticamente a partir das vendas classificadas até 31/03. Ative ajuste manual somente se a conferência financeira apurar divergência.</div><div class="fr c3"><div class="field"><label>Usar ajuste manual</label><label style="display:flex;gap:8px;align-items:center;height:44px"><input id="v25ManualBase" type="checkbox" ${cash.manual?'checked':''} onchange="renderCenarios()" style="width:auto"> Ajustar base</label></div><div class="field"><label>Recebido bruto até 31/03</label><input id="v25BaseBruta" type="number" step="0.01" value="${cash.bruto.toFixed(2)}" ${cash.manual?'':'disabled'} onchange="renderCenarios()"></div><div class="field"><label>Comissão até 31/03</label><input id="v25BaseComissao" type="number" step="0.01" value="${cash.comissao.toFixed(2)}" ${cash.manual?'':'disabled'} onchange="renderCenarios()"></div></div></details>
+ <div class="v24-premissa"><b>Leitura executiva:</b> o caixa começa pela base líquida recebida até março, incorpora Eliana e o fluxo de Eric e recebe as entradas e parcelas das novas vendas. As comissões são provisionadas no mês da venda. Parcelas acima de 36 meses não projetam IPCA.</div>
+ ${auditPanelV25(model,cfg)}
+ ${curveSvgV24(model.timeline)}
+ <div class="tw v24-curve-table"><table><thead><tr><th>Mês</th><th>Receita líquida contratada acumulada</th><th>Caixa histórico</th><th>Entradas novas</th><th>Parcelas novas</th><th>Comissão provisionada</th><th>Caixa líquido acumulado</th><th>Obra acumulada</th><th>Cobertura de caixa</th></tr></thead><tbody>${model.timeline.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.receitaLiquidaAcum)}</td><td>${BRL(r.historico)}</td><td>${BRL(r.entrada)}</td><td>${BRL(r.parcela)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.caixaAcum)}</b></td><td>${BRL(r.acum)}</td><td class="${r.coberturaCaixa>=0?'pos':'neg'}">${r.coberturaCaixa>=0?'+ ':''}${BRL(r.coberturaCaixa)}</td></tr>`).join('')}</tbody></table></div>
+ ${recoveryTableV25(model)}
+ <div class="info v25-board-note"><b>Recebimentos posteriores ao fim da obra:</b> ${BRL(afterReceivable)} permanecem previstos nas parcelas dos contratos projetados e passam a ser demonstrados na análise de recuperação, sem distorcer a leitura do caixa disponível durante a execução.</div></div></div>`;
+}
+
+/* Impressão: libera a quebra das grandes seções e elimina a página inicial vazia. */
+function printDocumentV25(page,orientation){
+  closeModal();
+  if(page==='simulador')calcSim();
+  const source=id('page-'+page);
+  if(!source){toast('Tela não encontrada para impressão.','err');return;}
+  const popup=window.open('','_blank','width=1280,height=920');
+  if(!popup){toast('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.','err');return;}
+  const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
+  const fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'';
+  const header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>';
+  const orientationCss=orientation==='portrait'?'portrait':'landscape';
+  const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 10px!important;padding:0 0 9px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 12px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .v24-section,.print-doc .v24-price-logic,.print-doc .cash-curve-section,.print-doc .scenario-section{break-inside:auto!important;page-break-inside:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v25-recovery-head,.print-doc .sim-price-v22,.print-doc .sim-pay-v22{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card,.print-doc .v25-recovery{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc table thead{display:table-header-group!important}.print-doc table tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-curve{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-input-card{display:none!important}`;
+  popup.document.open();
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.close();
+  setTimeout(()=>{popup.focus();popup.print();},650);
+}
+printDocumentV22=printDocumentV25;
+</script>
+
 </body>
 </html>
