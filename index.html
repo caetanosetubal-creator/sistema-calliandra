@@ -1720,6 +1720,218 @@ window.renderLotes=function(){
   const st=document.createElement('style');st.id='v21-final-css';st.textContent=css;document.head.appendChild(st);
 })();
 
+
+/* ========================================================================== 
+   V22 — simulador persistente, impressão padronizada e curva efetiva de caixa
+   ========================================================================== */
+const V22_SCENARIO_KEY='calliandra_v22_fluxo_caixa';
+const V22_SIM_KEY='calliandra_v22_simulador';
+
+/* ---------- Impressão padronizada: um botão e escolha de layout em janela ---------- */
+printActionsV19 = function(page){
+  return `<button class="btn btn-ghost" onclick="openPrintOptionsV22('${page}')">🖨 Imprimir / PDF</button>`;
+};
+function openPrintOptionsV22(page){
+  id('modalTitle').textContent='Imprimir ou salvar em PDF';
+  id('modalBody').innerHTML=`<div class="print-choice-v22"><p>Escolha o formato de página para gerar a visualização de impressão.</p><div class="print-choice-grid"><button class="print-choice" onclick="printDocumentV22('${page}','landscape')"><b>Horizontal</b><span>Relatórios, tabelas e cenários</span></button><button class="print-choice" onclick="printDocumentV22('${page}','portrait')"><b>Vertical</b><span>Propostas e páginas resumidas</span></button></div></div>`;
+  id('modalActions').innerHTML=`<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>`;
+  id('modalBack').classList.add('on');
+}
+function printDocumentV22(page,orientation){
+  closeModal();
+  if(page==='simulador') calcSim();
+  const source=id('page-'+page);
+  if(!source){toast('Tela não encontrada para impressão.','err');return;}
+  const popup=window.open('','_blank','width=1280,height=920');
+  if(!popup){toast('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.','err');return;}
+  const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
+  const fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'';
+  const header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>';
+  const orientationCss=orientation==='portrait'?'portrait':'landscape';
+  popup.document.open();
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.close();
+  setTimeout(()=>{popup.focus();popup.print();},420);
+}
+printPage = function(page,orientation){
+  if(orientation) return printDocumentV22(page,orientation);
+  openPrintOptionsV22(page);
+};
+
+/* ---------- Simulador: estado preservado e resumo reestruturado ---------- */
+function simStateV22(){
+  const saved=readJSON(V22_SIM_KEY,{}), user=(readJSON(USER,{})||{});
+  return {lote:saved.lote||'',cond:saved.cond==='avista'?'avista':'entrada50',parcelas:Math.min(120,Math.max(1,parseInt(saved.parcelas,10)||36)),desconto:Math.max(0,num(saved.desconto)),observacao:saved.observacao||'',responsavel:saved.responsavel||user.nome||'Administrador'};
+}
+function persistSimV22(state){safeSet(V22_SIM_KEY,JSON.stringify(state));return state;}
+function captureSimV22(){
+  const s=simStateV22();
+  if(id('simLote'))s.lote=val('simLote');
+  if(id('simResp'))s.responsavel=val('simResp');
+  if(id('simParcelas')&&!id('simParcelas').disabled)s.parcelas=Math.min(120,Math.max(1,parseInt(num(val('simParcelas')),10)||s.parcelas));
+  if(id('simDesc'))s.desconto=Math.max(0,num(val('simDesc')));
+  if(id('simObs'))s.observacao=val('simObs');
+  return persistSimV22(s);
+}
+function chooseCondV22(cond){
+  const s=captureSimV22();s.cond=cond==='avista'?'avista':'entrada50';persistSimV22(s);
+  document.querySelectorAll('.cond').forEach(b=>b.classList.toggle('on',b.dataset.cond===s.cond));
+  if(id('simParcelas'))id('simParcelas').disabled=s.cond==='avista';
+  calcSim();
+}
+function setSimFieldV22(field,value){const s=simStateV22();s[field]=value;persistSimV22(s);calcSim();}
+function sacSummaryV22(saldo,n){
+  const amort=saldo/n;let balance=saldo,total=0,first=0,last=0;
+  for(let i=1;i<=n;i++){const p=amort+(balance*JUROS_MES);if(i===1)first=p;if(i===n)last=p;total+=p;balance-=amort;}
+  return {primeira:first,ultima:last,total};
+}
+function moneyMetricV22(label,value,help=''){return `<div class="sim-metric"><span>${label}</span><b>${value}</b>${help?`<small>${help}</small>`:''}</div>`;}
+function renderSimulador(selected=''){
+  const lotes=simulaveis(), s=simStateV22();
+  if(selected)s.lote=selected;
+  if(!lotes.some(l=>l.id===s.lote))s.lote=lotes[0]?.id||'';
+  persistSimV22(s);
+  id('page-simulador').innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Condições vigentes da venda antecipada: à vista ou entrada de 50% com saldo parcelado em até 120 meses.</div></div><div class="sh-r">${printActionsV19('simulador')}</div></div>
+  <div class="sim-form no-print"><div class="fr c3"><div class="field"><label>Lote</label><select id="simLote" onchange="setSimFieldV22('lote',this.value)">${lotes.map(l=>`<option value="${l.id}" ${l.id===s.lote?'selected':''}>${esc(loteNome(l))} · ${AREA(l.area)} · ${BRL(l.valorTabela)} · ${l.status}</option>`).join('')}</select></div><div class="field"><label>Responsável pela simulação</label><input id="simResp" value="${esc(s.responsavel)}" oninput="setSimFieldV22('responsavel',this.value)"></div><div class="field"><label>Parcelas do saldo</label><input id="simParcelas" type="number" min="1" max="120" value="${s.parcelas}" ${s.cond==='avista'?'disabled':''} onchange="setSimFieldV22('parcelas',Math.min(120,Math.max(1,parseInt(this.value)||36)))"></div></div>
+  <div class="cond-grid cond-grid-v21"><button type="button" data-cond="avista" class="cond ${s.cond==='avista'?'on':''}" onclick="chooseCondV22('avista')"><b>À vista</b><span>5% de desconto automático<br>pagamento integral</span></button><button type="button" data-cond="entrada50" class="cond ${s.cond==='entrada50'?'on':''}" onclick="chooseCondV22('entrada50')"><b>Entrada de 50%</b><span>2,5% de desconto automático<br>saldo em até 120 meses</span></button></div>
+  <div class="fr c2"><div class="field"><label>Desconto adicional negociado (%)</label><input id="simDesc" type="number" step="0.01" min="0" value="${s.desconto}" oninput="setSimFieldV22('desconto',this.value)"></div><div class="field"><label>Observação da proposta</label><input id="simObs" value="${esc(s.observacao)}" placeholder="Ex.: condição válida até lançamento" oninput="setSimFieldV22('observacao',this.value)"></div></div><button class="btn btn-terra" onclick="calcSim()">Atualizar simulação</button></div><div id="simResult"></div>`;
+  calcSim();
+}
+function tabelaComparativa(pv,n){
+  if(!pv||!n)return'';
+  n=Math.min(120,Math.max(1,parseInt(n,10)||1));
+  const price=calcPrice(pv,n,JUROS_MES), amort=pv/n;let saldoPrice=pv,saldoSac=pv,rows='';
+  for(let i=1;i<=n;i++){
+    const jurosPrice=saldoPrice*JUROS_MES, amortPrice=price-jurosPrice;saldoPrice-=amortPrice;
+    const sacParcela=amort+(saldoSac*JUROS_MES);saldoSac-=amort;
+    rows+=`<tr><td>${i}</td><td>${BRL(price)}</td><td>${BRL(sacParcela)}</td></tr>`;
+  }
+  return `<div class="tw sim-payment-table-v22"><table><thead><tr><th>Parcela</th><th>Sistema Price</th><th>Sistema SAC</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function calcSim(){
+  const s=captureSimV22(), lots=simulaveis(), l=STATE.lotes.find(x=>x.id===s.lote)||lots[0];
+  if(!l){id('simResult').innerHTML='<div class="warnbox">Nenhum lote simulável encontrado. Sincronize ou confira a planilha.</div>';return;}
+  const avista=s.cond==='avista', entradaPct=avista?100:50, parcelas=avista?0:s.parcelas, descAuto=avista?5:2.5;
+  const descPct=descAuto+s.desconto, valorTabela=l.valorTabela, economia=valorTabela*(descPct/100), valorNegociado=valorTabela-economia, precoFinal=valorNegociado/l.area;
+  const entrada=valorNegociado*entradaPct/100, saldo=avista?0:valorNegociado-entrada, hasFinance=!avista&&saldo>0;
+  const price=hasFinance?calcPrice(saldo,parcelas,JUROS_MES):0, sac=hasFinance?sacSummaryV22(saldo,parcelas):null;
+  const totalPrice=hasFinance?entrada+(price*parcelas):valorNegociado, totalSac=hasFinance?entrada+sac.total:valorNegociado, ipca=hasFinance&&parcelas>36;
+  const nota=avista?'Pagamento integral à vista, sem financiamento.':ipca?'Parcelamento acima de 36 meses: os totais abaixo incluem juros de 12% a.a., mas não projetam a correção pelo IPCA.':'Parcelamento até 36 meses: juros de 12% a.a., sem correção monetária.';
+  id('simResult').innerHTML=`<div class="card sim-result-v22"><div class="sim-v22-head"><div><div class="ch-ttl">${loteNome(l)}</div><div class="sub">${AREA(l.area)} · ${l.quadra||l.rua||'-'} · ${badge(l.status)} · <b>${avista?'À vista':'Entrada de 50% + saldo parcelado'}</b></div></div><div class="sim-total-highlight"><span>Valor negociado</span><b>${BRL(valorNegociado)}</b><small>${descPct.toFixed(2).replace('.',',')}% de desconto</small></div></div>
+  <div class="sim-block-grid-v22"><section class="sim-section-v22 sim-price-v22"><h4>Preço e negociação</h4><div class="sim-metrics-v22">${moneyMetricV22('Valor de tabela',BRL(valorTabela))}${moneyMetricV22('Economia',BRL(economia))}${moneyMetricV22('Preço m² de tabela',BRL(l.precoM2))}${moneyMetricV22('Preço m² negociado',BRL(precoFinal))}${moneyMetricV22('Desconto automático',descAuto.toFixed(2).replace('.',',')+'%')}${moneyMetricV22('Desconto adicional',s.desconto.toFixed(2).replace('.',',')+'%')}</div></section>
+  <section class="sim-section-v22 sim-pay-v22"><h4>Forma de pagamento</h4><div class="sim-metrics-v22">${moneyMetricV22('Entrada',BRL(entrada),entradaPct+'% do valor negociado')}${moneyMetricV22('Saldo financiado',hasFinance?BRL(saldo):'Não se aplica')}${moneyMetricV22('Prazo',hasFinance?parcelas+' meses':'À vista')}${moneyMetricV22('Correção',ipca?'IPCA não projetado':'Sem correção')}</div>${hasFinance?`<div class="finance-methods-v22"><div><span>PRICE</span><b>${BRL(price)}</b><small>parcela mensal · total ${BRL(totalPrice)}</small></div><div><span>SAC</span><b>${BRL(sac.primeira)}</b><small>1ª parcela · última ${BRL(sac.ultima)} · total ${BRL(totalSac)}</small></div></div>`:`<div class="payment-full-v22"><span>Total a pagar</span><b>${BRL(valorNegociado)}</b></div>`}</section></div>
+  <div class="${ipca?'warnbox':'success'} sim-note-v22">${nota}</div>${s.observacao?`<div class="info sim-note-v22"><b>Observação:</b> ${esc(s.observacao)}</div>`:''}</div>
+  ${hasFinance?`<div class="table-card sim-compare v21-print-flow sim-installments-v22" style="margin-top:18px"><div class="ch"><div class="ch-ttl">Parcelamento comparativo · Price x SAC</div><span>${parcelas} parcelas · tabela integral para PDF</span></div>${tabelaComparativa(saldo,parcelas)}</div>`:''}`;
+}
+
+/* ---------- Cenários: separar venda contratada de entrada real de caixa ---------- */
+function rowsDefaultV22(){return[
+  {mes:'2026-06',modo:'lancamento10',qtd:10,entrada:10,parcelas:120,desconto:0},
+  {mes:'2026-06',modo:'padrao20',qtd:11,entrada:20,parcelas:120,desconto:0},
+  {mes:'2026-07',modo:'padrao20',qtd:4,entrada:20,parcelas:120,desconto:0},
+  {mes:'2026-08',modo:'entrada30',qtd:4,entrada:30,parcelas:120,desconto:0},
+  {mes:'2026-09',modo:'entrada50',qtd:4,entrada:50,parcelas:120,desconto:0},
+  {mes:'2026-10',modo:'avista',qtd:3,entrada:100,parcelas:0,desconto:0},
+  {mes:'2026-11',modo:'curto36',qtd:2,entrada:20,parcelas:36,desconto:0}
+];}
+function scenarioStateV22(){
+  const prior=scenarioStateV21(), saved=readJSON(V22_SCENARIO_KEY,{});
+  return {preco1:saved.preco1!==undefined?num(saved.preco1):prior.preco1,preco2:saved.preco2!==undefined?num(saved.preco2):prior.preco2,preco3:saved.preco3!==undefined?num(saved.preco3):prior.preco3,comissao:saved.comissao!==undefined?num(saved.comissao):prior.comissao,tetoAvista:saved.tetoAvista!==undefined?num(saved.tetoAvista):prior.tetoAvista,teto50:saved.teto50!==undefined?num(saved.teto50):prior.teto50,teto30:saved.teto30!==undefined?num(saved.teto30):prior.teto30,teto12:saved.teto12!==undefined?num(saved.teto12):prior.teto12,teto24:saved.teto24!==undefined?num(saved.teto24):prior.teto24,teto36:saved.teto36!==undefined?num(saved.teto36):prior.teto36,ativo:saved.ativo||prior.ativo||'1',deduzComissao:saved.deduzComissao===undefined?true:!!saved.deduzComissao,rows:Array.isArray(saved.rows)&&saved.rows.length?saved.rows:rowsDefaultV22()};
+}
+function currentScenarioV22(){
+  const s=scenarioStateV22();
+  ['preco1','preco2','preco3','comissao','tetoAvista','teto50','teto30','teto12','teto24','teto36'].forEach(k=>{const el=id('sc_'+k);if(el)s[k]=num(el.value);});
+  if(id('sc_ativo'))s.ativo=val('sc_ativo');
+  if(id('sc_deduz'))s.deduzComissao=val('sc_deduz')==='sim';
+  safeSet(V22_SCENARIO_KEY,JSON.stringify(s));return normalizeRowsV22(s);
+}
+function tetoDescontoV22(r,cfg){
+  const e=num(r.entrada), p=num(r.parcelas), opts=[0];
+  if(e>=100)return cfg.tetoAvista;
+  if(e>=50)opts.push(cfg.teto50); else if(e>=30)opts.push(cfg.teto30);
+  if(p>0&&p<=12)opts.push(cfg.teto12); else if(p>0&&p<=24)opts.push(cfg.teto24); else if(p>0&&p<=36)opts.push(cfg.teto36);
+  return Math.max(...opts);
+}
+function normalizeRowsV22(cfg){
+  cfg.rows=(cfg.rows||[]).map(r=>{const row={...r,mes:r.mes||'2026-06',qtd:Math.max(0,Math.floor(num(r.qtd))),entrada:Math.min(100,Math.max(0,num(r.entrada))),parcelas:Math.min(120,Math.max(0,Math.floor(num(r.parcelas)))),desconto:Math.max(0,num(r.desconto))};row.desconto=Math.min(row.desconto,tetoDescontoV22(row,cfg));return row;});
+  safeSet(V22_SCENARIO_KEY,JSON.stringify(cfg));return cfg;
+}
+function editRowV22(i,field,value){
+  let cfg=currentScenarioV22(), r=cfg.rows[i];if(!r)return;
+  if(field==='modo'){const p=PRESETS_V21[value]||PRESETS_V21.personalizado;r={...r,modo:value,entrada:p.entrada,parcelas:p.parcelas,desconto:0};}
+  else if(field==='mes')r.mes=value;
+  else r[field]=num(value);
+  cfg.rows[i]=r;normalizeRowsV22(cfg);renderCenarios();
+}
+function addRowV22(){const cfg=currentScenarioV22();cfg.rows.push({mes:'2026-12',modo:'padrao20',qtd:0,entrada:20,parcelas:120,desconto:0});normalizeRowsV22(cfg);renderCenarios();}
+function deleteRowV22(i){const cfg=currentScenarioV22();cfg.rows.splice(i,1);normalizeRowsV22(cfg);renderCenarios();}
+function totalRowsV22(cfg){return cfg.rows.reduce((s,r)=>s+r.qtd,0);}
+function rowsJunhoV22(cfg){return cfg.rows.filter(r=>r.mes<='2026-06').reduce((s,r)=>s+r.qtd,0);}
+function weightedDiscountV22(cfg){const q=totalRowsV22(cfg);return q?cfg.rows.reduce((s,r)=>s+(r.qtd*r.desconto),0)/q:0;}
+function mixTableV22(cfg){
+  return `<div class="mix-table-v22"><table><thead><tr><th>Mês da venda</th><th>Condição comercial</th><th>Entrada</th><th>Prazo</th><th>Lotes</th><th>Teto de desconto</th><th>Desconto aplicado</th><th></th></tr></thead><tbody>${cfg.rows.map((r,i)=>`<tr><td><input type="month" value="${r.mes}" onchange="editRowV22(${i},'mes',this.value)"></td><td><select onchange="editRowV22(${i},'modo',this.value)">${modeOptionsV21(r.modo)}</select></td><td><input type="number" min="0" max="100" value="${r.entrada}" onchange="editRowV22(${i},'entrada',this.value)">%</td><td><input type="number" min="0" max="120" value="${r.parcelas}" onchange="editRowV22(${i},'parcelas',this.value)">x</td><td><input type="number" min="0" value="${r.qtd}" onchange="editRowV22(${i},'qtd',this.value)"></td><td><b>${tetoDescontoV22(r,cfg).toFixed(1).replace('.',',')}%</b></td><td><input type="number" step="0.1" min="0" max="${tetoDescontoV22(r,cfg)}" value="${r.desconto}" onchange="editRowV22(${i},'desconto',this.value)">%</td><td><button class="icon del" onclick="deleteRowV22(${i})" title="Excluir">🗑</button></td></tr>`).join('')}</tbody></table><button class="btn btn-ghost btn-sm no-print" onclick="addRowV22()">+ Adicionar condição</button></div>`;
+}
+function priceScenariosV22(cfg){return[{id:'base',nome:'Base atual',preco:PRECO_M2,obs:'referência atual'},{id:'1',nome:'Cenário 1',preco:cfg.preco1,obs:'editável'},{id:'2',nome:'Cenário 2',preco:cfg.preco2,obs:'editável'},{id:'3',nome:'Cenário 3',preco:cfg.preco3,obs:'editável'}];}
+function metricsV22(area,preco,cfg){const bruto=area*preco, descontoPct=weightedDiscountV22(cfg), desconto=bruto*descontoPct/100, contratado=bruto-desconto, comissao=contratado*cfg.comissao/100;return{bruto,descontoPct,desconto,contratado,comissao,liquido:contratado-comissao};}
+function addCashV22(map,ym,key,value){if(!map[ym])map[ym]={historico:0,entrada:0,parcela:0,comissao:0};map[ym][key]+=value;}
+function knownCashV22(cfg){
+  const map={};addCashV22(map,'2026-05','historico',530000);addCashV22(map,'2026-06','historico',30000);addCashV22(map,'2026-07','historico',30000);addCashV22(map,'2026-08','historico',270000);
+  if(cfg.deduzComissao){const vp=vendasPeriodo(), provision=vp.reduce((s,v)=>s+comissaoValorVenda(v),0);addCashV22(map,'2026-05','comissao',provision);}
+  return map;
+}
+function cashProjectionV22(lotes,preco,cfg){
+  const map=knownCashV22(cfg), area=lotes.reduce((s,l)=>s+num(l.area),0), avgArea=lotes.length?area/lotes.length:0;let contracted=0, discount=0, comm=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return;const bruto=avgArea*r.qtd*preco, desc=bruto*r.desconto/100, contrato=bruto-desc, comissao=contrato*cfg.comissao/100, entrada=contrato*r.entrada/100, saldo=Math.max(contrato-entrada,0);
+    contracted+=contrato;discount+=desc;comm+=comissao;
+    addCashV22(map,r.mes,'entrada',entrada);if(cfg.deduzComissao)addCashV22(map,r.mes,'comissao',comissao);
+    if(saldo>0&&r.parcelas>0){const parcela=calcPrice(saldo,r.parcelas,JUROS_MES);for(let i=1;i<=r.parcelas;i++)addCashV22(map,addMonthV21(r.mes,i),'parcela',parcela);}
+  });
+  let accumGross=0,accumNet=0;
+  const timeline=OBRA_DESEMBOLSO_V19.map(o=>{const m=map[o.ym]||{historico:0,entrada:0,parcela:0,comissao:0};const bruto=m.historico+m.entrada+m.parcela, liquido=bruto-m.comissao;accumGross+=bruto;accumNet+=liquido;return {...o,...m,bruto,liquido,caixaAcum:accumNet,cobertura:accumNet-o.acum};});
+  return {map,timeline,area,avgArea,contracted,discount,commission:comm,final:timeline[timeline.length-1]};
+}
+function curveSvgV22(rows){
+  const w=1120,h=290,p={l:72,r:24,t:22,b:38},max=Math.max(...rows.map(r=>Math.max(r.caixaAcum,r.acum)),1)*1.08, X=i=>p.l+i*((w-p.l-p.r)/(rows.length-1||1)), Y=v=>p.t+(h-p.t-p.b)*(1-v/max), path=key=>rows.map((r,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(r[key]).toFixed(1)).join(' '), ticks=[0,.25,.5,.75,1];
+  return `<div class="curve-v22"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Caixa projetado acumulado e desembolso acumulado">${ticks.map(t=>`<line class="grid" x1="${p.l}" y1="${Y(max*t)}" x2="${w-p.r}" y2="${Y(max*t)}"></line><text x="8" y="${Y(max*t)+4}">${BRLShort(max*t)}</text>`).join('')}<path class="cash-line" d="${path('caixaAcum')}"></path><path class="work-line" d="${path('acum')}"></path>${rows.map((r,i)=>`<circle class="cash-dot" cx="${X(i)}" cy="${Y(r.caixaAcum)}" r="3"></circle><circle class="work-dot" cx="${X(i)}" cy="${Y(r.acum)}" r="3"></circle><text x="${X(i)-15}" y="${h-9}">${r.mes}</text>`).join('')}</svg><div class="curve-legend"><span><i class="lg-cash"></i>Caixa líquido acumulado projetado</span><span><i class="lg-obra"></i>Desembolso acumulado da obra</span></div></div>`;
+}
+function cashPanelV22(model,cfg){
+  const final=model.final, gap=final.cobertura, knownGross=860000, knownCommission=vendasPeriodo().reduce((s,v)=>s+comissaoValorVenda(v),0), sevenMissing=7;
+  return `<div class="card scenario-section cash-curve-section"><div class="ch"><div><div class="ch-ttl">Curva de caixa projetado x desembolso da obra</div><div class="sub">Recebimentos previstos por condição comercial e mês de venda, comparados ao cronograma da obra.</div></div>${badge('caixa')}</div><div class="cb"><div class="kpi-row v22-curve-kpis">${kpi('Caixa cadastrado Eric + Eliana',BRL(knownGross),'fluxo total conhecido')}${kpi('Comissão provisionada das vendas-meta',BRL(knownCommission),'premissa no mês da venda','o')}${kpi('Desembolso planejado',BRL(OBRA_DESEMBOLSO_V19.at(-1).acum),'até dez/27')}${kpiSafeV21(gap>=0?'Cobertura projetada':'Necessidade projetada',BRL(Math.abs(gap)),gap>=0?'caixa líquido acima da obra':'obra acima do caixa líquido','kpi-blue-safe')}</div><div class="warnbox curve-premise-v22"><b>Premissa de caixa:</b> a curva considera integralmente os fluxos cadastrados de Eric e Eliana e os recebimentos projetados das novas vendas. As outras ${sevenMissing} vendas históricas permanecem fora da curva de caixa até que seus cronogramas de recebimento sejam cadastrados. ${cfg.deduzComissao?'A comissão é provisionada no mês da venda.':'A comissão não foi deduzida da curva.'} Parcelamentos acima de 36 meses não incluem IPCA.</div>${curveSvgV22(model.timeline)}<div class="tw cash-table-v22"><table><thead><tr><th>Mês</th><th>Caixa histórico cadastrado</th><th>Entradas novas</th><th>Parcelas novas</th><th>Comissão provisionada</th><th>Caixa líquido mensal</th><th>Caixa acumulado</th><th>Obra acumulada</th><th>Cobertura</th></tr></thead><tbody>${model.timeline.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.historico)}</td><td>${BRL(r.entrada)}</td><td>${BRL(r.parcela)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td>${BRL(r.caixaAcum)}</td><td>${BRL(r.acum)}</td><td class="${r.cobertura>=0?'pos':'neg'}">${r.cobertura>=0?'+ ':''}${BRL(r.cobertura)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+}
+function renderCenarios(){
+  const cfg=currentScenarioV22(), lotes=scenarioLotsV21(), area=lotes.reduce((s,l)=>s+num(l.area),0), conciliado=lotes.length===CFG.disponiveis, total=totalRowsV22(cfg), junho=rowsJunhoV22(cfg), mixOk=total===CFG.disponiveis;
+  const prices=priceScenariosV22(cfg), ativo=prices.find(p=>p.id===cfg.ativo)||prices[1], base=metricsV22(area,PRECO_M2,cfg), model=conciliado&&mixOk?cashProjectionV22(lotes,ativo.preco,cfg):null;
+  const totalAlert=mixOk?`<div class="success"><b>Estoque distribuído:</b> ${total} de ${CFG.disponiveis} lotes projetados.</div>`:`<div class="warnbox"><b>Distribuição incompleta:</b> ${total} de ${CFG.disponiveis} lotes alocados. Complete a distribuição para calcular caixa e obra.</div>`;
+  const metaAlert=junho===stats().faltam?`<div class="success"><b>Meta trimestral projetada:</b> ${stats().unidades} vendas já fechadas + ${junho} novas vendas até 30/06 = ${CFG.metaLotes}/${CFG.metaLotes} unidades.</div>`:`<div class="warnbox"><b>Meta de junho:</b> estão projetadas ${junho} novas vendas até 30/06, mas são necessárias ${stats().faltam} para completar as ${CFG.metaLotes} unidades.</div>`;
+  const baseAlert=conciliado?'':`<div class="warnbox"><b>Base de lotes divergente:</b> o sistema leu ${lotes.length} de ${CFG.disponiveis} comercializáveis. Sincronize a planilha.</div>`;
+  const comparativo=conciliado&&mixOk?`<div class="table-card scenario-section"><div class="ch"><div class="ch-ttl">Comparativo econômico do estoque remanescente</div><span>VGV contratado após desconto e comissão estimada</span></div><div class="tw"><table><thead><tr><th>Cenário</th><th>Preço m²</th><th>VGV bruto</th><th>Desconto médio</th><th>VGV contratado</th><th>Comissão</th><th>Líquido econômico UP</th><th>Variação vs. base</th></tr></thead><tbody>${prices.map(p=>{const m=metricsV22(area,p.preco,cfg),delta=m.liquido-base.liquido;return `<tr><td><b>${p.nome}</b></td><td>${BRL(p.preco)}</td><td>${BRL(m.bruto)}</td><td>${m.descontoPct.toFixed(2).replace('.',',')}%<br><small>${BRL(m.desconto)}</small></td><td><b>${BRL(m.contratado)}</b></td><td>${BRL(m.comissao)}</td><td><b>${BRL(m.liquido)}</b></td><td class="${delta>=0?'pos':'neg'}">${delta>=0?'+ ':''}${BRL(delta)}</td></tr>`}).join('')}</tbody></table></div></div>`:'';
+  id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Cenários e projeções</div><div class="sub">Preço, política comercial, programação de vendas e suficiência de caixa frente à obra.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+  <div class="card scenario-section"><div class="ch"><div class="ch-ttl">Parâmetros comerciais</div>${badge('editável')}</div><div class="cb"><div class="fr c4"><div class="field"><label>Cenário 1 · R$/m²</label><input id="sc_preco1" type="number" step="0.01" value="${cfg.preco1.toFixed(2)}" onchange="renderCenarios()"></div><div class="field"><label>Cenário 2 · R$/m²</label><input id="sc_preco2" type="number" step="0.01" value="${cfg.preco2.toFixed(2)}" onchange="renderCenarios()"></div><div class="field"><label>Cenário 3 · R$/m²</label><input id="sc_preco3" type="number" step="0.01" value="${cfg.preco3.toFixed(2)}" onchange="renderCenarios()"></div><div class="field"><label>Comissão padrão estimada (%)</label><input id="sc_comissao" type="number" step="0.01" value="${cfg.comissao.toFixed(2)}" onchange="renderCenarios()"></div></div><div class="info"><b>Comissão padrão:</b> Bronze 4,0%, Prata 4,5%, Ouro 5,0% e Platina 5,5%. O campo permanece editável para representar o mix de parceiros previsto.</div><div class="section-mini-title">Tetos de desconto</div><div class="fr c3"><div class="field"><label>À vista</label><input id="sc_tetoAvista" type="number" step="0.1" value="${cfg.tetoAvista}" onchange="renderCenarios()"></div><div class="field"><label>Entrada a partir de 50%</label><input id="sc_teto50" type="number" step="0.1" value="${cfg.teto50}" onchange="renderCenarios()"></div><div class="field"><label>Entrada a partir de 30%</label><input id="sc_teto30" type="number" step="0.1" value="${cfg.teto30}" onchange="renderCenarios()"></div><div class="field"><label>Plano até 12x</label><input id="sc_teto12" type="number" step="0.1" value="${cfg.teto12}" onchange="renderCenarios()"></div><div class="field"><label>Plano até 24x</label><input id="sc_teto24" type="number" step="0.1" value="${cfg.teto24}" onchange="renderCenarios()"></div><div class="field"><label>Plano até 36x</label><input id="sc_teto36" type="number" step="0.1" value="${cfg.teto36}" onchange="renderCenarios()"></div></div><div class="section-mini-title">Distribuição de vendas e recebimentos</div>${mixTableV22(cfg)}<div class="fr c2 v22-premise-controls"><div class="field"><label>Cenário de preço usado na curva de caixa</label><select id="sc_ativo" onchange="renderCenarios()">${['1','2','3'].map(x=>`<option value="${x}" ${cfg.ativo===x?'selected':''}>Cenário ${x}</option>`).join('')}</select></div><div class="field"><label>Tratamento da comissão no caixa</label><select id="sc_deduz" onchange="renderCenarios()"><option value="sim" ${cfg.deduzComissao?'selected':''}>Provisionar no mês da venda</option><option value="nao" ${!cfg.deduzComissao?'selected':''}>Não deduzir na curva</option></select></div></div>${baseAlert}${totalAlert}${metaAlert}<div class="info"><b>Separação correta:</b> VGV mede vendas contratadas. Caixa mede entradas e parcelas previstas mês a mês. A curva da obra utiliza caixa, não apenas VGV.</div></div></div>
+  <div class="kpi-row scenario-section">${kpi('Estoque remanescente',CFG.disponiveis,'lotes comercializáveis')}${kpi('Novas vendas até 30/06',junho,'necessárias: '+stats().faltam,'g')}${kpi('VGV histórico contratado',BRLShort(historicoVGVV19()),'9 vendas fechadas')}${kpi('Preço ativo na curva',BRL(ativo.preco)+'/m²',ativo.nome,'l')}</div>${comparativo}${model?cashPanelV22(model,cfg):''}`;
+}
+
+/* ---------- Dashboard: card de caixa sem conflito de estilos ---------- */
+function renderDashboard(){
+  const s=stats();
+  id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">Régua principal: estoque comercial da UP. Permutante fora do VGV e da meta.</div></div><div class="sh-r">${printActionsV19('dashboard')}<button class="btn btn-terra" onclick="go('cenarios')">💹 Cenários de preço</button></div></div>
+  <div class="kpi-row">${kpi('Estoque UP',CFG.estoqueUP,'base comercial')}${kpi('Comercializáveis',CFG.disponiveis,'disponíveis + garantia GDF','g',pct(CFG.disponiveis,CFG.estoqueUP))}${kpi('Comercializados UP',CFG.comercializados,'9 vendidos + 1 permuta','o',pct(CFG.comercializados,CFG.estoqueUP))}${kpi('Restritos UP',s.restritos,'fora da venda imediata','l',pct(s.restritos,CFG.estoqueUP))}</div>
+  <div class="kpi-row dashboard-second-row">${kpi('VGV da meta',BRL(s.real),s.pctFin+'% de '+BRL(CFG.metaFinanceira),'g',s.pctFin)}${kpi('Unidades da meta',s.unidades+'/'+CFG.metaLotes,s.pctLot+'% da meta','o',s.pctLot)}${kpi('Caixa até junho',BRL(s.caixa),'Eliana + Eric no período','',pct(s.caixa,s.real))}${kpi('Saldo da meta',BRL(s.faltaFin),s.faltam+' unidades restantes','l')}</div>
+  <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',s.real,CFG.metaFinanceira,true)}${progress('Meta de unidades',s.unidades,CFG.metaLotes,false)}<div class="info"><b>Situação:</b> VGV realizado de ${BRL(s.real)}; faltam ${BRL(s.faltaFin)} e ${s.faltam} unidades para o encerramento da meta.</div></div></div><div class="card"><div class="ch"><div class="ch-ttl">Composição do estoque UP</div>${badge('base 53')}</div><div class="cb" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">${donut([{v:CFG.disponiveis,c:'#173d37'},{v:CFG.comercializados,c:'#ac4a4a'},{v:s.restritos,c:'#d7cdbd'}])}<div class="legend" style="flex:1">${legend('#173d37','Comercializáveis',CFG.disponiveis)}${legend('#ac4a4a','Comercializados',CFG.comercializados)}${legend('#d7cdbd','Restritos UP',s.restritos)}${legend('#6e6760','Permutante fora da régua',CFG.permutante)}</div></div></div></div>
+  <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Cenários de preço e VGV</div><button class="btn btn-ghost btn-sm" onclick="go('cenarios')">Abrir painel →</button></div><div class="cb">${scenarioMini()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Fluxo confirmado na meta</div>${badge('caixa')}</div><div class="cb">${progress('Recebido até junho',s.caixa,s.real,true)}<div class="success"><b>Composição:</b> Eliana ${BRL(480000)} à vista e Eric ${BRL(80000)} recebidos/previstos até junho. O saldo do Eric está previsto para julho e agosto.</div></div></div></div><div class="table-card section-gap"><div class="ch"><div class="ch-ttl">Vendas consideradas na meta</div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${tabelaVendas(s.vp)}</div>`;
+}
+
+(function(){
+ const css=`
+ .print-choice-v22 p{color:var(--muted);margin-bottom:16px}.print-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.print-choice{border:1.5px solid var(--borda);background:#fff;border-radius:15px;padding:18px;text-align:left}.print-choice:hover{border-color:var(--marsala);background:#fff8f4}.print-choice b{display:block;color:var(--verde);font-size:18px;margin-bottom:6px}.print-choice span{color:var(--muted);font-size:12px}
+ .sim-v22-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:4px 2px 16px;border-bottom:1px solid var(--borda)}.sim-total-highlight{text-align:right;min-width:210px}.sim-total-highlight span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--muted)}.sim-total-highlight b{display:block;font-size:27px;color:var(--verde);line-height:1.15;margin-top:5px}.sim-total-highlight small{color:var(--marsala);font-weight:800}.sim-block-grid-v22{display:grid;grid-template-columns:1fr 1.1fr;gap:16px;margin-top:16px}.sim-section-v22{border:1px solid var(--borda);border-radius:15px;overflow:hidden}.sim-section-v22 h4{padding:12px 14px;background:#fbf7ef;border-bottom:1px solid var(--borda);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--verde)}.sim-metrics-v22{display:grid;grid-template-columns:repeat(2,1fr)}.sim-metric{padding:12px 14px;border-bottom:1px solid var(--borda);min-height:70px}.sim-metric:nth-child(odd){border-right:1px solid var(--borda)}.sim-metric span{display:block;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.sim-metric b{display:block;color:var(--verde);font-size:18px;margin-top:5px}.sim-metric small{font-size:11px;color:var(--muted)}.finance-methods-v22{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px}.finance-methods-v22>div,.payment-full-v22{background:#f7f2e8;border-radius:12px;padding:12px}.finance-methods-v22 span,.payment-full-v22 span{display:block;font-size:10px;font-weight:900;letter-spacing:.08em;color:var(--muted)}.finance-methods-v22 b,.payment-full-v22 b{display:block;color:var(--verde);font-size:20px;margin:4px 0}.finance-methods-v22 small{display:block;color:var(--muted);font-size:11px}.payment-full-v22{margin:14px}.sim-note-v22{margin-top:14px}.sim-installments-v22{margin-bottom:16px}
+ .mix-table-v22{overflow:auto;margin-bottom:12px}.mix-table-v22 table{width:100%;border-collapse:collapse;min-width:1120px}.mix-table-v22 th{padding:10px;background:var(--verde);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-align:left}.mix-table-v22 td{padding:8px 10px;border-bottom:1px solid var(--borda)}.mix-table-v22 input,.mix-table-v22 select{height:38px;border:1px solid var(--borda);border-radius:9px;padding:0 9px;background:#fff}.mix-table-v22 select{min-width:270px}.mix-table-v22 input[type=number]{width:78px}.v22-premise-controls{margin:16px 0}.v22-curve-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.curve-premise-v22{margin-bottom:16px}.curve-v22{border:1px solid var(--borda);border-radius:16px;padding:12px;background:#fff;margin:14px 0}.curve-v22 svg{display:block;width:100%;height:auto}.curve-v22 .grid{stroke:#ede3d5;stroke-width:1}.curve-v22 .cash-line{fill:none;stroke:#173d37;stroke-width:3.5}.curve-v22 .work-line{fill:none;stroke:#ac4a4a;stroke-width:3.5}.curve-v22 .cash-dot{fill:#173d37}.curve-v22 .work-dot{fill:#ac4a4a}.curve-v22 text{font-size:10px;fill:#7d756d;font-family:var(--font)}.curve-legend{display:flex;justify-content:center;gap:26px;color:var(--verde);font-size:12px;font-weight:800}.curve-legend i{display:inline-block;width:26px;height:3px;vertical-align:middle;margin-right:7px}.lg-cash{background:#173d37}.lg-obra{background:#ac4a4a}.cash-table-v22{max-height:390px;overflow:auto}
+ @media(max-width:1100px){.sim-block-grid-v22{grid-template-columns:1fr}.v22-curve-kpis{grid-template-columns:repeat(2,1fr)}}
+ @media print{.sim-v22-head{break-after:avoid!important;page-break-after:avoid!important}.sim-block-grid-v22{grid-template-columns:1fr 1fr!important}.sim-total-highlight b{font-size:20px!important}.sim-metric b{font-size:14px!important}.mix-table-v22 input,.mix-table-v22 select{border:0!important;height:auto!important;padding:0!important;appearance:none!important}.cash-table-v22{max-height:none!important;overflow:visible!important}.v22-curve-kpis{grid-template-columns:repeat(4,1fr)!important}}
+ `;
+ const style=document.createElement('style');style.id='v22-style';style.textContent=css;document.head.appendChild(style);
+})();
+
 </script>
 <!-- V18: dashboard corrigido, caixa Eric, comissões, projeções, velocidade de vendas e impressão. -->
 </body>
