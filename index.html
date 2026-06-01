@@ -1758,28 +1758,42 @@ printPage = function(page,orientation){
   openPrintOptionsV22(page);
 };
 
-/* ---------- Simulador: estado preservado e resumo reestruturado ---------- */
+/* ---------- Simulador: cadastro orientado ao atendimento e estado preservado — V25.2 ---------- */
 function simStateV22(){
   const saved=readJSON(V22_SIM_KEY,{}), user=(readJSON(USER,{})||{});
-  return {lote:saved.lote||'',cond:saved.cond==='avista'?'avista':'entrada50',parcelas:Math.min(120,Math.max(1,parseInt(saved.parcelas,10)||36)),desconto:Math.max(0,num(saved.desconto)),observacao:saved.observacao||'',responsavel:saved.responsavel||user.nome||'Administrador'};
+  return {
+    cliente:saved.cliente||'',
+    responsavel:saved.responsavel||user.nome||'Administrador',
+    lote:saved.lote||'',
+    cond:saved.cond==='avista'?'avista':'entrada50',
+    parcelas:Math.min(120,Math.max(1,parseInt(saved.parcelas,10)||36)),
+    desconto:Math.max(0,num(saved.desconto)),
+    observacao:saved.observacao||''
+  };
 }
 function persistSimV22(state){safeSet(V22_SIM_KEY,JSON.stringify(state));return state;}
 function captureSimV22(){
   const s=simStateV22();
-  if(id('simLote'))s.lote=val('simLote');
+  if(id('simCliente'))s.cliente=val('simCliente');
   if(id('simResp'))s.responsavel=val('simResp');
-  if(id('simParcelas')&&!id('simParcelas').disabled)s.parcelas=Math.min(120,Math.max(1,parseInt(num(val('simParcelas')),10)||s.parcelas));
+  if(id('simLote'))s.lote=val('simLote');
+  if(id('simParcelas'))s.parcelas=Math.min(120,Math.max(1,parseInt(num(val('simParcelas')),10)||s.parcelas));
   if(id('simDesc'))s.desconto=Math.max(0,num(val('simDesc')));
   if(id('simObs'))s.observacao=val('simObs');
   return persistSimV22(s);
 }
 function chooseCondV22(cond){
-  const s=captureSimV22();s.cond=cond==='avista'?'avista':'entrada50';persistSimV22(s);
-  document.querySelectorAll('.cond').forEach(b=>b.classList.toggle('on',b.dataset.cond===s.cond));
-  if(id('simParcelas'))id('simParcelas').disabled=s.cond==='avista';
+  const s=captureSimV22();
+  s.cond=cond==='avista'?'avista':'entrada50';
+  persistSimV22(s);
+  renderSimulador(s.lote);
+}
+function setSimFieldV22(field,value){
+  const s=simStateV22();
+  s[field]=value;
+  persistSimV22(s);
   calcSim();
 }
-function setSimFieldV22(field,value){const s=simStateV22();s[field]=value;persistSimV22(s);calcSim();}
 function sacSummaryV22(saldo,n){
   const amort=saldo/n;let balance=saldo,total=0,first=0,last=0;
   for(let i=1;i<=n;i++){const p=amort+(balance*JUROS_MES);if(i===1)first=p;if(i===n)last=p;total+=p;balance-=amort;}
@@ -1791,10 +1805,24 @@ function renderSimulador(selected=''){
   if(selected)s.lote=selected;
   if(!lotes.some(l=>l.id===s.lote))s.lote=lotes[0]?.id||'';
   persistSimV22(s);
-  id('page-simulador').innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Condições vigentes da venda antecipada: à vista ou entrada de 50% com saldo parcelado em até 120 meses.</div></div><div class="sh-r">${printActionsV19('simulador')}</div></div>
-  <div class="sim-form no-print"><div class="fr c3"><div class="field"><label>Lote</label><select id="simLote" onchange="setSimFieldV22('lote',this.value)">${lotes.map(l=>`<option value="${l.id}" ${l.id===s.lote?'selected':''}>${esc(loteNome(l))} · ${AREA(l.area)} · ${BRL(l.valorTabela)} · ${l.status}</option>`).join('')}</select></div><div class="field"><label>Responsável pela simulação</label><input id="simResp" value="${esc(s.responsavel)}" oninput="setSimFieldV22('responsavel',this.value)"></div><div class="field"><label>Parcelas do saldo</label><input id="simParcelas" type="number" min="1" max="120" value="${s.parcelas}" ${s.cond==='avista'?'disabled':''} onchange="setSimFieldV22('parcelas',Math.min(120,Math.max(1,parseInt(this.value)||36)))"></div></div>
-  <div class="cond-grid cond-grid-v21"><button type="button" data-cond="avista" class="cond ${s.cond==='avista'?'on':''}" onclick="chooseCondV22('avista')"><b>À vista</b><span>5% de desconto automático<br>pagamento integral</span></button><button type="button" data-cond="entrada50" class="cond ${s.cond==='entrada50'?'on':''}" onclick="chooseCondV22('entrada50')"><b>Entrada de 50%</b><span>2,5% de desconto automático<br>saldo em até 120 meses</span></button></div>
-  <div class="fr c2"><div class="field"><label>Desconto adicional negociado (%)</label><input id="simDesc" type="number" step="0.01" min="0" value="${s.desconto}" oninput="setSimFieldV22('desconto',this.value)"></div><div class="field"><label>Observação da proposta</label><input id="simObs" value="${esc(s.observacao)}" placeholder="Ex.: condição válida até lançamento" oninput="setSimFieldV22('observacao',this.value)"></div></div><button class="btn btn-terra" onclick="calcSim()">Atualizar simulação</button></div><div id="simResult"></div>`;
+  const parcelasField=s.cond==='entrada50'
+    ? `<div class="field sim-installment-field-v252"><label>Número de parcelas do saldo</label><input id="simParcelas" type="number" min="1" max="120" value="${s.parcelas}" oninput="setSimFieldV22('parcelas',Math.min(120,Math.max(1,parseInt(this.value)||36)))"><small>Saldo financiado em até 120 meses.</small></div>`
+    : `<div class="sim-cash-note-v252"><b>Pagamento integral</b><span>Na opção à vista não há saldo financiado nem campo de parcelas.</span></div>`;
+  id('page-simulador').innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Cadastre o cliente, identifique o responsável e simule as condições vigentes da venda antecipada.</div></div><div class="sh-r">${printActionsV19('simulador')}</div></div>
+  <div class="sim-form no-print sim-form-v252">
+    <div class="sim-form-title-v252"><b>Dados da simulação</b><span>Informações que identificam a proposta comercial.</span></div>
+    <div class="fr c3 sim-cadastro-v252">
+      <div class="field"><label>Nome do cliente</label><input id="simCliente" value="${esc(s.cliente)}" placeholder="Nome completo do interessado" oninput="setSimFieldV22('cliente',this.value)"></div>
+      <div class="field"><label>Responsável pelo preenchimento</label><input id="simResp" value="${esc(s.responsavel)}" oninput="setSimFieldV22('responsavel',this.value)"></div>
+      <div class="field"><label>Lote</label><select id="simLote" onchange="setSimFieldV22('lote',this.value)">${lotes.map(l=>`<option value="${l.id}" ${l.id===s.lote?'selected':''}>${esc(loteNome(l))} · ${AREA(l.area)} · ${BRL(l.valorTabela)} · ${l.status}</option>`).join('')}</select></div>
+    </div>
+    <div class="sim-payment-choice-v252">
+      <label class="sim-label-v252">Forma de pagamento</label>
+      <div class="cond-grid cond-grid-v252"><button type="button" data-cond="avista" class="cond ${s.cond==='avista'?'on':''}" onclick="chooseCondV22('avista')"><b>À vista</b><span>5% de desconto automático<br>pagamento integral</span></button><button type="button" data-cond="entrada50" class="cond ${s.cond==='entrada50'?'on':''}" onclick="chooseCondV22('entrada50')"><b>Entrada de 50%</b><span>2,5% de desconto automático<br>saldo parcelado</span></button>${parcelasField}</div>
+    </div>
+    <div class="fr c2 sim-complement-v252"><div class="field"><label>Desconto adicional negociado (%)</label><input id="simDesc" type="number" step="0.01" min="0" value="${s.desconto}" oninput="setSimFieldV22('desconto',this.value)"></div><div class="field"><label>Observação da proposta</label><input id="simObs" value="${esc(s.observacao)}" placeholder="Ex.: condição válida até lançamento" oninput="setSimFieldV22('observacao',this.value)"></div></div>
+    <button class="btn btn-terra" onclick="calcSim()">Atualizar simulação</button>
+  </div><div id="simResult"></div>`;
   calcSim();
 }
 function tabelaComparativa(pv,n){
@@ -1817,7 +1845,9 @@ function calcSim(){
   const price=hasFinance?calcPrice(saldo,parcelas,JUROS_MES):0, sac=hasFinance?sacSummaryV22(saldo,parcelas):null;
   const totalPrice=hasFinance?entrada+(price*parcelas):valorNegociado, totalSac=hasFinance?entrada+sac.total:valorNegociado, ipca=hasFinance&&parcelas>36;
   const nota=avista?'Pagamento integral à vista, sem financiamento.':ipca?'Parcelamento acima de 36 meses: os totais abaixo incluem juros de 12% a.a., mas não projetam a correção pelo IPCA.':'Parcelamento até 36 meses: juros de 12% a.a., sem correção monetária.';
-  id('simResult').innerHTML=`<div class="card sim-result-v22"><div class="sim-v22-head"><div><div class="ch-ttl">${loteNome(l)}</div><div class="sub">${AREA(l.area)} · ${l.quadra||l.rua||'-'} · ${badge(l.status)} · <b>${avista?'À vista':'Entrada de 50% + saldo parcelado'}</b></div></div><div class="sim-total-highlight"><span>Valor negociado</span><b>${BRL(valorNegociado)}</b><small>${descPct.toFixed(2).replace('.',',')}% de desconto</small></div></div>
+  const cliente=esc(s.cliente||'Cliente não informado');
+  const responsavel=esc(s.responsavel||'-');
+  id('simResult').innerHTML=`<div class="card sim-result-v22"><div class="sim-record-v252"><div><span>Cliente</span><b>${cliente}</b></div><div><span>Responsável pelo preenchimento</span><b>${responsavel}</b></div></div><div class="sim-v22-head"><div><div class="ch-ttl">${loteNome(l)}</div><div class="sub">${AREA(l.area)} · ${l.quadra||l.rua||'-'} · ${badge(l.status)} · <b>${avista?'À vista':'Entrada de 50% + saldo parcelado'}</b></div></div><div class="sim-total-highlight"><span>Valor negociado</span><b>${BRL(valorNegociado)}</b><small>${descPct.toFixed(2).replace('.',',')}% de desconto</small></div></div>
   <div class="sim-block-grid-v22"><section class="sim-section-v22 sim-price-v22"><h4>Preço e negociação</h4><div class="sim-metrics-v22">${moneyMetricV22('Valor de tabela',BRL(valorTabela))}${moneyMetricV22('Economia',BRL(economia))}${moneyMetricV22('Preço m² de tabela',BRL(l.precoM2))}${moneyMetricV22('Preço m² negociado',BRL(precoFinal))}${moneyMetricV22('Desconto automático',descAuto.toFixed(2).replace('.',',')+'%')}${moneyMetricV22('Desconto adicional',s.desconto.toFixed(2).replace('.',',')+'%')}</div></section>
   <section class="sim-section-v22 sim-pay-v22"><h4>Forma de pagamento</h4><div class="sim-metrics-v22">${moneyMetricV22('Entrada',BRL(entrada),entradaPct+'% do valor negociado')}${moneyMetricV22('Saldo financiado',hasFinance?BRL(saldo):'Não se aplica')}${moneyMetricV22('Prazo',hasFinance?parcelas+' meses':'À vista')}${moneyMetricV22('Correção',ipca?'IPCA não projetado':'Sem correção')}</div>${hasFinance?`<div class="finance-methods-v22"><div><span>PRICE</span><b>${BRL(price)}</b><small>parcela mensal · total ${BRL(totalPrice)}</small></div><div><span>SAC</span><b>${BRL(sac.primeira)}</b><small>1ª parcela · última ${BRL(sac.ultima)} · total ${BRL(totalSac)}</small></div></div>`:`<div class="payment-full-v22"><span>Total a pagar</span><b>${BRL(valorNegociado)}</b></div>`}</section></div>
   <div class="${ipca?'warnbox':'success'} sim-note-v22">${nota}</div>${s.observacao?`<div class="info sim-note-v22"><b>Observação:</b> ${esc(s.observacao)}</div>`:''}</div>
@@ -2441,6 +2471,26 @@ function printDocumentV25(page,orientation){
 }
 printDocumentV22=printDocumentV25;
 </script>
+
+
+<style id="v25-2-simulador-css">
+.sim-form-v252{display:grid;gap:18px}
+.sim-form-title-v252{display:flex;flex-direction:column;gap:3px;color:var(--green,#153f39);padding-bottom:2px}
+.sim-form-title-v252 b{font-size:16px}
+.sim-form-title-v252 span{font-size:12px;color:#7b817c}
+.sim-cadastro-v252{align-items:end}
+.sim-payment-choice-v252{display:grid;gap:9px}
+.sim-label-v252{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#16443d}
+.cond-grid-v252{display:grid;grid-template-columns:minmax(195px,1fr) minmax(195px,1fr) minmax(240px,1.22fr);gap:12px;align-items:stretch}
+.sim-installment-field-v252{background:#fbf7f0;border:1px solid #e9dfd1;border-radius:14px;padding:12px 14px;display:grid;align-content:center}
+.sim-installment-field-v252 small{display:block;margin-top:5px;color:#858075;font-size:11px}
+.sim-cash-note-v252{border:1px solid #cbe1d5;background:#eef8f2;border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:center;gap:5px;color:#174940}
+.sim-cash-note-v252 b{font-size:14px}.sim-cash-note-v252 span{font-size:12px;color:#607a71}
+.sim-record-v252{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 20px;border-bottom:1px solid #e8e2d9;background:#fbf8f2;border-radius:18px 18px 0 0}
+.sim-record-v252 div{display:flex;flex-direction:column;gap:4px}.sim-record-v252 span{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#7e837d}.sim-record-v252 b{color:#15443d;font-size:16px}
+@media(max-width:1100px){.cond-grid-v252{grid-template-columns:1fr 1fr}.sim-installment-field-v252,.sim-cash-note-v252{grid-column:1/-1}.sim-record-v252{grid-template-columns:1fr}}
+@media print{.sim-record-v252{break-inside:avoid;page-break-inside:avoid}}
+</style>
 
 </body>
 </html>
