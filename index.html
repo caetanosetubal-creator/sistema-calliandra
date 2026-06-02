@@ -2585,5 +2585,255 @@ function printDocumentV26(page,orientation){
 printDocumentV25=printDocumentV26;printDocumentV22=printDocumentV26;
 </script>
 
+
+<style>
+.v27-rule-grid{display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:10px}
+.v27-rule{border:1px solid var(--borda);border-radius:14px;padding:13px;background:#fff}
+.v27-rule.primary{background:#fff5ee;border-color:rgba(172,74,74,.28)}
+.v27-rule small{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:900;font-size:10px}
+.v27-rule b{display:block;color:var(--verde);font-size:19px;margin:6px 0}
+.v27-rule span{font-size:12px;color:var(--muted);line-height:1.35}
+.v27-cash-note{margin-top:12px;padding:13px 14px;border-radius:13px;background:#edf8f1;border:1px solid rgba(28,124,74,.18);font-size:13px;color:#245d3b}
+.v27-integracao{margin-top:16px}
+.v27-single-price{font-size:30px!important;color:var(--marsala)!important}
+.v27-paper{font-family:Arial,sans-serif;color:#173d37}
+.v27-paper h1{font-size:25px;margin:0;color:#173d37}
+.v27-paper .paper-sub{font-size:11px;color:#6e6760;margin:4px 0 18px}
+.v27-paper .paper-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 16px}
+.v27-paper .paper-kpi{border:1px solid #dfd7ca;border-radius:10px;padding:10px;background:#fff}
+.v27-paper .paper-kpi small{display:block;text-transform:uppercase;color:#776f65;font-size:8px;font-weight:bold;letter-spacing:.07em}
+.v27-paper .paper-kpi b{display:block;font-size:17px;margin-top:6px}
+.v27-paper .paper-section{margin:14px 0;page-break-inside:auto}
+.v27-paper .paper-section-title{font-weight:bold;text-transform:uppercase;letter-spacing:.08em;font-size:10px;border-bottom:2px solid #173d37;padding-bottom:6px;margin-bottom:8px}
+.v27-paper table{border-collapse:collapse;width:100%;font-size:9.5px}
+.v27-paper th{background:#173d37;color:#fff;text-align:left;padding:6px}
+.v27-paper td{border-bottom:1px solid #e6dfd5;padding:6px;vertical-align:top}
+.v27-paper .paper-rule{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.v27-paper .paper-rule div{border:1px solid #e6dfd5;padding:8px;border-radius:8px}
+.v27-paper .paper-rule small{display:block;color:#776f65;font-size:8px;text-transform:uppercase;font-weight:bold}
+.v27-paper .paper-rule b{display:block;font-size:14px;margin-top:4px}
+@media(max-width:1000px){.v27-rule-grid{grid-template-columns:1fr 1fr}.v27-rule.primary{grid-column:1/-1}}
+@media print{.v27-paper .v23-curve{break-inside:avoid!important;page-break-inside:avoid!important}.v27-paper .paper-kpis,.v27-paper .paper-rule{break-inside:avoid!important;page-break-inside:avoid!important}}
+</style>
+<script>
+/* ---------- V27 · Fluxo financeiro oficial, lançamento e paper executivo ---------- */
+const V27_PRECO_LANCAMENTO = 1472.47;
+const V27_FIN_ID = 'FIN36-VINICIUS-JAQUELINE';
+const V27_FIN36_EMBED = [{"ym":"2026-03","vencimento":"27/03/2026","descricao":"Vinícius e Jacqueline · contrato 36x · sinal","serie":"Sinal","principal":96812.79,"bruto":96812.79,"comissao":25012.66,"status":"Recebido"},{"ym":"2026-04","vencimento":"28/04/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela inicial","serie":"Parcelas Mensais","principal":198604.97,"bruto":198604.97,"comissao":0.0,"status":"Recebido"},{"ym":"2026-05","vencimento":"15/05/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Recebido"},{"ym":"2026-06","vencimento":"15/06/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2026-07","vencimento":"15/07/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2026-08","vencimento":"15/08/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2026-09","vencimento":"15/09/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2026-10","vencimento":"15/10/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2026-11","vencimento":"15/11/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2026-12","vencimento":"15/12/2026","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-01","vencimento":"15/01/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-02","vencimento":"15/02/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-03","vencimento":"15/03/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-04","vencimento":"15/04/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-05","vencimento":"15/05/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-06","vencimento":"15/06/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-07","vencimento":"15/07/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-08","vencimento":"15/08/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-09","vencimento":"15/09/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-10","vencimento":"15/10/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-11","vencimento":"15/11/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2027-12","vencimento":"15/12/2027","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-01","vencimento":"15/01/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-02","vencimento":"15/02/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-03","vencimento":"15/03/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-04","vencimento":"15/04/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-05","vencimento":"15/05/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-06","vencimento":"15/06/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-07","vencimento":"15/07/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-08","vencimento":"15/08/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-09","vencimento":"15/09/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-10","vencimento":"15/10/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-11","vencimento":"15/11/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2028-12","vencimento":"15/12/2028","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2029-01","vencimento":"15/01/2029","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2029-02","vencimento":"15/02/2029","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2029-03","vencimento":"15/03/2029","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"},{"ym":"2029-04","vencimento":"15/04/2029","descricao":"Vinícius e Jacqueline · contrato 36x · parcela mensal","serie":"Parcelas Mensais","principal":5417.41,"bruto":6481.61,"comissao":0.0,"status":"Previsto"}];
+
+function ymFromDateV27(value){
+  const s=String(value||'').trim();
+  if(/^\d{4}-\d{2}/.test(s)) return s.slice(0,7);
+  const m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2]}` : '';
+}
+function fluxoFin36V27(){
+  const fromSheet=(STATE.recebimentos||[]).filter(r=>{
+    const key=norm([r.id_contrato,r.cliente,r.observacoes,r.contrato].join(' '));
+    return key.includes('fin36') || (key.includes('vinicius') && key.includes('jaqueline'));
+  }).map(r=>({
+    ym:String(r.mes_competencia||'').slice(0,7)||ymFromDateV27(r.vencimento),
+    vencimento:r.vencimento||'',
+    descricao:`Vinícius e Jacqueline · contrato 36x · ${r.serie||'recebimento'}`,
+    serie:r.serie||'Recebimento',
+    principal:num(r.valor_sem_juros||r.valor_principal||r.valor),
+    bruto:num(r.valor_recebimento||r.valor_com_juros||r.valor),
+    comissao:num(r.comissao||r.comissao_valor),
+    status:r.status||'Previsto'
+  })).filter(r=>r.ym&&r.bruto>0);
+  return fromSheet.length ? fromSheet : V27_FIN36_EMBED;
+}
+function fin36CfgV26(){
+  const rows=fluxoFin36V27();
+  const principal=rows.reduce((s,r)=>s+num(r.principal),0);
+  const totalComJuros=rows.reduce((s,r)=>s+num(r.bruto),0);
+  const comissaoTotal=rows.reduce((s,r)=>s+num(r.comissao),0);
+  return {cronograma:rows, principal, totalComJuros, comissaoTotal, liquidoTotal:totalComJuros-comissaoTotal, parcela:6481.61, parcelas:36, fonte:(STATE.recebimentos||[]).length?'planilha':'condição importada'};
+}
+function fluxoContratosV26(){
+  const map={}, vendas=soldV23(), mens=vendas.filter(isMendesV26);
+  vendas.filter(v=>String(v.data||'')<'2026-04-01'&&!isMendesV26(v)&&!isFin36V26(v)).forEach(v=>addReceiptV26(map,'2026-03',`${v.cliente} · ${v.quadra} ${v.lote}`,v.valorFinal,comissaoValorVenda(v),'Recebido até março'));
+  mens.forEach(v=>{
+    addReceiptV26(map,'2026-05',`Mendes Lima Group · ${v.quadra} ${v.lote} · sinal recebido`,29000,0,'Recebido');
+    addReceiptV26(map,'2026-06',`Mendes Lima Group · ${v.quadra} ${v.lote} · saldo até 20/06`,Math.max(num(v.valorFinal)-29000,0),comissaoValorVenda(v),'Previsto');
+  });
+  const eliana=vendas.find(isElianaVenda);
+  if(eliana) addReceiptV26(map,'2026-05','Eliana · Baru 27 · pagamento à vista',eliana.valorFinal,comissaoValorVenda(eliana),'Recebido');
+  const eric=vendas.find(isEricVenda);
+  if(eric){
+    addReceiptV26(map,'2026-05','Eric · Araçá 19 · entrada',50000,comissaoValorVenda(eric),'Recebido');
+    addReceiptV26(map,'2026-06','Eric · Araçá 19 · 18/06',30000,0,'Previsto');
+    addReceiptV26(map,'2026-07','Eric · Araçá 19 · 01/07',30000,0,'Previsto');
+    addReceiptV26(map,'2026-08','Eric · Araçá 19 · 27/08',270000,0,'Previsto');
+  }
+  fluxoFin36V27().forEach(r=>addReceiptV26(map,r.ym,r.descricao,r.bruto,r.comissao,r.status));
+  let acum=0;
+  return Object.values(map).sort((a,b)=>a.ym.localeCompare(b.ym)).map(r=>{r.liquido=r.bruto-r.comissao;acum+=r.liquido;r.acum=acum;return r;});
+}
+function fin36PanelV26(){ return ''; }
+
+function tetoDescontoV24(r,cfg){
+  const e=num(r.entrada), p=num(r.parcelas), op=[0];
+  if(e>=100) return cfg.tetoAvista;
+  if(e>=50) op.push(cfg.teto50);
+  else if(e>=30) op.push(cfg.teto30);
+  if(p>0 && p<=12) op.push(cfg.teto12);
+  return Math.max(...op);
+}
+function comissaoProjetadaV27(valor,r,cfg){
+  const base=valor*num(cfg.comissao)/100;
+  const entrada=valor*num(r.entrada)/100;
+  const incentivo=num(r.entrada)>=30 ? entrada*0.01 : 0;
+  return {base,incentivo,total:base+incentivo};
+}
+function metricsV24(area,preco,cfg){
+  const total=totalRowsV24(cfg)||CFG.disponiveis, avg=total?area/total:0;
+  let bruto=0,desc=0,contratado=0,com=0,bonus=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return;
+    const b=avg*r.qtd*preco, d=b*r.desconto/100, v=b-d, c=comissaoProjetadaV27(v,r,cfg);
+    bruto+=b;desc+=d;contratado+=v;com+=c.total;bonus+=c.incentivo;
+  });
+  return {bruto,pctDesc:bruto?desc/bruto*100:0,desc,contratado,com,bonus,liquido:contratado-com};
+}
+function cashProjectionV24(lotes,preco,cfg){
+  const cash=knownCashV24(cfg),economic=contractedHistoryV24(),area=lotes.reduce((s,l)=>s+num(l.area),0),avg=lotes.length?area/lotes.length:0;
+  let contratado=0,desconto=0,comissao=0,incentivo=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return;
+    const bruto=avg*r.qtd*preco,desc=bruto*r.desconto/100,valor=bruto-desc,calcCom=comissaoProjetadaV27(valor,r,cfg),com=calcCom.total,liq=valor-com,entrada=valor*r.entrada/100,saldo=Math.max(0,valor-entrada);
+    contratado+=valor;desconto+=desc;comissao+=com;incentivo+=calcCom.incentivo;
+    economic[r.mes]=(economic[r.mes]||0)+liq;
+    addFlowV24(cash,r.mes,'entrada',entrada);
+    if(cfg.deduzComissao)addFlowV24(cash,r.mes,'comissao',com);
+    if(saldo>0&&r.parcelas>0){
+      const parcela=calcPrice(saldo,r.parcelas,JUROS_MES);
+      for(let n=1;n<=r.parcelas;n++) addFlowV24(cash,addMonthV21(r.mes,n),'parcela',parcela);
+    }
+  });
+  const obraRows=obraTimelineV24(), obraMap=Object.fromEntries(obraRows.map(o=>[o.ym,o])), finalObra=obraRows[obraRows.length-1].acum;
+  const cashLast=Object.keys(cash).sort().slice(-1)[0]||V25_OBRA_END;
+  const end=cashLast>V25_OBRA_END?cashLast:V25_OBRA_END;
+  let caixaAcum=0,receitaAcum=0;
+  const extended=monthsBetweenV25('2026-03',end).map(ym=>{
+    const c=cash[ym]||{historico:0,entrada:0,parcela:0,comissao:0}, obra=obraMap[ym]||{ym,mes:ymLabelV25(ym),mensal:0,acum:finalObra};
+    receitaAcum+=num(economic[ym]);
+    const bruto=c.historico+c.entrada+c.parcela,liquido=bruto-c.comissao;caixaAcum+=liquido;
+    return {...obra,...c,bruto,liquido,receitaLiquidaAcum:receitaAcum,caixaAcum,coberturaCaixa:caixaAcum-obra.acum,coberturaEconomica:receitaAcum-obra.acum};
+  });
+  const timeline=extended.filter(r=>r.ym<=V25_OBRA_END),final=timeline[timeline.length-1];
+  const firstNegative=timeline.find(r=>r.coberturaCaixa<0),worst=timeline.reduce((a,b)=>b.coberturaCaixa<a.coberturaCaixa?b:a,timeline[0]);
+  const recovery=firstNegative?extended.find(r=>r.ym>firstNegative.ym&&r.coberturaCaixa>=0):null;
+  const saldoReceberDepoisObra=extended.filter(r=>r.ym>V25_OBRA_END).reduce((s,r)=>s+r.liquido,0);
+  return {timeline,extended,area,avg,contratado,desconto,comissao,incentivo,final,firstNegative,worst,recovery,saldoReceberDepoisObra};
+}
+function regrasLancamentoV27(cfg,editavel=false){
+  const input=editavel?`<div class="field" style="margin-top:8px"><label>Comissão base estimada (%)</label><input id="v24_comissao" type="number" step="0.01" value="${cfg.comissao.toFixed(2)}" onchange="renderCenarios()"></div>`:`<span>Comissão base conforme parceiro cadastrado</span>`;
+  return `<div class="card v26-section"><div class="ch"><div><div class="ch-ttl">Regras comerciais do lançamento</div><div class="sub">Aplicação a partir de 20/06. Percentuais de desconto representam teto máximo de negociação.</div></div>${badge('lançamento')}</div><div class="cb"><div class="v27-rule-grid"><div class="v27-rule primary"><small>Valor de lançamento</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b><span>A partir de 20/06/2026</span>${input}</div><div class="v27-rule"><small>À vista</small><b>até 10%</b><span>desconto máximo</span></div><div class="v27-rule"><small>Entrada de 50%</small><b>até 5%</b><span>desconto máximo</span></div><div class="v27-rule"><small>Entrada de 30%</small><b>até 3%</b><span>desconto máximo</span></div><div class="v27-rule"><small>Plano até 12x</small><b>até 2%</b><span>12% a.a. · sem correção</span></div></div><div class="info" style="margin-top:12px"><b>Comissionamento nas projeções:</b> comissão base estimada acrescida de <b>1% sobre o valor recebido como entrada</b> quando a entrada for igual ou superior a 30%. O sistema aplica esse adicional no caixa projetado.</div></div></div>`;
+}
+function regrasComerciaisV26(){ return regrasLancamentoV27({comissao:comissaoPadraoMediaV21()},false); }
+function escalaPrecoV27(){
+  const faixas=[
+    ['Unidades 1 a 5','R$ 1.387,33/m²','venda antecipada'],
+    ['Patamar vigente','R$ 1.408,14/m²','até completar a faixa atual'],
+    ['Próximo patamar até 19/06','R$ 1.429,27/m²','venda antecipada'],
+    ['Lançamento · a partir de 20/06','R$ 1.472,47/m²','valor definido']
+  ];
+  return `<div class="card v24-section"><div class="ch"><div><div class="ch-ttl">Escalonamento de preço</div><div class="sub">Histórico comercial e valor definido para o lançamento.</div></div>${badge('régua comercial')}</div><div class="cb"><div class="tw"><table><thead><tr><th>Etapa</th><th>Valor</th><th>Aplicação</th></tr></thead><tbody>${faixas.map(f=>`<tr><td><b>${f[0]}</b></td><td>${f[1]}</td><td>${f[2]}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+}
+function mixTableV24(cfg){
+  return `<div class="tw"><table class="v24-table v24-flow"><thead><tr><th>Etapa comercial</th><th>Mês da venda</th><th>Lotes</th><th>Entrada</th><th>Prazo</th><th>Teto desconto</th><th>Desconto aplicado</th><th></th></tr></thead><tbody>${cfg.rows.map((r,i)=>`<tr><td><select class="v24-stage" onchange="editRowV24(${i},'etapa',this.value)">${etapaOptionsV24(r.etapa)}</select></td><td><input class="v24-month" type="month" value="${r.mes}" onchange="editRowV24(${i},'mes',this.value)"></td><td><input class="v24-input-inline" type="number" min="0" value="${r.qtd}" onchange="editRowV24(${i},'qtd',this.value)"></td><td><div class="v24-pay"><input type="number" min="0" max="100" value="${r.entrada}" onchange="editRowV24(${i},'entrada',this.value)">%</div></td><td><div class="v24-pay"><input type="number" min="0" max="120" value="${r.parcelas}" onchange="editRowV24(${i},'parcelas',this.value)">x</div></td><td><b>${tetoDescontoV24(r,cfg).toFixed(1).replace('.',',')}%</b></td><td><div class="v24-pay"><input type="number" step="0.1" min="0" max="${tetoDescontoV24(r,cfg)}" value="${r.desconto}" onchange="editRowV24(${i},'desconto',this.value)">%</div></td><td><button class="icon del" onclick="delRowV24(${i})" title="Excluir">🗑</button></td></tr>`).join('')}</tbody></table></div><button class="btn btn-ghost btn-sm no-print" style="margin-top:10px" onclick="addRowV24()">+ Adicionar condição</button>`;
+}
+function historyTableV24(cfg){
+  const total=vendasResumoV23(soldV23()), f=fin36CfgV26(), rows=fluxoContratosV26(), ateMai=fluxoAteV26('2026-05'), ateJun=fluxoAteV26('2026-06');
+  return `<div class="card v24-section"><div class="ch"><div><div class="ch-ttl">Base contratada e recebimentos incorporados</div><div class="sub">O VGV demonstra vendas fechadas; o caixa considera o cronograma de recebimento confirmado ou previsto.</div></div>${badge('financeiro')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('VGV pós-comissão contratado',BRL(total.liquido),'9 vendas fechadas','g')}${kpi('Caixa líquido até maio',BRL(ateMai),'recebimentos registrados')}${kpi('Caixa previsto até junho',BRL(ateJun),'inclui saldos previstos','o')}${kpi('Financiado 36x · caixa total',BRL(f.liquidoTotal),'cronograma incorporado','l')}</div><div class="v27-cash-note"><b>Fluxo 36x incorporado:</b> o contrato de Vinícius e Jacqueline foi integrado ao caixa conforme as condições enviadas: recebimentos com juros de ${BRL(f.totalComJuros)}, comissão de ${BRL(f.comissaoTotal)} e caixa líquido projetado de ${BRL(f.liquidoTotal)} até abril de 2029.</div></div></div>`;
+}
+function recebimentosPanelV26(){
+  const rows=fluxoContratosV26(),m=mendesResumoV26(),f=fin36CfgV26();
+  return `<div class="card v26-section"><div class="ch"><div><div class="ch-ttl">Fluxo de recebimentos dos contratos vendidos</div><div class="sub">Recebimentos realizados e previstos dos contratos assinados, separados do VGV contratado.</div></div>${badge('financeiro')}</div><div class="cb"><div class="v26-flow-summary">${kpi('Caixa líquido até maio',BRL(fluxoAteV26('2026-05')),'entradas reconhecidas','g')}${kpi('Previsto líquido até junho',BRL(fluxoAteV26('2026-06')),'inclui liquidação Mendes','o')}${kpi('Mendes · saldo bruto jun',BRL(m.saldo),'previsto até 20/06','l')}${kpi('36x · caixa projetado',BRL(f.liquidoTotal),'até abr/2029')}</div><div class="v26-flow-grid"><div class="v26-flow-card">${flowChartV26(rows)}${tabelaFluxoV26(rows)}</div></div><div class="v26-alert" style="margin-top:14px"><b>Mendes Lima Group:</b> dos lotes Araçá 25 e Araçá 27, foram reconhecidos R$ 58.000,00 em maio — R$ 29.000,00 por lote. O saldo bruto de ${BRL(m.saldo)} permanece previsto até 20/06. <b>Contrato em 36x:</b> fluxo financeiro já incorporado ao relatório, sem formulário específico.</div></div></div>`;
+}
+function renderVendas(){
+  const todas=soldV23(),periodo=periodV23(),total=vendasResumoV23(todas),tri=vendasResumoV23(periodo),m=mendesResumoV26();
+  id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">VGV contratado, VGV pós-comissão e fluxo efetivo de caixa apresentados em leituras separadas.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div><div class="section-mini-title">Resultado comercial acumulado</div><div class="v23-kpi-stack">${kpi('Unidades vendidas',total.unidades,'+ 1 permuta fora do VGV')}${kpi('VGV contratado total',BRL(total.vgv),'9 vendas fechadas','g')}${kpi('Comissão total',BRL(total.comissao),'regras das vendas','o')}${kpi('VGV pós-comissão',BRL(total.liquido),'valor contratado menos comissão','l')}</div>${recebimentosPanelV26()}<div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas totais acumuladas</div><div class="v23-table-sub">Mendes: recebido parcial de ${BRL(m.recebido)}; saldo bruto de ${BRL(m.saldo)} previsto em junho.</div></div></div>${tabelaVendasV23(todas)}</div><div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas consideradas na meta atual</div><div class="v23-table-sub">01/04 a 30/06 · ${periodo.length} de ${CFG.metaLotes} unidades · VGV ${BRL(tri.vgv)}</div></div></div>${tabelaVendasV23(periodo,false)}</div>`;
+}
+function auditPanelV25(model,cfg){
+  const total=totalRowsV24(cfg),junho=qtdAteJunhoV24(cfg),tetoOk=cfg.rows.every(r=>num(r.desconto)<=tetoDescontoV24(r,cfg)+.0001),f=fin36CfgV26(),status=model.firstNegative?`${model.worst.mes}: ${BRL(model.worst.coberturaCaixa)}`:'Sem ruptura';
+  return `<div class="v25-audit">${[['VGV histórico','OK','9 contratos fechados'],['Mendes','Atenção','saldo previsto em jun'],['Venda 36x','OK',`fluxo até abr/29 · ${BRL(f.liquidoTotal)}`],['Estoque projetado',total===CFG.disponiveis?'OK':'Revisar',total+' de '+CFG.disponiveis+' lotes'],['Meta até junho',junho===stats().faltam?'OK':'Revisar',junho+' novas de '+stats().faltam],['Cobertura da obra',model.firstNegative?'Atenção':'OK',status],['Limites de desconto',tetoOk?'OK':'Revisar',tetoOk?'tetos respeitados':'desconto excedido'],['Fim da obra',BRL(model.final.coberturaCaixa),model.final.coberturaCaixa>=0?'sobra':'necessidade']].map(([a,b,c])=>`<div class="v25-audit-item"><small>${a}</small><b class="${String(b).includes('Atenção')||String(b).includes('Revisar')?'v25-status-bad':'v25-status-ok'}">${b}</b><span>${c}</span></div>`).join('')}</div>`;
+}
+function cashPanelV24(model,cfg){
+  const total=vendasResumoV23(soldV23()),confirmedJun=fluxoAteV26('2026-06'),projectedJun=model.timeline.find(r=>r.ym==='2026-06'),endStatus=model.final.coberturaCaixa>=0?'Cobertura no fim da obra':'Necessidade no fim da obra';
+  return `<div class="card scenario-section cash-curve-section v24-section"><div class="ch"><div><div class="ch-ttl">Evolução do caixa x desembolso das obras</div><div class="sub">VGV acumulado pós-comissão representa contratos; caixa líquido acumulado representa disponibilidade financeira conforme os recebimentos.</div></div>${badge('diretoria')}</div><div class="cb"><div class="v24-curvesummary">${kpi('VGV pós-comissão vendido',BRL(total.liquido),'9 contratos','g')}${kpi('Caixa líquido até maio',BRL(fluxoAteV26('2026-05')),'recebimentos informados')}${kpi('Caixa previsto · jun',BRL(confirmedJun),'inclui Mendes, Eric e 36x','o')}${kpi('Caixa projetado · jun',BRL(projectedJun?projectedJun.caixaAcum:confirmedJun),'inclui novas vendas')}${kpi(endStatus,BRL(Math.abs(model.final.coberturaCaixa)),model.final.coberturaCaixa>=0?'caixa acima da obra':'obra acima do caixa','l')}</div><div class="v24-premissa"><b>Premissa de caixa:</b> Mendes possui R$ 58.000,00 reconhecidos em maio e saldo previsto até 20/06; Eric segue o cronograma informado; o contrato financiado em 36x foi incorporado conforme o fluxo financeiro enviado.</div>${auditPanelV25(model,cfg)}${curveSvgV24(model.timeline)}<div class="tw v24-curve-table"><table><thead><tr><th>Mês</th><th>VGV acumulado pós-comissão</th><th>Recebimentos contratados</th><th>Entradas novas</th><th>Parcelas novas</th><th>Comissão provisionada</th><th>Caixa líquido acumulado</th><th>Obra acumulada</th><th>Cobertura de caixa</th></tr></thead><tbody>${model.timeline.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.receitaLiquidaAcum)}</td><td>${BRL(r.historico-r.comissao)}</td><td>${BRL(r.entrada)}</td><td>${BRL(r.parcela)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.caixaAcum)}</b></td><td>${BRL(r.acum)}</td><td class="${r.coberturaCaixa>=0?'pos':'neg'}">${r.coberturaCaixa>=0?'+ ':''}${BRL(r.coberturaCaixa)}</td></tr>`).join('')}</tbody></table></div>${recoveryTableV25(model)}<div class="info v25-board-note"><b>Recebimentos posteriores ao fim da obra:</b> ${BRL(model.saldoReceberDepoisObra)} permanecem na carteira projetada, inclusive parcelas do financiamento histórico em 36x e das novas vendas.</div></div></div>`;
+}
+function renderCenarios(){
+  const cfg=currentScenarioV24();
+  cfg.preco3=V27_PRECO_LANCAMENTO;cfg.ativo='3';cfg.teto24=0;cfg.teto36=0;
+  normalizeRowsV24(cfg);safeSet(V24_SCENARIO_KEY,JSON.stringify(cfg));
+  const lotes=scenarioLotsV21(),conciliado=lotes.length===CFG.disponiveis,total=totalRowsV24(cfg),junho=qtdAteJunhoV24(cfg),mixOk=total===CFG.disponiveis,metaOk=junho===stats().faltam,area=lotes.reduce((s,l)=>s+num(l.area),0),model=conciliado&&mixOk?cashProjectionV24(lotes,V27_PRECO_LANCAMENTO,cfg):null,hist=vendasResumoV23(soldV23()),proj=metricsV24(area,V27_PRECO_LANCAMENTO,cfg);
+  const baseAlert=conciliado?'':`<div class="warnbox"><b>Base divergente:</b> a planilha devolveu ${lotes.length} de ${CFG.disponiveis} lotes comercializáveis. Não apresente a curva sem conciliar.</div>`;
+  const mixAlert=mixOk?`<div class="success"><b>Estoque distribuído:</b> ${total} de ${CFG.disponiveis} lotes remanescentes estão alocados na projeção.</div>`:`<div class="warnbox"><b>Distribuição incompleta:</b> ${total} de ${CFG.disponiveis} lotes remanescentes foram alocados.</div>`;
+  const metaAlert=metaOk?`<div class="success"><b>Meta abril-junho fechada:</b> 2 vendas realizadas + ${junho} novas vendas projetadas = 23 unidades até 30/06.</div>`:`<div class="warnbox"><b>Meta abril-junho:</b> a projeção registra ${junho} novas vendas até 30/06, mas são necessárias ${stats().faltam}.</div>`;
+  const economic=conciliado&&mixOk?`<div class="table-card v24-section"><div class="ch"><div><div class="ch-ttl">Projeção econômica do estoque remanescente</div><div class="sub">Aplicação exclusiva do preço de lançamento aos 38 lotes disponíveis; vendas já fechadas não são recalculadas.</div></div>${badge('R$ 1.472,47/m²')}</div><div class="tw"><table><thead><tr><th>Preço lançamento</th><th>VGV bruto</th><th>Desconto projetado</th><th>VGV pós-desconto</th><th>Comissão projetada</th><th>VGV pós-comissão</th></tr></thead><tbody><tr><td><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b></td><td>${BRL(proj.bruto)}</td><td>${BRL(proj.desc)}<br><small>${proj.pctDesc.toFixed(2).replace('.',',')}%</small></td><td>${BRL(proj.contratado)}</td><td>${BRL(proj.com)}<br><small>inclui incentivo entrada ${BRL(proj.bonus)}</small></td><td><b>${BRL(proj.liquido)}</b></td></tr></tbody></table></div></div>`:'';
+  id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Valor de lançamento, política comercial, velocidade de vendas e capacidade de cobertura das obras.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>${regrasLancamentoV27(cfg,true)}${escalaPrecoV27()}${historyTableV24(cfg)}<div class="card v24-section"><div class="ch"><div><div class="ch-ttl">Distribuição projetada dos 38 lotes remanescentes</div><div class="sub">Defina quantidade, entrada, prazo e desconto para avaliar o efeito no caixa do empreendimento.</div></div>${badge('planejamento')}</div><div class="cb">${mixTableV24(cfg)}<div class="fr c1" style="margin-top:14px"><div class="field"><label>Tratamento da comissão no caixa</label><select id="v24_deduz" onchange="renderCenarios()"><option value="sim" ${cfg.deduzComissao?'selected':''}>Provisionar no mês da venda</option><option value="nao" ${!cfg.deduzComissao?'selected':''}>Não deduzir da curva</option></select></div></div>${baseAlert}${mixAlert}${metaAlert}</div></div><div class="v24-board-grid v24-section">${kpi('Estoque remanescente',CFG.disponiveis,'lotes a comercializar')}${kpi('Meta novas vendas · jun',stats().faltam,'para atingir 23 unidades','g')}${kpi('VGV pós-comissão vendido',BRL(hist.liquido),'9 vendas fechadas','o')}${kpi('Preço do lançamento',BRL(V27_PRECO_LANCAMENTO)+'/m²','vigente a partir de 20/06','l')}</div>${economic}${model?cashPanelV24(model,cfg):''}`;
+}
+function rowProjectionPaperV27(cfg){
+  return `<table><thead><tr><th>Etapa</th><th>Mês</th><th>Unidades</th><th>Entrada</th><th>Prazo</th><th>Desconto</th></tr></thead><tbody>${cfg.rows.filter(r=>r.qtd>0).map(r=>`<tr><td>${esc(r.etapa)}</td><td>${ymLabelV25(r.mes)}</td><td>${r.qtd}</td><td>${r.entrada}%</td><td>${r.parcelas?`${r.parcelas}x`:'à vista'}</td><td>${num(r.desconto).toFixed(1).replace('.',',')}%</td></tr>`).join('')}</tbody></table>`;
+}
+function buildPaperCenariosV27(){
+  const cfg=currentScenarioV24(); cfg.preco3=V27_PRECO_LANCAMENTO;cfg.ativo='3';cfg.teto24=0;cfg.teto36=0;normalizeRowsV24(cfg);
+  const lotes=scenarioLotsV21(),area=lotes.reduce((s,l)=>s+num(l.area),0),model=cashProjectionV24(lotes,V27_PRECO_LANCAMENTO,cfg),proj=metricsV24(area,V27_PRECO_LANCAMENTO,cfg),hist=vendasResumoV23(soldV23()),fin=fin36CfgV26(),jun=qtdAteJunhoV24(cfg);
+  const footer=`<div style="font-size:9px;color:#6e6760;margin-top:10px">Documento gerencial emitido pelo Sistema Comercial Calliandra. O VGV pós-comissão não representa caixa disponível; a leitura financeira deve observar o cronograma de recebimentos e o desembolso das obras.</div>`;
+  return `<div class="v27-paper"><h1>Projeção executiva de vendas e fluxo de caixa</h1><div class="paper-sub">Residencial Calliandra · Urbanizadora Paranoazinho · preço de lançamento e cobertura financeira das obras</div><div class="paper-kpis"><div class="paper-kpi"><small>Preço lançamento</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b></div><div class="paper-kpi"><small>Estoque remanescente</small><b>${CFG.disponiveis} lotes</b></div><div class="paper-kpi"><small>VGV pós-comissão vendido</small><b>${BRL(hist.liquido)}</b></div><div class="paper-kpi"><small>Novas vendas até junho</small><b>${jun} / ${stats().faltam}</b></div></div><div class="paper-section"><div class="paper-section-title">Regras comerciais do lançamento</div><div class="paper-rule"><div><small>Valor a partir de 20/06</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b></div><div><small>À vista</small><b>até 10%</b></div><div><small>Entrada 50%</small><b>até 5%</b></div><div><small>Entrada 30%</small><b>até 3%</b></div><div><small>Até 12x</small><b>até 2%</b><span> · 12% a.a. sem correção</span></div></div><div class="v27-cash-note">Comissão projetada: base estimada de ${cfg.comissao.toFixed(2).replace('.',',')}% acrescida de 1% sobre a entrada quando o pagamento inicial for igual ou superior a 30%.</div></div><div class="paper-section"><div class="paper-section-title">Projeção do estoque remanescente</div><table><thead><tr><th>VGV bruto</th><th>Desconto projetado</th><th>VGV pós-desconto</th><th>Comissão projetada</th><th>VGV pós-comissão</th></tr></thead><tbody><tr><td>${BRL(proj.bruto)}</td><td>${BRL(proj.desc)}</td><td>${BRL(proj.contratado)}</td><td>${BRL(proj.com)}</td><td><b>${BRL(proj.liquido)}</b></td></tr></tbody></table></div><div class="paper-section"><div class="paper-section-title">Velocidade e condições projetadas de venda</div>${rowProjectionPaperV27(cfg)}</div><div class="paper-section"><div class="paper-section-title">Evolução do caixa e desembolso das obras</div><div class="paper-kpis"><div class="paper-kpi"><small>Caixa líquido até maio</small><b>${BRL(fluxoAteV26('2026-05'))}</b></div><div class="paper-kpi"><small>Caixa previsto até junho</small><b>${BRL(fluxoAteV26('2026-06'))}</b></div><div class="paper-kpi"><small>Contrato 36x no caixa</small><b>${BRL(fin.liquidoTotal)}</b></div><div class="paper-kpi"><small>${model.final.coberturaCaixa>=0?'Cobertura final':'Necessidade final'}</small><b>${BRL(Math.abs(model.final.coberturaCaixa))}</b></div></div>${curveSvgV24(model.timeline)}<div style="margin-top:8px">${model.firstNegative?`<b>Leitura:</b> há necessidade de caixa em ${model.worst.mes} no valor de ${BRL(Math.abs(model.worst.coberturaCaixa))}; ${model.recovery?`a curva retorna ao positivo em ${model.recovery.mes}.`:'não há recuperação no horizonte projetado.'}`:`<b>Leitura:</b> a cobertura de caixa permanece positiva durante o período de obra sob as premissas informadas.`}</div></div>${footer}</div>`;
+}
+const printDocumentV26Base = printDocumentV26;
+function printDocumentV27(page,orientation){
+  if(page!=='cenarios') return printDocumentV26Base(page,orientation);
+  closeModal();
+  const popup=window.open('','_blank','width=1280,height=920');
+  if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}
+  const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape';
+  const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-head{display:flex!important;margin:0 0 12px!important;padding:0 0 8px!important;border-bottom:2px solid #173d37;break-after:avoid!important;page-break-after:avoid!important}.v27-paper{display:block!important;margin:0!important;padding:0!important}.v27-paper .paper-section{break-before:auto!important;page-break-before:auto!important}.v27-paper tr{break-inside:avoid!important;page-break-inside:avoid!important}.v27-paper thead{display:table-header-group!important}`;
+  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
+}
+printDocumentV26=printDocumentV27;printDocumentV25=printDocumentV27;printDocumentV22=printDocumentV27;
+
+function rowsRecebimentosSheetV27(){
+ return fluxoFin36V27().map((r,i)=>({id:`${V27_FIN_ID}-${String(i+1).padStart(2,'0')}`,id_recebimento:`${V27_FIN_ID}-${String(i+1).padStart(2,'0')}`,id_contrato:V27_FIN_ID,cliente:'Vinícius e Jacqueline',serie:r.serie,vencimento:r.vencimento,mes_competencia:r.ym,valor_sem_juros:r.principal,valor_recebimento:r.bruto,comissao:r.comissao,valor_liquido_caixa:r.bruto-r.comissao,status:r.status,observacoes:'Fluxo importado das condições financeiras do contrato em 36x'}));
+}
+async function publicarRecebimentosFin36V27(){
+ if(!confirm('Publicar o cronograma do contrato em 36x na aba recebimentos da planilha conectada?')) return;
+ let ok=0,fail=0;
+ for(const row of rowsRecebimentosSheetV27()){
+  try{
+   let res=await api({action:'updateRowById',sheet:'recebimentos',values:row,id:row.id_recebimento},12000);
+   if(!res||res.ok===false||res.success===false) res=await api({action:'appendRow',sheet:'recebimentos',values:row},12000);
+   if(res&&res.ok!==false&&res.success!==false) ok++; else fail++;
+  }catch(e){fail++;}
+ }
+ if(fail===0){toast(`${ok} recebimentos publicados na planilha.`);syncManual();}
+ else toast(`Publicação parcial: ${ok} gravados e ${fail} não confirmados. Verifique a aba recebimentos e o Apps Script.`,'err');
+}
+const renderConfigV26Base = renderConfig;
+renderConfig = function(){
+  renderConfigV26Base();
+  id('page-config').insertAdjacentHTML('beforeend',`<div class="card v27-integracao"><div class="ch"><div><div class="ch-ttl">Integração financeira de recebimentos</div><div class="sub">Publicação do cronograma confirmado do contrato de Vinícius e Jacqueline na base oficial.</div></div>${badge('admin')}</div><div class="cb"><div class="info"><b>Pré-requisito:</b> a planilha deve possuir uma aba chamada <b>recebimentos</b> e o Apps Script precisa incluí-la na ação <b>getAll</b>. Após a publicação, a sincronização passará a ler essa aba como fonte do fluxo em 36x.</div><button class="btn btn-terra" style="margin-top:12px" onclick="publicarRecebimentosFin36V27()">Publicar fluxo 36x na planilha</button></div></div>`);
+};
+const syncDataV26Base = syncData;
+syncData = async function(){
+  setConn(false,'Sincronizando...');
+  const r=await apiGetAll(35000),data=r.data||r.raw?.data||{};
+  const lotesPlanilha=getSheet(data,'lotes').map(normLote).filter(l=>l.lote&&l.area>0);
+  const vendasPlanilha=[...getSheet(data,'vendas'),...getSheet(data,'contratos')].map(normContrato).filter(c=>c.lote||c.cliente);
+  const corretoresPlanilha=[...getSheet(data,'corretores'),...getSheet(data,'parceiros_comerciais')].map(normCorretor).filter(c=>c.nome);
+  const recebimentosPlanilha=getSheet(data,'recebimentos');
+  if(!lotesPlanilha.length) throw new Error('A API respondeu, mas não trouxe a aba lotes.');
+  STATE.lotes=dedupeLotes(lotesPlanilha);
+  if(vendasPlanilha.length){STATE.contratos=vendasPlanilha;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendasPlanilha));}
+  if(corretoresPlanilha.length) STATE.corretores=dedupe([...corretoresPadrao(),...corretoresPlanilha],'nome');
+  STATE.recebimentos=Array.isArray(recebimentosPlanilha)?recebimentosPlanilha:[];
+  STATE.lastSync={at:new Date().toISOString(),source:'google_sheets',lotes:lotesPlanilha.length,vendas:vendasPlanilha.length,corretores:corretoresPlanilha.length,recebimentos:STATE.recebimentos.length};
+  saveLocal();applyRules();setConn(true,'Google Sheets sincronizado');
+};
+</script>
+
 </body>
 </html>
