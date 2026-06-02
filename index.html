@@ -2835,5 +2835,171 @@ syncData = async function(){
 };
 </script>
 
+
+<style>
+.v271-commission-summary{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px;margin-top:14px}
+.v271-commission-summary .mini{border:1px solid #ded7cc;border-radius:14px;padding:12px;background:#faf8f3}
+.v271-commission-summary .mini small{display:block;color:#776f68;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.v271-commission-summary .mini b{font-size:19px;color:#173d37}
+.v271-select{min-width:122px}
+.v271-line-commission b{display:block;color:#173d37;white-space:nowrap}
+.v271-line-commission small{display:block;color:#776f68;white-space:nowrap}
+@media(max-width:1100px){.v271-commission-summary{grid-template-columns:1fr}}
+@media print{.v271-commission-summary{display:grid!important;grid-template-columns:repeat(3,1fr)!important}}
+</style>
+<script>
+/* V27.1 — Correção de Vendas/Relatórios e comissão por condição projetada. */
+const V271_COMISSOES = [
+  {nome:'Bronze', taxa:4.0},
+  {nome:'Prata', taxa:4.5},
+  {nome:'Ouro', taxa:5.0},
+  {nome:'Platina', taxa:5.5}
+];
+
+function comissaoBaseV271(row){
+  const taxa = num(row && row.comissaoBase);
+  return taxa > 0 ? taxa : 4.5;
+}
+function optionsComissaoV271(value){
+  const atual = comissaoBaseV271({comissaoBase:value});
+  return V271_COMISSOES.map(c=>`<option value="${c.taxa}" ${Math.abs(c.taxa-atual)<0.001?'selected':''}>${c.nome} · ${c.taxa.toFixed(1).replace('.',',')}%</option>`).join('');
+}
+
+/* Contrato em 36x: a leitura usa o cronograma financeiro incorporado, sem depender do formulário removido. */
+function caixaVendaAteV26(v, limite){
+  if(!v || !isVendido(v.status)) return null;
+  if(isFin36V26(v)){
+    return fluxoFin36V27()
+      .filter(r=>r.ym<=limite)
+      .reduce((s,r)=>s + num(r.bruto) - num(r.comissao), 0);
+  }
+  if(isMendesV26(v)){
+    let n = limite >= '2026-05' ? 29000 : 0;
+    if(limite >= '2026-06') n += Math.max(num(v.valorFinal) - 29000 - comissaoValorVenda(v), 0);
+    return n;
+  }
+  if(String(v.data||'') < '2026-04-01') return limite >= '2026-03' ? valorLiquidoUP(v) : 0;
+  if(isElianaVenda(v)) return limite >= '2026-05' ? valorLiquidoUP(v) : 0;
+  if(isEricVenda(v)){
+    let n=0;
+    if(limite >= '2026-05') n += 50000 - comissaoValorVenda(v);
+    if(limite >= '2026-06') n += 30000;
+    if(limite >= '2026-07') n += 30000;
+    if(limite >= '2026-08') n += 270000;
+    return n;
+  }
+  return null;
+}
+
+/* Comissão definida em cada bloco de vendas projetadas. */
+function comissaoProjetadaV27(valor, row, cfg){
+  const taxaBase = comissaoBaseV271(row);
+  const base = valor * taxaBase / 100;
+  const valorEntrada = valor * num(row.entrada) / 100;
+  const incentivo = num(row.entrada) >= 30 ? valorEntrada * 0.01 : 0;
+  return {taxaBase, base, incentivo, total:base+incentivo};
+}
+
+function normalizeRowsV24(cfg){
+  cfg.rows=(cfg.rows||[]).map((r,i)=>{
+    const n={
+      ...r,
+      _seq:i,
+      etapa:r.etapa||V24_ETAPAS[2],
+      mes:r.mes||'2026-07',
+      qtd:Math.max(0,Math.floor(num(r.qtd))),
+      entrada:Math.min(100,Math.max(0,num(r.entrada))),
+      parcelas:Math.min(120,Math.max(0,Math.floor(num(r.parcelas)))),
+      desconto:Math.max(0,num(r.desconto)),
+      comissaoBase:comissaoBaseV271(r)
+    };
+    n.desconto=Math.min(n.desconto,tetoDescontoV24(n,cfg));
+    return n;
+  }).sort(compareRowsV25).map(({_seq,...r})=>r);
+  return cfg;
+}
+
+function editRowV24(i,field,value){
+  const cfg=currentScenarioV24(), r=cfg.rows[i];
+  if(!r) return;
+  if(field==='etapa'||field==='mes') r[field]=value;
+  else r[field]=num(value);
+  cfg.rows[i]=r;
+  normalizeRowsV24(cfg);
+  safeSet(V24_SCENARIO_KEY,JSON.stringify(cfg));
+  renderCenarios();
+}
+
+function addRowV24(){
+  const cfg=currentScenarioV24(), ordered=[...(cfg.rows||[])].sort(compareRowsV25), last=ordered[ordered.length-1];
+  cfg.rows.push({etapa:V24_ETAPAS[3],mes:last?addMonthV21(last.mes,1):'2026-07',qtd:0,entrada:20,parcelas:120,desconto:0,comissaoBase:4.5});
+  normalizeRowsV24(cfg);safeSet(V24_SCENARIO_KEY,JSON.stringify(cfg));renderCenarios();
+}
+
+function regrasLancamentoV27(cfg, editavel=false){
+  return `<div class="card v26-section"><div class="ch"><div><div class="ch-ttl">Regras comerciais do lançamento</div><div class="sub">Aplicação a partir de 20/06. Percentuais de desconto representam teto máximo de negociação.</div></div>${badge('lançamento')}</div><div class="cb"><div class="v27-rule-grid"><div class="v27-rule primary"><small>Valor de lançamento</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b><span>A partir de 20/06/2026</span></div><div class="v27-rule"><small>À vista</small><b>até 10%</b><span>desconto máximo</span></div><div class="v27-rule"><small>Entrada de 50%</small><b>até 5%</b><span>desconto máximo</span></div><div class="v27-rule"><small>Entrada de 30%</small><b>até 3%</b><span>desconto máximo</span></div><div class="v27-rule"><small>Plano até 12x</small><b>até 2%</b><span>12% a.a. · sem correção</span></div></div><div class="info" style="margin-top:12px"><b>Comissão:</b> será calculada na distribuição projetada, conforme a categoria do parceiro em cada bloco de vendas. Para entradas iguais ou superiores a 30%, o sistema acrescenta 1% sobre o valor da entrada.</div></div></div>`;
+}
+function regrasComerciaisV26(){ return regrasLancamentoV27({},false); }
+
+function metricsV24(area,preco,cfg){
+  const total=totalRowsV24(cfg)||CFG.disponiveis, avg=total?area/total:0;
+  let bruto=0,desc=0,contratado=0,com=0,bonus=0,baseCom=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return;
+    const b=avg*r.qtd*preco, d=b*r.desconto/100, v=b-d, c=comissaoProjetadaV27(v,r,cfg);
+    bruto+=b;desc+=d;contratado+=v;com+=c.total;bonus+=c.incentivo;baseCom+=c.base;
+  });
+  return {bruto,pctDesc:bruto?desc/bruto*100:0,desc,contratado,com,bonus,baseCom,liquido:contratado-com,taxaEfetiva:contratado?com/contratado*100:0};
+}
+
+function cashProjectionV24(lotes,preco,cfg){
+  const cash=knownCashV24(cfg),economic=contractedHistoryV24(),area=lotes.reduce((s,l)=>s+num(l.area),0),avg=lotes.length?area/lotes.length:0;
+  let contratado=0,desconto=0,comissao=0,incentivo=0;
+  cfg.rows.forEach(r=>{
+    if(!r.qtd)return;
+    const bruto=avg*r.qtd*preco,desc=bruto*r.desconto/100,valor=bruto-desc,calcCom=comissaoProjetadaV27(valor,r,cfg),com=calcCom.total,liq=valor-com,entrada=valor*r.entrada/100,saldo=Math.max(0,valor-entrada);
+    contratado+=valor;desconto+=desc;comissao+=com;incentivo+=calcCom.incentivo;
+    economic[r.mes]=(economic[r.mes]||0)+liq;
+    addFlowV24(cash,r.mes,'entrada',entrada);
+    if(cfg.deduzComissao)addFlowV24(cash,r.mes,'comissao',com);
+    if(saldo>0&&r.parcelas>0){
+      const parcela=calcPrice(saldo,r.parcelas,JUROS_MES);
+      for(let n=1;n<=r.parcelas;n++) addFlowV24(cash,addMonthV21(r.mes,n),'parcela',parcela);
+    }
+  });
+  const obraRows=obraTimelineV24(), obraMap=Object.fromEntries(obraRows.map(o=>[o.ym,o])), finalObra=obraRows[obraRows.length-1].acum;
+  const cashLast=Object.keys(cash).sort().slice(-1)[0]||V25_OBRA_END, end=cashLast>V25_OBRA_END?cashLast:V25_OBRA_END;
+  let caixaAcum=0,receitaAcum=0;
+  const extended=monthsBetweenV25('2026-03',end).map(ym=>{
+    const c=cash[ym]||{historico:0,entrada:0,parcela:0,comissao:0}, obra=obraMap[ym]||{ym,mes:ymLabelV25(ym),mensal:0,acum:finalObra};
+    receitaAcum+=num(economic[ym]);
+    const bruto=c.historico+c.entrada+c.parcela,liquido=bruto-c.comissao;caixaAcum+=liquido;
+    return {...obra,...c,bruto,liquido,receitaLiquidaAcum:receitaAcum,caixaAcum,coberturaCaixa:caixaAcum-obra.acum,coberturaEconomica:receitaAcum-obra.acum};
+  });
+  const timeline=extended.filter(r=>r.ym<=V25_OBRA_END),final=timeline[timeline.length-1],firstNegative=timeline.find(r=>r.coberturaCaixa<0),worst=timeline.reduce((a,b)=>b.coberturaCaixa<a.coberturaCaixa?b:a,timeline[0]),recovery=firstNegative?extended.find(r=>r.ym>firstNegative.ym&&r.coberturaCaixa>=0):null,saldoReceberDepoisObra=extended.filter(r=>r.ym>V25_OBRA_END).reduce((s,r)=>s+r.liquido,0);
+  return {timeline,extended,area,avg,contratado,desconto,comissao,incentivo,final,firstNegative,worst,recovery,saldoReceberDepoisObra};
+}
+
+function mixTableV24(cfg){
+  const lotes=scenarioLotsV21(), area=lotes.reduce((s,l)=>s+num(l.area),0), total=totalRowsV24(cfg)||CFG.disponiveis, avg=total?area/total:0, resumo=metricsV24(area,V27_PRECO_LANCAMENTO,cfg);
+  return `<div class="tw"><table class="v24-table v24-flow"><thead><tr><th>Etapa comercial</th><th>Mês</th><th>Lotes</th><th>Entrada</th><th>Prazo</th><th>Teto desc.</th><th>Desc. aplicado</th><th>Categoria / comissão base</th><th>Comissão projetada</th><th></th></tr></thead><tbody>${cfg.rows.map((r,i)=>{
+    const bruto=avg*r.qtd*V27_PRECO_LANCAMENTO, desc=bruto*r.desconto/100, valor=bruto-desc, c=comissaoProjetadaV27(valor,r,cfg), efetiva=valor?c.total/valor*100:0;
+    return `<tr><td><select class="v24-stage" onchange="editRowV24(${i},'etapa',this.value)">${etapaOptionsV24(r.etapa)}</select></td><td><input class="v24-month" type="month" value="${r.mes}" onchange="editRowV24(${i},'mes',this.value)"></td><td><input class="v24-input-inline" type="number" min="0" value="${r.qtd}" onchange="editRowV24(${i},'qtd',this.value)"></td><td><div class="v24-pay"><input type="number" min="0" max="100" value="${r.entrada}" onchange="editRowV24(${i},'entrada',this.value)">%</div></td><td><div class="v24-pay"><input type="number" min="0" max="120" value="${r.parcelas}" onchange="editRowV24(${i},'parcelas',this.value)">x</div></td><td><b>${tetoDescontoV24(r,cfg).toFixed(1).replace('.',',')}%</b></td><td><div class="v24-pay"><input type="number" step="0.1" min="0" max="${tetoDescontoV24(r,cfg)}" value="${r.desconto}" onchange="editRowV24(${i},'desconto',this.value)">%</div></td><td><select class="v271-select" onchange="editRowV24(${i},'comissaoBase',this.value)">${optionsComissaoV271(r.comissaoBase)}</select></td><td class="v271-line-commission"><b>${BRL(c.total)}</b><small>${c.incentivo>0?`inclui ${BRL(c.incentivo)} sobre entrada`:'sem incentivo de entrada'} · ${efetiva.toFixed(2).replace('.',',')}%</small></td><td><button class="icon del" onclick="delRowV24(${i})" title="Excluir">🗑</button></td></tr>`;
+  }).join('')}</tbody></table></div><button class="btn btn-ghost btn-sm no-print" style="margin-top:10px" onclick="addRowV24()">+ Adicionar condição</button><div class="v271-commission-summary"><div class="mini"><small>Comissão base projetada</small><b>${BRL(resumo.baseCom)}</b></div><div class="mini"><small>Incentivo sobre entradas ≥ 30%</small><b>${BRL(resumo.bonus)}</b></div><div class="mini"><small>Comissão total projetada · média efetiva</small><b>${BRL(resumo.com)} · ${resumo.taxaEfetiva.toFixed(2).replace('.',',')}%</b></div></div><div class="v25-source"><b>Regra aplicada:</b> a categoria informa a comissão base do parceiro; quando a entrada é igual ou superior a 30%, soma-se 1% somente sobre o valor pago como entrada.</div>`;
+}
+
+function rowProjectionPaperV27(cfg){
+  const lotes=scenarioLotsV21(),area=lotes.reduce((s,l)=>s+num(l.area),0),total=totalRowsV24(cfg)||CFG.disponiveis,avg=total?area/total:0;
+  return `<table><thead><tr><th>Etapa</th><th>Mês</th><th>Unidades</th><th>Entrada</th><th>Prazo</th><th>Desconto</th><th>Comissão base</th><th>Comissão projetada</th></tr></thead><tbody>${cfg.rows.filter(r=>r.qtd>0).map(r=>{const b=avg*r.qtd*V27_PRECO_LANCAMENTO,d=b*r.desconto/100,v=b-d,c=comissaoProjetadaV27(v,r,cfg);return `<tr><td>${esc(r.etapa)}</td><td>${ymLabelV25(r.mes)}</td><td>${r.qtd}</td><td>${r.entrada}%</td><td>${r.parcelas?`${r.parcelas}x`:'à vista'}</td><td>${num(r.desconto).toFixed(1).replace('.',',')}%</td><td>${c.taxaBase.toFixed(1).replace('.',',')}%</td><td>${BRL(c.total)}${c.incentivo>0?`<br><small>+ incentivo ${BRL(c.incentivo)}</small>`:''}</td></tr>`}).join('')}</tbody></table>`;
+}
+
+function buildPaperCenariosV27(){
+  const cfg=currentScenarioV24(); cfg.preco3=V27_PRECO_LANCAMENTO;cfg.ativo='3';cfg.teto24=0;cfg.teto36=0;normalizeRowsV24(cfg);
+  const lotes=scenarioLotsV21(),area=lotes.reduce((s,l)=>s+num(l.area),0),model=cashProjectionV24(lotes,V27_PRECO_LANCAMENTO,cfg),proj=metricsV24(area,V27_PRECO_LANCAMENTO,cfg),hist=vendasResumoV23(soldV23()),fin=fin36CfgV26(),jun=qtdAteJunhoV24(cfg);
+  const footer=`<div style="font-size:9px;color:#6e6760;margin-top:10px">Documento gerencial emitido pelo Sistema Comercial Calliandra. O VGV pós-comissão não representa caixa disponível; a leitura financeira deve observar o cronograma de recebimentos e o desembolso das obras.</div>`;
+  return `<div class="v27-paper"><h1>Projeção executiva de vendas e fluxo de caixa</h1><div class="paper-sub">Residencial Calliandra · Urbanizadora Paranoazinho · preço de lançamento e cobertura financeira das obras</div><div class="paper-kpis"><div class="paper-kpi"><small>Preço lançamento</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b></div><div class="paper-kpi"><small>Estoque remanescente</small><b>${CFG.disponiveis} lotes</b></div><div class="paper-kpi"><small>VGV pós-comissão vendido</small><b>${BRL(hist.liquido)}</b></div><div class="paper-kpi"><small>Novas vendas até junho</small><b>${jun} / ${stats().faltam}</b></div></div><div class="paper-section"><div class="paper-section-title">Regras comerciais do lançamento</div><div class="paper-rule"><div><small>Valor a partir de 20/06</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b></div><div><small>À vista</small><b>até 10%</b></div><div><small>Entrada 50%</small><b>até 5%</b></div><div><small>Entrada 30%</small><b>até 3%</b></div><div><small>Até 12x</small><b>até 2%</b><span> · 12% a.a. sem correção</span></div></div></div><div class="paper-section"><div class="paper-section-title">Projeção do estoque remanescente</div><table><thead><tr><th>VGV bruto</th><th>Desconto projetado</th><th>VGV pós-desconto</th><th>Comissão base</th><th>Incentivo entrada</th><th>Comissão total</th><th>VGV pós-comissão</th></tr></thead><tbody><tr><td>${BRL(proj.bruto)}</td><td>${BRL(proj.desc)}</td><td>${BRL(proj.contratado)}</td><td>${BRL(proj.baseCom)}</td><td>${BRL(proj.bonus)}</td><td>${BRL(proj.com)}<br><small>${proj.taxaEfetiva.toFixed(2).replace('.',',')}% efetivos</small></td><td><b>${BRL(proj.liquido)}</b></td></tr></tbody></table></div><div class="paper-section"><div class="paper-section-title">Velocidade, condições de venda e comissão projetada</div>${rowProjectionPaperV27(cfg)}</div><div class="paper-section"><div class="paper-section-title">Evolução do caixa e desembolso das obras</div><div class="paper-kpis"><div class="paper-kpi"><small>Caixa líquido até maio</small><b>${BRL(fluxoAteV26('2026-05'))}</b></div><div class="paper-kpi"><small>Caixa previsto até junho</small><b>${BRL(fluxoAteV26('2026-06'))}</b></div><div class="paper-kpi"><small>Contrato 36x no caixa</small><b>${BRL(fin.liquidoTotal)}</b></div><div class="paper-kpi"><small>${model.final.coberturaCaixa>=0?'Cobertura final':'Necessidade final'}</small><b>${BRL(Math.abs(model.final.coberturaCaixa))}</b></div></div>${curveSvgV24(model.timeline)}<div style="margin-top:8px">${model.firstNegative?`<b>Leitura:</b> há necessidade de caixa em ${model.worst.mes} no valor de ${BRL(Math.abs(model.worst.coberturaCaixa))}; ${model.recovery?`a curva retorna ao positivo em ${model.recovery.mes}.`:'não há recuperação no horizonte projetado.'}`:`<b>Leitura:</b> a cobertura de caixa permanece positiva durante o período de obra sob as premissas informadas.`}</div></div>${footer}</div>`;
+}
+</script>
+
 </body>
 </html>
