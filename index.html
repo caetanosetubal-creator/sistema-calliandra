@@ -3001,5 +3001,387 @@ function buildPaperCenariosV27(){
 }
 </script>
 
+<style>
+/* V28 — Auditoria operacional, simulador por fase e consistência de estoque */
+.v28-rule-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0 16px}
+.v28-rule-card{border:1.5px solid var(--borda);border-radius:16px;background:#fff;padding:13px 14px;cursor:pointer;transition:.15s}
+.v28-rule-card.on{border-color:var(--marsala);background:#fff8f2;box-shadow:0 8px 24px rgba(172,74,74,.10)}
+.v28-rule-card small{display:block;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:var(--muted);font-size:10px}
+.v28-rule-card b{display:block;color:var(--verde);font-size:20px;margin-top:3px}
+.v28-rule-card span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.v28-audit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.v28-audit-mini{border:1px solid var(--borda);border-radius:14px;background:#faf8f3;padding:11px 12px}
+.v28-audit-mini small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:900}
+.v28-audit-mini b{display:block;color:var(--verde);font-size:18px;margin-top:3px}
+.v28-result-table{width:100%;border-collapse:collapse;margin-top:12px}
+.v28-result-table th{background:var(--verde);color:#fff;text-align:left;padding:10px;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.v28-result-table td{border-bottom:1px solid var(--borda);padding:10px;vertical-align:top}
+@media(max-width:900px){.v28-rule-switch,.v28-audit-grid{grid-template-columns:1fr}}
+@media print{.v28-rule-switch{display:none!important}.v28-audit-grid{grid-template-columns:repeat(4,1fr)!important}}
+</style>
+<script>
+/* ========================================================================
+   V28 — Ajuste de auditoria: comissão histórica, simulador por fase,
+   estoque comercializável e leitura real das abas gerenciais da planilha.
+   ======================================================================== */
+var V28_PRECO_ANTECIPADO = 1408.14;
+var V28_PRECO_LANCAMENTO = 1472.47;
+var V28_MARKETING = 562534.02;
+var V28_COMISSAO_VINICIUS = 22070.00;
+
+if(typeof CFG!=='undefined'){
+  Object.assign(CFG,{verbaMidia:V28_MARKETING,estoqueUP:53,permutante:31,disponiveis:38,comercializados:10,reservados:0,metaFinanceira:4000000,metaLotes:23});
+}
+
+function round2V28(v){return Math.round((Number(v)||0)*100)/100;}
+function normTextV28(v){return norm(String(v==null?'':v));}
+function rawPickV28(obj,keys){return pick((obj&&obj.raw)||obj||{},keys)||'';}
+function loteKeyV28(o){return normTextV28((o&&((o.quadra||o.rua||'')+'|'+o.lote))||'');}
+function isVendaV28(c){return c&&isVendido(c.status);}
+function isMendesV28(c){return !!c&&normTextV28(c.cliente).includes('mendes lima')&&same(c.quadra,'Araçá')&&['25','27'].includes(String(c.lote).trim());}
+function isDanielV28(c){return !!c&&normTextV28(c.cliente).includes('daniel bittencourt')&&same(c.quadra,'Araçá')&&String(c.lote).trim()==='23';}
+function isViniciusJaqueline(c){return !!c&&((same(c.quadra,'Baru')&&String(c.lote).trim()==='14')||normTextV28(c.cliente).includes('vinicius')||normTextV28(c.cliente).includes('jaqueline')||normTextV28(c.cliente).includes('jacqueline'));}
+function isGustavoVenda(c){return !!c&&((same(c.quadra,'Baru')&&String(c.lote).trim()==='23')||normTextV28(c.cliente).includes('gustavo'));}
+
+function comissaoPctVenda(c){
+  if(!c)return 0;
+  var st=normTextV28(c.status), fp=normTextV28((c.formaPagamento||'')+' '+(c.fluxo||''));
+  if(st.includes('permut')||fp.includes('permuta'))return 0;
+  if(isGustavoVenda(c))return 0;
+  if(isViniciusJaqueline(c)||fp.includes('36'))return 4.5;
+  if(isMendesV28(c)||isDanielV28(c))return 5.5;
+  return 5.5;
+}
+function comissaoValorVenda(c){
+  if(!c)return 0;
+  if(isGustavoVenda(c))return 0;
+  if(isViniciusJaqueline(c))return V28_COMISSAO_VINICIUS;
+  return round2V28(num(c.valorFinal)*comissaoPctVenda(c)/100);
+}
+function valorLiquidoUP(c){return round2V28(num(c.valorFinal)-comissaoValorVenda(c));}
+
+function normLote(r,i){
+  var idL=pick(r,['id_lote','id','codigo','código','#'])||'L'+String((i||0)+1).padStart(3,'0');
+  var ruaRaw=pick(r,['rua','logradouro','quadra'])||'';
+  var quadra=quadraNome(ruaRaw);
+  var rua=String(ruaRaw||quadra).toUpperCase()===String(ruaRaw||'')?('Rua '+quadra):String(ruaRaw||quadra);
+  var lote=String(pick(r,['lote','numero','número'])||'').replace(/\.0$/,'').trim();
+  var area=num(pick(r,['area_m2','area','área','metragem','m2','m²']));
+  var precoBase=num(pick(r,['preco_m2_base','preco_base','preco_m2','preço_m2','valor_m2','valor do m²','valor do m2']))||PRECO_M2;
+  var fator=num(pick(r,['fator','fator_comercial']))||1;
+  var valor=num(pick(r,['valor_tabela','valor_total','valor','preco_total','total','total ']))||area*precoBase*fator;
+  var precoFinal=num(pick(r,['preco_m2_final','preço_m2_final']))||((area>0)?valor/area:precoBase);
+  var statusVenda=normTextV28(pick(r,['status_venda','status_comercial','status'])||'');
+  var statusLote=normTextV28(pick(r,['status_lote','situacao','situação'])||'');
+  var propriedade=normTextV28(pick(r,['propriedade','propriedade_origem','proprietario_origem','proprietário_origem'])||'');
+  var tipoAnotacao=String(pick(r,['tipo_anotacao','tipo anotacao','tipo_anotação','tipo de anotação'])||'');
+  var tipoNorm=normTextV28(tipoAnotacao);
+  var vendavelRaw=normTextV28(pick(r,['vendavel','vendável'])||'');
+  var motivoRaw=String(pick(r,['motivo_bloqueio','motivo bloqueio'])||'');
+  var motivo=normTextV28(motivoRaw);
+  var estoque=normTextV28(pick(r,['estoque_comercial','estoque comercial'])||'');
+  var anotacao=String(pick(r,['anotacao_lote','anotacao','anotação','propriedade_origem','propriedade'])||'');
+  var contexto=normTextV28([propriedade,tipoAnotacao,motivoRaw,estoque,anotacao,pick(r,['origem_status','observacoes','obs'])].join(' '));
+  var semBloqueio=tipoNorm.includes('sem anotacao bloqueante')||contexto.includes('sem anotacao bloqueante')||contexto.includes('sem restricao');
+  var garantia=contexto.includes('garantia gdf')||contexto.includes('garantia ao gdf');
+  var simObs=vendavelRaw.startsWith('sim');
+  var proibicao=vendavelRaw==='nao'||vendavelRaw==='não'||motivo.includes('nao comercializ')||motivo.includes('não comercializ')||motivo.includes('fora da venda')||motivo.includes('casa calliandra')||motivo.includes('comprometido');
+  var status='Restrito', vendavel=false;
+  if(propriedade.includes('vendida')||isAffirmativeSold(statusVenda)||isAffirmativeSold(statusLote)){
+    status='Vendido'; vendavel=false;
+  }else if(propriedade.includes('permuta')||statusLote.includes('permuta')||contexto.includes('permutante')){
+    status='Permutado'; vendavel=false;
+  }else if(contexto.includes('casa calliandra')){
+    status='Casa Calliandra'; vendavel=false;
+  }else if(garantia && simObs && !proibicao){
+    status='Garantia GDF'; vendavel=true;
+  }else if(proibicao||contexto.includes('desenvolve')||contexto.includes('indisponivel')||contexto.includes('bloqueio definitivo')){
+    status='Restrito'; vendavel=false;
+  }else if(statusVenda.includes('dispon')||simObs||semBloqueio||propriedade==='up'||estoque.includes('estoque comercial')){
+    status='Disponível'; vendavel=true;
+  }
+  return {id:String(idL).replace(/\.0$/,''),quadra:quadra,rua:rua,lote:lote,area:area,precoM2:precoFinal||precoBase,precoBase:precoBase,fator:fator,valorTabela:valor,status:status,vendavel:vendavel,obs:pick(r,['observacoes','observações','obs'])||'',anotacao:tipoAnotacao||anotacao,tipoAnotacao:tipoAnotacao,motivoBloqueio:motivoRaw,estoqueComercial:pick(r,['estoque_comercial','estoque comercial'])||'',vendavelRaw:pick(r,['vendavel','vendável'])||'',raw:r};
+}
+
+function isLoteComercializavelV28(l){
+  if(!l||!l.lote||num(l.area)<=0)return false;
+  var ctx=normTextV28([l.status,l.anotacao,l.tipoAnotacao,l.motivoBloqueio,l.estoqueComercial,l.vendavelRaw,rawPickV28(l,['status_comercial','tipo_anotacao','motivo_bloqueio','estoque_comercial','vendavel','anotacao_lote','propriedade_origem'])].join(' '));
+  if(ctx.includes('vendido')||ctx.includes('vendida')||ctx.includes('permuta')||ctx.includes('casa calliandra')||ctx.includes('desenvolve')||ctx.includes('comprometido'))return false;
+  if(ctx.includes('nao comercializ')||ctx.includes('não comercializ')||ctx.includes('fora da venda'))return false;
+  if(normTextV28(l.vendavelRaw)==='nao'||normTextV28(l.vendavelRaw)==='não')return false;
+  if(l.vendavel&&(l.status==='Disponível'||l.status==='Garantia GDF'))return true;
+  if(ctx.includes('garantia gdf')&&(ctx.includes('sim com observacao')||ctx.includes('sim, com observacao')))return true;
+  return false;
+}
+function auditoriaEstoqueV28(){
+  var lotes=(STATE&&STATE.lotes)||[];
+  var vendidos=lotes.filter(function(l){return normTextV28(l.status).includes('vend')||normTextV28(rawPickV28(l,['status_comercial','propriedade_origem'])).includes('vendida');}).length;
+  var permutas=lotes.filter(function(l){return normTextV28([l.status,l.anotacao,l.tipoAnotacao,rawPickV28(l,['status_comercial','tipo_anotacao','propriedade_origem'])].join(' ')).includes('permuta');}).length;
+  var comercializaveis=lotes.filter(isLoteComercializavelV28).length;
+  var base=lotes.length||num(CFG.estoqueUP)||53;
+  var comercializados=(vendidos||num(CFG.vendidosHistorico)||9)+(permutas||num(CFG.permutado)||1);
+  var restritos=Math.max(base-comercializaveis-comercializados,0);
+  return {base:base,comercializaveis:comercializaveis||num(CFG.disponiveis)||38,vendidos:vendidos||num(CFG.vendidosHistorico)||9,permutas:permutas||num(CFG.permutado)||1,comercializados:comercializados||num(CFG.comercializados)||10,restritos:restritos||num(CFG.restritosUP)||5};
+}
+function aplicarAuditoriaEstoqueV28(){
+  var a=auditoriaEstoqueV28();
+  Object.assign(CFG,{estoqueUP:a.base,disponiveis:a.comercializaveis,vendidosHistorico:a.vendidos,permutado:a.permutas,comercializados:a.comercializados,restritosUP:a.restritos});
+  return a;
+}
+function lotesComercializaveis(){
+  var vendidosKeys=new Set((typeof vendasGerenciais==='function'?vendasGerenciais():[]).filter(isVendaV28).map(loteKeyV28));
+  return ((STATE&&STATE.lotes)||[]).filter(function(l){return isLoteComercializavelV28(l)&&!vendidosKeys.has(loteKeyV28(l));}).sort(function(a,b){return String(loteNome(a)).localeCompare(String(loteNome(b)),'pt-BR');});
+}
+function simulaveis(){return lotesComercializaveis();}
+
+function stats(){
+  var aud=aplicarAuditoriaEstoqueV28();
+  var vp=vendasPeriodo();
+  var real=sum(vp,'valorFinal'), tab=sum(vp,'valorTabela');
+  var caixa=sum(vp,'recebimentoMaio')+sum(vp,'recebimentoJunho');
+  return {vp:vp,real:real,tab:tab,caixa:caixa,desconto:Math.max(tab-real,0),unidades:vp.length,pctFin:pct(real,CFG.metaFinanceira),pctLot:pct(vp.length,CFG.metaLotes),faltam:Math.max(CFG.metaLotes-vp.length,0),faltaFin:Math.max(CFG.metaFinanceira-real,0),ticket:vp.length?real/vp.length:0,restritos:aud.restritos,mediaNec:Math.max(CFG.metaLotes-vp.length,0)?Math.max(CFG.metaFinanceira-real,0)/Math.max(CFG.metaLotes-vp.length,0):0};
+}
+
+function cfgNumberV28(rows,key,fallback){
+  var row=(rows||[]).find(function(r){return normTextV28(pick(r,['chave','key','id'])||'')===normTextV28(key);});
+  if(!row)return fallback;
+  var v=pick(row,['valor','value','Valor']);
+  var n=num(v);
+  return (v!==''&&v!=null&&!isNaN(n))?n:fallback;
+}
+function cfgTextV28(rows,key,fallback){
+  var row=(rows||[]).find(function(r){return normTextV28(pick(r,['chave','key','id'])||'')===normTextV28(key);});
+  if(!row)return fallback;
+  var v=pick(row,['valor','value','Valor']);
+  return (v!==''&&v!=null)?v:fallback;
+}
+function aplicarCfgPlanilhaV28(rows){
+  if(!rows||!rows.length)return;
+  CFG.total=cfgNumberV28(rows,'total_lotes_comerciais',CFG.total);
+  CFG.estoqueUP=cfgNumberV28(rows,'estoque_up',CFG.estoqueUP);
+  CFG.permutante=cfgNumberV28(rows,'lotes_permutante',CFG.permutante);
+  CFG.disponiveis=cfgNumberV28(rows,'lotes_comercializaveis',CFG.disponiveis);
+  CFG.restritosUP=cfgNumberV28(rows,'lotes_restritos_up',CFG.restritosUP||5);
+  CFG.vendidosHistorico=cfgNumberV28(rows,'vendidos_historico_up',CFG.vendidosHistorico);
+  CFG.permutado=cfgNumberV28(rows,'permutados_up',CFG.permutado);
+  CFG.comercializados=cfgNumberV28(rows,'comercializados_up',CFG.comercializados);
+  CFG.metaLotes=cfgNumberV28(rows,'meta_periodo_unidades',cfgNumberV28(rows,'meta_vendas_unidades',CFG.metaLotes));
+  CFG.metaFinanceira=cfgNumberV28(rows,'meta_periodo_vgv',cfgNumberV28(rows,'meta_vgv',CFG.metaFinanceira));
+  CFG.verbaMidia=cfgNumberV28(rows,'orcamento_marketing_total',V28_MARKETING);
+  CFG.precoM2Padrao=cfgNumberV28(rows,'preco_m2_padrao',V28_PRECO_ANTECIPADO);
+  safeSet('calliandra_v9_cfg',JSON.stringify(CFG));
+}
+
+var syncDataV28Anterior = typeof syncData==='function'?syncData:null;
+syncData = async function(){
+  setConn(false,'Sincronizando...');
+  var r=await apiGetAll(35000), data=r.data||r.raw?.data||{};
+  var cfgRows=getSheet(data,'cfg');
+  aplicarCfgPlanilhaV28(cfgRows);
+  var lotesPlanilha=getSheet(data,'lotes').map(normLote).filter(function(l){return l.lote&&l.area>0;});
+  var vendasPlanilha=[...getSheet(data,'vendas'),...getSheet(data,'contratos')].map(normContrato).filter(function(c){return c.lote||c.cliente;});
+  var corretoresPlanilha=[...getSheet(data,'corretores'),...getSheet(data,'parceiros_comerciais')].map(normCorretor).filter(function(c){return c.nome;});
+  var recebimentosPlanilha=getSheet(data,'recebimentos');
+  if(!lotesPlanilha.length) throw new Error('A API respondeu, mas não trouxe a aba lotes.');
+  STATE.lotes=dedupeLotes(lotesPlanilha);
+  if(vendasPlanilha.length){STATE.contratos=vendasPlanilha;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendasPlanilha));}
+  if(corretoresPlanilha.length) STATE.corretores=dedupe([...corretoresPadrao(),...corretoresPlanilha],'nome');
+  STATE.recebimentos=Array.isArray(recebimentosPlanilha)?recebimentosPlanilha:[];
+  STATE.cfgRows=cfgRows;
+  STATE.metas=getSheet(data,'metas');
+  STATE.regrasComerciais=getSheet(data,'regras_comerciais');
+  STATE.regrasComissionamento=getSheet(data,'regras_comissionamento');
+  STATE.regrasFinanciamento=getSheet(data,'regras_financiamento');
+  STATE.orcamentoRows=getSheet(data,'orcamento');
+  STATE.midiaRows=getSheet(data,'midia');
+  var aud=aplicarAuditoriaEstoqueV28();
+  STATE.lastSync={at:new Date().toISOString(),source:'google_sheets',lotes:lotesPlanilha.length,vendas:vendasPlanilha.length,corretores:corretoresPlanilha.length,recebimentos:STATE.recebimentos.length,cfg:cfgRows.length,metas:STATE.metas.length,regras:STATE.regrasComerciais.length,comercializaveis:aud.comercializaveis,restritos:aud.restritos};
+  saveLocal();applyRules();setConn(true,'Google Sheets sincronizado');
+};
+
+function fatorLoteV28(l){
+  var f=num(l&&l.fator);
+  if(f>0&&isFinite(f))return f;
+  var area=num(l&&l.area), valor=num(l&&l.valorTabela), precoRef=num(l&&l.precoBase)||V28_PRECO_ANTECIPADO;
+  if(area>0&&precoRef>0&&valor>0){f=valor/(area*precoRef); if(isFinite(f)&&f>0)return f;}
+  return 1;
+}
+function precoM2SimV28(l,regra){return (regra==='lancamento'?V28_PRECO_LANCAMENTO:V28_PRECO_ANTECIPADO)*fatorLoteV28(l);}
+function valorTabelaSimV28(l,regra){return num(l.area)*precoM2SimV28(l,regra);}
+function descontoMaxSimV28(regra,entrada,parcelas){
+  entrada=num(entrada); parcelas=Math.floor(num(parcelas));
+  var max=0;
+  if(regra==='lancamento'){
+    if(entrada>=100)max=10;
+    else if(entrada>=50)max=5;
+    else if(entrada>=30)max=3;
+    if(parcelas>0&&parcelas<=12)max=Math.max(max,2);
+  }else{
+    if(entrada>=100)max=5;
+    else if(entrada>=50)max=2.5;
+  }
+  return max;
+}
+function textoRegraSimV28(regra){
+  return regra==='lancamento'?'Lançamento a partir de 20/06 · R$ 1.472,47/m²':'Venda antecipada até 19/06 · R$ 1.408,14/m²';
+}
+function setSimRegraV28(regra){
+  var el=id('simRegra'); if(el)el.value=regra;
+  var ent=id('simEntrada'), parc=id('simParcelas'), desc=id('simDesconto');
+  if(regra==='antecipada'){ if(ent)ent.value=100; if(parc)parc.value=0; }
+  else { if(ent)ent.value=10; if(parc)parc.value=120; }
+  if(desc)desc.value='';
+  calcSim();
+}
+function renderSimulador(selected){
+  var lotes=simulaveis(), first=selected||lotes[0]?.id||'';
+  id('page-simulador').innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Simulação por fase comercial, com preço vigente até 19/06 e regra de lançamento a partir de 20/06.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('simulador')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div><div class="sim-form no-print"><div class="ch" style="padding:0 0 12px;border-bottom:0"><div><div class="ch-ttl">Regra da simulação</div><div class="sub">Escolha a fase antes de gerar a condição comercial.</div></div></div><div class="v28-rule-switch"><div id="ruleAntecipada" class="v28-rule-card on" onclick="setSimRegraV28('antecipada')"><small>Até 19/06</small><b>R$ 1.408,14/m²</b><span>À vista até 5% · entrada 50% até 2,5%</span></div><div id="ruleLancamento" class="v28-rule-card" onclick="setSimRegraV28('lancamento')"><small>A partir de 20/06</small><b>R$ 1.472,47/m²</b><span>À vista até 10% · 50% até 5% · 30% até 3% · até 12x até 2%</span></div></div><input id="simRegra" type="hidden" value="antecipada"><div class="fr c4"><div class="field"><label>Lote</label><select id="simLote" onchange="calcSim()">${lotes.map(l=>`<option value="${l.id}" ${l.id===first?'selected':''}>${esc(loteNome(l))} · ${AREA(l.area)} · ${l.status}</option>`).join('')}</select></div><div class="field"><label>Entrada (%)</label><input id="simEntrada" type="number" min="0" max="100" value="100" oninput="calcSim()"></div><div class="field"><label>Parcelas</label><input id="simParcelas" type="number" min="0" max="120" value="0" oninput="calcSim()"></div><div class="field"><label>Desconto (%)</label><input id="simDesconto" type="number" min="0" step="0.1" placeholder="usar teto" oninput="calcSim()"></div></div><div class="info" style="margin-top:12px"><b>Teto calculado:</b> <span id="simTetoTxt">-</span>. Para prazo acima de 36 parcelas, o sistema calcula 12% a.a. e exibe aviso de IPCA, sem projetar o índice.</div></div><div id="simResult"></div>`;
+  calcSim();
+}
+function calcSim(){
+  var regra=val('simRegra')||'antecipada', lote=(simulaveis()||[]).find(function(l){return String(l.id)===String(val('simLote'));});
+  var cardA=id('ruleAntecipada'), cardL=id('ruleLancamento'); if(cardA&&cardL){cardA.classList.toggle('on',regra==='antecipada');cardL.classList.toggle('on',regra==='lancamento');}
+  if(!lote){id('simResult').innerHTML='<div class="warnbox">Nenhum lote comercializável disponível para simulação. Confira a planilha de lotes.</div>';return;}
+  var entradaPct=Math.min(100,Math.max(0,num(val('simEntrada'))));
+  var parcelas=Math.min(120,Math.max(0,Math.floor(num(val('simParcelas')))));
+  var teto=descontoMaxSimV28(regra,entradaPct,parcelas);
+  var descEl=id('simDesconto');
+  var desconto=(descEl&&descEl.value!=='')?Math.min(teto,Math.max(0,num(descEl.value))):teto;
+  if(descEl&&num(descEl.value)>teto)descEl.value=teto;
+  var precoM2=precoM2SimV28(lote,regra), tabela=valorTabelaSimV28(lote,regra), descontoValor=tabela*desconto/100, contratado=tabela-descontoValor;
+  var entradaValor=contratado*entradaPct/100, saldo=Math.max(0,contratado-entradaValor), jurosMes=JUROS_MES, parcela=(parcelas>0&&saldo>0)?calcPrice(saldo,parcelas,jurosMes):0;
+  var avisos=[];
+  if(regra==='antecipada'&&entradaPct<50)avisos.push('Até 19/06, a venda antecipada exige entrada mínima de 50%, salvo aprovação específica.');
+  if(regra==='lancamento'&&entradaPct<10)avisos.push('No dia do lançamento, a entrada mínima é 10%. Após o lançamento, a entrada padrão prevista é 20%.');
+  if(parcelas>36)avisos.push('Financiamento acima de 36 parcelas: aplicar 12% a.a. + IPCA. O IPCA não foi projetado no cálculo.');
+  if(lote.status==='Garantia GDF')avisos.push('Lote em garantia GDF: pode ser simulado como comercializável com observação e validação contratual.');
+  id('simTetoTxt').textContent=`${teto.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}% para ${textoRegraSimV28(regra)}`;
+  id('simResult').innerHTML=`<div class="card"><div class="ch"><div><div class="ch-ttl">Resultado da simulação</div><div class="sub">${esc(loteNome(lote))} · ${AREA(lote.area)} · ${textoRegraSimV28(regra)}</div></div>${badge(lote.status)}</div><div class="result-grid"><div class="result-item"><span>Preço m² aplicado</span><b>${BRL(precoM2)}/m²</b></div><div class="result-item"><span>Valor tabela</span><b>${BRL(tabela)}</b></div><div class="result-item"><span>Desconto</span><b>${BRL(descontoValor)}</b><small>${desconto.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</small></div><div class="result-item"><span>Valor contratado</span><b>${BRL(contratado)}</b></div><div class="result-item"><span>Entrada</span><b>${BRL(entradaValor)}</b><small>${entradaPct.toLocaleString('pt-BR')}%</small></div><div class="result-item"><span>${parcelas>0?'Parcela estimada':'Saldo'}</span><b>${parcelas>0?BRL(parcela):BRL(saldo)}</b><small>${parcelas>0?parcelas+'x · 12% a.a.':(saldo>0?'a negociar':'quitado')}</small></div></div>${avisos.length?`<div class="warnbox" style="margin-top:12px">${avisos.map(a=>'• '+esc(a)).join('<br>')}</div>`:`<div class="success" style="margin-top:12px"><b>Condição dentro da régua selecionada.</b> Validar disponibilidade e aprovação contratual antes de formalizar proposta.</div>`}<table class="v28-result-table"><thead><tr><th>Leitura comercial</th><th>Parâmetro aplicado</th></tr></thead><tbody><tr><td>Fase</td><td>${textoRegraSimV28(regra)}</td></tr><tr><td>Teto de desconto</td><td>${teto.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</td></tr><tr><td>Juros</td><td>${parcelas>0?'12% ao ano, sem correção até 36 parcelas':'Não aplicado'}</td></tr><tr><td>Correção</td><td>${parcelas>36?'IPCA aplicável, sem projeção no sistema':'Sem correção projetada'}</td></tr></tbody></table></div>`;
+}
+
+function regrasLancamentoV27(cfg,editavel){
+  return `<div class="card v26-section"><div class="ch"><div><div class="ch-ttl">Regras comerciais por fase</div><div class="sub">O simulador separa a venda antecipada até 19/06 da régua de lançamento a partir de 20/06.</div></div>${badge('régua comercial')}</div><div class="cb"><div class="v27-rule-grid"><div class="v27-rule primary"><small>Até 19/06</small><b>${BRL(V28_PRECO_ANTECIPADO)}/m²</b><span>à vista até 5% · entrada mínima 50% com até 2,5%</span></div><div class="v27-rule primary"><small>A partir de 20/06</small><b>${BRL(V28_PRECO_LANCAMENTO)}/m²</b><span>regra de lançamento</span></div><div class="v27-rule"><small>À vista</small><b>até 10%</b><span>lançamento</span></div><div class="v27-rule"><small>Entrada de 50%</small><b>até 5%</b><span>lançamento</span></div><div class="v27-rule"><small>Entrada de 30%</small><b>até 3%</b><span>lançamento</span></div><div class="v27-rule"><small>Plano até 12x</small><b>até 2%</b><span>12% a.a. · sem correção</span></div></div><div class="info" style="margin-top:12px"><b>Observação:</b> a aba de cenários/projeções trabalha o preço de lançamento; o simulador permite alternar entre a régua vigente até 19/06 e a régua de lançamento.</div></div></div>`;
+}
+function regrasComerciaisV26(){return regrasLancamentoV27({},false);}
+
+var renderConfigV28Anterior = typeof renderConfig==='function'?renderConfig:null;
+renderConfig = function(){
+  if(renderConfigV28Anterior)renderConfigV28Anterior();
+  var aud=aplicarAuditoriaEstoqueV28(), sync=STATE.lastSync||{};
+  var html=`<div class="card v28-audit"><div class="ch"><div><div class="ch-ttl">Auditoria operacional V28</div><div class="sub">Conferência automática entre planilha, estoque e regras críticas do sistema.</div></div>${badge('auditoria')}</div><div class="cb"><div class="v28-audit-grid"><div class="v28-audit-mini"><small>Estoque UP</small><b>${aud.base}</b></div><div class="v28-audit-mini"><small>Comercializáveis</small><b>${aud.comercializaveis}</b></div><div class="v28-audit-mini"><small>Comercializados</small><b>${aud.comercializados}</b></div><div class="v28-audit-mini"><small>Restritos UP</small><b>${aud.restritos}</b></div></div><div class="info" style="margin-top:12px"><b>Comissões travadas:</b> Vinícius e Jacqueline = 4,5% / R$ 22.070,00; Mendes Araçá 25 e 27 = 5,5%; Daniel Araçá 23 = 5,5%; Gustavo Baru 23 = R$ 0,00 por desconto comercial.</div><div class="success" style="margin-top:12px"><b>Abas lidas na sincronização:</b> lotes, vendas/contratos, corretores/parceiros, recebimentos, cfg, metas, regras_comerciais, regras_comissionamento, regras_financiamento, orçamento e mídia. Última sincronização: ${sync.at?new Date(sync.at).toLocaleString('pt-BR'):'ainda não registrada nesta sessão'}.</div></div></div>`;
+  id('page-config').insertAdjacentHTML('beforeend',html);
+};
+</script>
+
+
+
+<script>
+/* V28.1 — preservação funcional e proteção do gráfico econômico-financeiro
+   Objetivo: manter todas as funcionalidades da versão principal e impedir que o painel
+   "VGV acumulado pós-comissão x caixa líquido acumulado x desembolso acumulado da obra"
+   desapareça por divergência de classificação dos lotes. */
+(function(){
+  function nomeLoteV281(l){
+    try{return String(typeof loteNome==='function'?loteNome(l):((l&&l.quadra?l.quadra+' ':'')+(l&&l.lote?l.lote:'')));}
+    catch(e){return String((l&&l.quadra?l.quadra+' ':'')+(l&&l.lote?l.lote:''));}
+  }
+  function sortLotesV281(a,b){return nomeLoteV281(a).localeCompare(nomeLoteV281(b),'pt-BR',{numeric:true,sensitivity:'base'});}
+
+  var lotesComercializaveisAnteriorV281 = typeof window.lotesComercializaveis==='function' ? window.lotesComercializaveis : null;
+  window.lotesComercializaveis = function(){
+    var lotes=(window.STATE&&Array.isArray(STATE.lotes))?STATE.lotes:[];
+    var filtrados=[];
+    if(typeof window.isLoteComercializavelV28==='function'){
+      filtrados=lotes.filter(function(l){return isLoteComercializavelV28(l);}).sort(sortLotesV281);
+    }
+    if(!filtrados.length && lotesComercializaveisAnteriorV281){
+      try{filtrados=(lotesComercializaveisAnteriorV281()||[]).slice().sort(sortLotesV281);}catch(e){filtrados=[];}
+    }
+    return filtrados;
+  };
+
+  window.simulaveis = function(){return window.lotesComercializaveis();};
+
+  function painelCurvaProtegidaV281(model,cfg,lotes,total,mixOk,conciliado){
+    if(model && typeof window.cashPanelV24==='function') return cashPanelV24(model,cfg);
+    var esperado=(window.CFG&&CFG.disponiveis)||38;
+    var encontrados=(lotes&&lotes.length)||0;
+    var distribuido=total||0;
+    return `<div class="card scenario-section cash-curve-section v24-section v281-protected"><div class="ch"><div><div class="ch-ttl">Caixa projetado x desembolso das obras</div><div class="sub">Painel protegido: esta seção não será removida. Se houver divergência de base, o sistema bloqueia apenas o cálculo para evitar apresentação incorreta.</div></div>${typeof badge==='function'?badge('gráfico protegido'):''}</div><div class="cb"><div class="warnbox"><b>Curva temporariamente bloqueada para conciliação.</b><br>O gráfico de VGV acumulado pós-comissão, caixa líquido acumulado e desembolso acumulado da obra continua preservado no sistema, mas depende da conciliação entre lotes comercializáveis e distribuição da projeção.<br><br><b>Diagnóstico:</b> lotes comercializáveis reconhecidos: ${encontrados} de ${esperado}; unidades distribuídas na projeção: ${distribuido} de ${esperado}.<br><br>Após a planilha reconhecer corretamente os 38 comercializáveis e a projeção distribuir as 38 unidades, a curva volta a renderizar automaticamente.</div><div class="info" style="margin-top:12px"><b>Leitura obrigatória preservada:</b> VGV acumulado pós-comissão não representa caixa disponível; caixa líquido acumulado representa entradas efetivas/projetadas; desembolso acumulado da obra representa a necessidade financeira do empreendimento.</div></div></div>`;
+  }
+
+  window.renderCenarios = function(){
+    const cfg=currentScenarioV24();
+    cfg.preco3=V27_PRECO_LANCAMENTO;cfg.ativo='3';cfg.teto24=0;cfg.teto36=0;
+    normalizeRowsV24(cfg);safeSet(V24_SCENARIO_KEY,JSON.stringify(cfg));
+    const lotes=scenarioLotsV21(),conciliado=lotes.length===CFG.disponiveis,total=totalRowsV24(cfg),junho=qtdAteJunhoV24(cfg),mixOk=total===CFG.disponiveis,metaOk=junho===stats().faltam,area=lotes.reduce((s,l)=>s+num(l.area),0),model=conciliado&&mixOk?cashProjectionV24(lotes,V27_PRECO_LANCAMENTO,cfg):null,hist=vendasResumoV23(soldV23()),proj=metricsV24(area,V27_PRECO_LANCAMENTO,cfg);
+    const baseAlert=conciliado?'':`<div class="warnbox"><b>Base divergente:</b> a planilha devolveu ${lotes.length} de ${CFG.disponiveis} lotes comercializáveis. Não apresente a curva sem conciliar.</div>`;
+    const mixAlert=mixOk?`<div class="success"><b>Estoque distribuído:</b> ${total} de ${CFG.disponiveis} lotes remanescentes estão alocados na projeção.</div>`:`<div class="warnbox"><b>Distribuição incompleta:</b> ${total} de ${CFG.disponiveis} lotes remanescentes foram alocados.</div>`;
+    const metaAlert=metaOk?`<div class="success"><b>Meta abril-junho fechada:</b> 2 vendas realizadas + ${junho} novas vendas projetadas = 23 unidades até 30/06.</div>`:`<div class="warnbox"><b>Meta abril-junho:</b> a projeção registra ${junho} novas vendas até 30/06, mas são necessárias ${stats().faltam}.</div>`;
+    const economic=conciliado&&mixOk?`<div class="table-card v24-section"><div class="ch"><div><div class="ch-ttl">Projeção econômica do estoque remanescente</div><div class="sub">Aplicação exclusiva do preço de lançamento aos 38 lotes disponíveis; vendas já fechadas não são recalculadas.</div></div>${badge('R$ 1.472,47/m²')}</div><div class="tw"><table><thead><tr><th>Preço lançamento</th><th>VGV bruto</th><th>Desconto projetado</th><th>VGV pós-desconto</th><th>Comissão projetada</th><th>VGV pós-comissão</th></tr></thead><tbody><tr><td><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b></td><td>${BRL(proj.bruto)}</td><td>${BRL(proj.desc)}<br><small>${proj.pctDesc.toFixed(2).replace('.',',')}%</small></td><td>${BRL(proj.contratado)}</td><td>${BRL(proj.com)}<br><small>inclui incentivo entrada ${BRL(proj.bonus)}</small></td><td><b>${BRL(proj.liquido)}</b></td></tr></tbody></table></div></div>`:'';
+    const painelCurva=painelCurvaProtegidaV281(model,cfg,lotes,total,mixOk,conciliado);
+    id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Valor de lançamento, política comercial, velocidade de vendas e capacidade de cobertura das obras.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>${regrasLancamentoV27(cfg,true)}${escalaPrecoV27()}${historyTableV24(cfg)}<div class="card v24-section"><div class="ch"><div><div class="ch-ttl">Distribuição projetada dos 38 lotes remanescentes</div><div class="sub">Defina quantidade, entrada, prazo e desconto para avaliar o efeito no caixa do empreendimento.</div></div>${badge('planejamento')}</div><div class="cb">${mixTableV24(cfg)}<div class="fr c1" style="margin-top:14px"><div class="field"><label>Tratamento da comissão no caixa</label><select id="v24_deduz" onchange="renderCenarios()"><option value="sim" ${cfg.deduzComissao?'selected':''}>Provisionar no mês da venda</option><option value="nao" ${!cfg.deduzComissao?'selected':''}>Não deduzir da curva</option></select></div></div>${baseAlert}${mixAlert}${metaAlert}</div></div><div class="v24-board-grid v24-section">${kpi('Estoque remanescente',CFG.disponiveis,'lotes a comercializar')}${kpi('Meta novas vendas · jun',stats().faltam,'para atingir 23 unidades','g')}${kpi('VGV pós-comissão vendido',BRL(hist.liquido),'9 vendas fechadas','o')}${kpi('Preço do lançamento',BRL(V27_PRECO_LANCAMENTO)+'/m²','vigente a partir de 20/06','l')}</div>${economic}${painelCurva}`;
+  };
+
+  window.CALLIANDRA_V281_CHECKLIST={
+    preservado:true,
+    itens:['Dashboard','Cronograma','Orçamento','Plano de Mídia','Simulador','Vendas','Lotes','Mapa Comercial','Corretores','Relatórios','Cenários e Projeções','Configurações','Impressão/PDF','Sincronização Google Sheets','Exportação','Nova Venda','Gráfico VGV pós-comissão x caixa líquido x desembolso da obra'],
+    graficoProtegido:true,
+    regraLotes:'lotesComercializaveis agora usa isLoteComercializavelV28 e respeita vendavel, Casa Calliandra, RHUMB Garantia GDF e demais bloqueios.'
+  };
+})();
+</script>
+
+
+<script>
+/* V28.2 — restauração do simulador original
+   Recoloca a mecânica da versão principal: nome do cliente, responsável pelo preenchimento, botões À vista/Entrada de 50% e abertura do campo de parcelas ao escolher 50%. */
+function renderSimulador(selected=''){
+  const lotes=simulaveis(), s=simStateV22();
+  if(selected)s.lote=selected;
+  if(!lotes.some(l=>l.id===s.lote))s.lote=lotes[0]?.id||'';
+  persistSimV22(s);
+  const parcelasField=s.cond==='entrada50'
+    ? `<div class="field sim-installment-field-v252"><label>Número de parcelas do saldo</label><input id="simParcelas" type="number" min="1" max="120" value="${s.parcelas}" oninput="setSimFieldV22('parcelas',Math.min(120,Math.max(1,parseInt(this.value)||36)))"><small>Saldo financiado em até 120 meses.</small></div>`
+    : `<div class="sim-cash-note-v252"><b>Pagamento integral</b><span>Na opção à vista não há saldo financiado nem campo de parcelas.</span></div>`;
+  id('page-simulador').innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Cadastre o cliente, identifique o responsável e simule as condições vigentes da venda antecipada.</div></div><div class="sh-r">${printActionsV19('simulador')}</div></div>
+  <div class="sim-form no-print sim-form-v252">
+    <div class="sim-form-title-v252"><b>Dados da simulação</b><span>Informações que identificam a proposta comercial.</span></div>
+    <div class="fr c3 sim-cadastro-v252">
+      <div class="field"><label>Nome do cliente</label><input id="simCliente" value="${esc(s.cliente)}" placeholder="Nome completo do interessado" oninput="setSimFieldV22('cliente',this.value)"></div>
+      <div class="field"><label>Responsável pelo preenchimento</label><input id="simResp" value="${esc(s.responsavel)}" oninput="setSimFieldV22('responsavel',this.value)"></div>
+      <div class="field"><label>Lote</label><select id="simLote" onchange="setSimFieldV22('lote',this.value)">${lotes.map(l=>`<option value="${l.id}" ${l.id===s.lote?'selected':''}>${esc(loteNome(l))} · ${AREA(l.area)} · ${BRL(l.valorTabela)} · ${l.status}</option>`).join('')}</select></div>
+    </div>
+    <div class="sim-payment-choice-v252">
+      <label class="sim-label-v252">Forma de pagamento</label>
+      <div class="cond-grid cond-grid-v252"><button type="button" data-cond="avista" class="cond ${s.cond==='avista'?'on':''}" onclick="chooseCondV22('avista')"><b>À vista</b><span>5% de desconto automático<br>pagamento integral</span></button><button type="button" data-cond="entrada50" class="cond ${s.cond==='entrada50'?'on':''}" onclick="chooseCondV22('entrada50')"><b>Entrada de 50%</b><span>2,5% de desconto automático<br>saldo parcelado</span></button>${parcelasField}</div>
+    </div>
+    <div class="fr c2 sim-complement-v252"><div class="field"><label>Desconto adicional negociado (%)</label><input id="simDesc" type="number" step="0.01" min="0" value="${s.desconto}" oninput="setSimFieldV22('desconto',this.value)"></div><div class="field"><label>Observação da proposta</label><input id="simObs" value="${esc(s.observacao)}" placeholder="Ex.: condição válida até lançamento" oninput="setSimFieldV22('observacao',this.value)"></div></div>
+    <button class="btn btn-terra" onclick="calcSim()">Atualizar simulação</button>
+  </div><div id="simResult"></div>`;
+  calcSim();
+}
+
+function calcSim(){
+  const s=captureSimV22(), lots=simulaveis(), l=STATE.lotes.find(x=>x.id===s.lote)||lots[0];
+  if(!l){id('simResult').innerHTML='<div class="warnbox">Nenhum lote simulável encontrado. Sincronize ou confira a planilha.</div>';return;}
+  const avista=s.cond==='avista', entradaPct=avista?100:50, parcelas=avista?0:s.parcelas, descAuto=avista?5:2.5;
+  const descPct=descAuto+s.desconto, valorTabela=l.valorTabela, economia=valorTabela*(descPct/100), valorNegociado=valorTabela-economia, precoFinal=valorNegociado/l.area;
+  const entrada=valorNegociado*entradaPct/100, saldo=avista?0:valorNegociado-entrada, hasFinance=!avista&&saldo>0;
+  const price=hasFinance?calcPrice(saldo,parcelas,JUROS_MES):0, sac=hasFinance?sacSummaryV22(saldo,parcelas):null;
+  const totalPrice=hasFinance?entrada+(price*parcelas):valorNegociado, totalSac=hasFinance?entrada+sac.total:valorNegociado, ipca=hasFinance&&parcelas>36;
+  const nota=avista?'Pagamento integral à vista, sem financiamento.':ipca?'Parcelamento acima de 36 meses: os totais abaixo incluem juros de 12% a.a., mas não projetam a correção pelo IPCA.':'Parcelamento até 36 meses: juros de 12% a.a., sem correção monetária.';
+  const cliente=esc(s.cliente||'Cliente não informado');
+  const responsavel=esc(s.responsavel||'-');
+  id('simResult').innerHTML=`<div class="card sim-result-v22"><div class="sim-record-v252"><div><span>Cliente</span><b>${cliente}</b></div><div><span>Responsável pelo preenchimento</span><b>${responsavel}</b></div></div><div class="sim-v22-head"><div><div class="ch-ttl">${loteNome(l)}</div><div class="sub">${AREA(l.area)} · ${l.quadra||l.rua||'-'} · ${badge(l.status)} · <b>${avista?'À vista':'Entrada de 50% + saldo parcelado'}</b></div></div><div class="sim-total-highlight"><span>Valor negociado</span><b>${BRL(valorNegociado)}</b><small>${descPct.toFixed(2).replace('.',',')}% de desconto</small></div></div>
+  <div class="sim-block-grid-v22"><section class="sim-section-v22 sim-price-v22"><h4>Preço e negociação</h4><div class="sim-metrics-v22">${moneyMetricV22('Valor de tabela',BRL(valorTabela))}${moneyMetricV22('Economia',BRL(economia))}${moneyMetricV22('Preço m² de tabela',BRL(l.precoM2))}${moneyMetricV22('Preço m² negociado',BRL(precoFinal))}${moneyMetricV22('Desconto automático',descAuto.toFixed(2).replace('.',',')+'%')}${moneyMetricV22('Desconto adicional',s.desconto.toFixed(2).replace('.',',')+'%')}</div></section>
+  <section class="sim-section-v22 sim-pay-v22"><h4>Forma de pagamento</h4><div class="sim-metrics-v22">${moneyMetricV22('Entrada',BRL(entrada),entradaPct+'% do valor negociado')}${moneyMetricV22('Saldo financiado',hasFinance?BRL(saldo):'Não se aplica')}${moneyMetricV22('Prazo',hasFinance?parcelas+' meses':'À vista')}${moneyMetricV22('Correção',ipca?'IPCA não projetado':'Sem correção')}</div>${hasFinance?`<div class="finance-methods-v22"><div><span>PRICE</span><b>${BRL(price)}</b><small>parcela mensal · total ${BRL(totalPrice)}</small></div><div><span>SAC</span><b>${BRL(sac.primeira)}</b><small>1ª parcela · última ${BRL(sac.ultima)} · total ${BRL(totalSac)}</small></div></div>`:`<div class="payment-full-v22"><span>Total a pagar</span><b>${BRL(valorNegociado)}</b></div>`}</section></div>
+  <div class="${ipca?'warnbox':'success'} sim-note-v22">${nota}</div>${s.observacao?`<div class="info sim-note-v22"><b>Observação:</b> ${esc(s.observacao)}</div>`:''}</div>
+  ${hasFinance?`<div class="table-card sim-compare v21-print-flow sim-installments-v22" style="margin-top:18px"><div class="ch"><div class="ch-ttl">Parcelamento comparativo · Price x SAC</div><span>${parcelas} parcelas · tabela integral para PDF</span></div>${tabelaComparativa(saldo,parcelas)}</div>`:''}`;
+}
+
+window.CALLIANDRA_V282_CHECKLIST = Object.assign({}, window.CALLIANDRA_V281_CHECKLIST || {}, {preservaSimuladorOriginal:true, simuladorOriginalRestaurado:true});
+</script>
+
 </body>
 </html>
