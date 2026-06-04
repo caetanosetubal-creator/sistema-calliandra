@@ -3383,5 +3383,111 @@ function calcSim(){
 window.CALLIANDRA_V282_CHECKLIST = Object.assign({}, window.CALLIANDRA_V281_CHECKLIST || {}, {preservaSimuladorOriginal:true, simuladorOriginalRestaurado:true});
 </script>
 
+
+
+<script>
+/* V28.4 — ajustes de preservação funcional e refinamento visual
+   Mantém o simulador original preservado e corrige Dashboard, fluxo financeiro, largura de tabelas, regras do lançamento e impressão. */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .v284-full-flow{width:100%!important;max-width:none!important;display:block!important}
+    .v284-flow-grid,.v26-flow-grid{display:block!important;width:100%!important;max-width:none!important}
+    .v26-flow-card{width:100%!important;max-width:none!important}
+    .v26-flow-chart{width:100%!important;max-width:none!important;overflow-x:auto!important}
+    .v26-flow-chart svg{width:100%!important;min-width:900px!important;display:block!important}
+    .v26-flow-table{width:100%!important;max-width:none!important;overflow-x:auto!important}
+    .v26-flow-table table{width:100%!important;min-width:1180px!important;table-layout:auto!important}
+    .v26-flow-table td:last-child,.v26-flow-table th:last-child{white-space:normal!important;min-width:360px!important}
+    .v26-flow-table small{display:block;line-height:1.45;white-space:normal!important}
+    .v284-fin36-below{margin-top:16px;width:100%!important}
+    .v284-flow-summary{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+    .v284-dashboard-flow{margin-top:16px}
+    .v284-dashboard-flow .cb{padding-top:16px}
+    .v284-map-next{margin-top:12px}
+    @media(max-width:1280px){.v284-flow-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.v26-flow-table table{min-width:1040px!important}}
+    @media(max-width:760px){.v284-flow-summary{grid-template-columns:1fr!important}}
+    @media print{
+      html,body,.print-doc,.print-doc .page,.print-doc section{background:#fff!important;background-image:none!important;overflow:visible!important}
+      body::before,body::after,.print-doc::before,.print-doc::after,.print-doc .page::before,.print-doc .page::after{content:none!important;display:none!important;background:none!important;background-image:none!important}
+      .print-doc .v26-flow-grid{display:block!important;width:100%!important}
+      .print-doc .v26-flow-card{width:100%!important;max-width:none!important;box-shadow:none!important}
+      .print-doc .v26-flow-chart{overflow:visible!important;width:100%!important}
+      .print-doc .v26-flow-chart svg{width:100%!important;min-width:0!important;height:auto!important}
+      .print-doc .v26-flow-table table{width:100%!important;min-width:0!important;font-size:8.5px!important}
+      .print-doc .v26-flow-table td,.print-doc .v26-flow-table th{white-space:normal!important;padding:4px 5px!important}
+      .print-doc .v26-flow-table td:last-child{min-width:0!important}
+    }
+  `;
+  document.head.appendChild(style);
+
+  window.renderDashboard=function(){
+    const s=stats();
+    id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">Régua principal: estoque comercial da UP. Permutante fora do VGV e da meta.</div></div><div class="sh-r">${printActionsV19('dashboard')}</div></div>
+    <div class="kpi-row">${kpi('Estoque UP',CFG.estoqueUP,'base comercial')}${kpi('Comercializáveis',CFG.disponiveis,'disponíveis + garantia GDF','g',pct(CFG.disponiveis,CFG.estoqueUP))}${kpi('Comercializados UP',CFG.comercializados,'9 vendidos + 1 permuta','o',pct(CFG.comercializados,CFG.estoqueUP))}${kpi('Restritos UP',s.restritos,'fora da venda imediata','l',pct(s.restritos,CFG.estoqueUP))}</div>
+    <div class="kpi-row dashboard-second-row">${kpi('VGV da meta',BRL(s.real),s.pctFin+'% de '+BRL(CFG.metaFinanceira),'g',s.pctFin)}${kpi('Unidades da meta',s.unidades+'/'+CFG.metaLotes,s.pctLot+'% da meta','o',s.pctLot)}${kpi('Caixa até junho',BRL(s.caixa),'Eliana + Eric no período','',pct(s.caixa,s.real))}${kpi('Saldo da meta',BRL(s.faltaFin),s.faltam+' unidades restantes','l')}</div>
+    <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',s.real,CFG.metaFinanceira,true)}${progress('Meta de unidades',s.unidades,CFG.metaLotes,false)}<div class="info"><b>Situação:</b> VGV realizado de ${BRL(s.real)}; faltam ${BRL(s.faltaFin)} e ${s.faltam} unidades para o encerramento da meta.</div></div></div><div class="card"><div class="ch"><div class="ch-ttl">Composição do estoque UP</div>${badge('base 53')}</div><div class="cb" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">${donut([{v:CFG.disponiveis,c:'#173d37'},{v:CFG.comercializados,c:'#ac4a4a'},{v:s.restritos,c:'#d7cdbd'}])}<div class="legend" style="flex:1">${legend('#173d37','Comercializáveis',CFG.disponiveis)}${legend('#ac4a4a','Comercializados',CFG.comercializados)}${legend('#d7cdbd','Restritos UP',s.restritos)}${legend('#6e6760','Permutante fora da régua',CFG.permutante)}</div></div></div></div>
+    <div class="card section-gap v284-dashboard-flow"><div class="ch"><div class="ch-ttl">Fluxo confirmado na meta</div>${badge('caixa')}</div><div class="cb">${progress('Recebido até junho',s.caixa,s.real,true)}<div class="success"><b>Composição:</b> Eliana ${BRL(480000)} à vista e Eric ${BRL(80000)} recebidos/previstos até junho. O saldo do Eric está previsto para julho e agosto.</div></div></div>
+    <div class="table-card section-gap"><div class="ch"><div class="ch-ttl">Vendas consideradas na meta</div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${tabelaVendas(s.vp)}</div>`;
+  };
+
+  window.tabelaFluxoV26=function(rows){
+    return `<div class="tw v26-flow-table"><table><thead><tr><th>Mês</th><th>Recebimento bruto</th><th>Comissão provisionada</th><th>Caixa líquido mensal</th><th>Caixa líquido acumulado</th><th>Composição</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td class="v26-cash-green">${BRL(r.liquido)}</td><td><b>${BRL(r.acum)}</b></td><td>${r.detalhes.map(d=>`<small>• ${esc(d.descricao)}: ${BRL(d.bruto)}${d.comissao?` · comissão ${BRL(d.comissao)}`:''} (${esc(d.status)})</small>`).join('')}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+
+  window.recebimentosPanelV26=function(){
+    const rows=fluxoContratosV26(),m=mendesResumoV26(),fin=fin36VendaV26(),f=fin36CfgV26(),finPanel=fin36PanelV26(),eric=soldV23().find(isEricVenda),ericJun=eric?30000:0;
+    return `<div class="card v26-section"><div class="ch"><div><div class="ch-ttl">Fluxo de recebimentos dos contratos vendidos</div><div class="sub">Leitura financeira: recebimentos realizados e previstos dos contratos já assinados, separados do VGV contratado.</div></div>${badge('financeiro')}</div><div class="cb"><div class="v26-flow-summary v284-flow-summary">${kpi('Caixa líquido até maio',BRL(fluxoAteV26('2026-05')),'entradas reconhecidas','g')}${kpi('Previsto líquido até junho',BRL(fluxoAteV26('2026-06')),'inclui Mendes + Eric 18/06','o')}${kpi('Mendes · saldo bruto jun',BRL(m.saldo),'previsto até 20/06','l')}${kpi('Eric · 18/06',BRL(ericJun),'previsão de entrada','g')}${kpi('Contrato 36x',f.parcela>0?BRL(f.parcela)+'/mês':'Pendente','informar fluxo mensal')}</div><div class="v26-flow-grid v284-flow-grid"><div class="v26-flow-card v284-full-flow">${flowChartV26(rows)}${tabelaFluxoV26(rows)}</div>${finPanel?`<div class="v284-fin36-below">${finPanel}</div>`:''}</div><div class="v26-alert" style="margin-top:14px"><b>Mendes Lima Group:</b> dos lotes Araçá 25 e Araçá 27, foram reconhecidos R$ 58.000,00 em maio — R$ 29.000,00 por lote. O saldo bruto de ${BRL(m.saldo)} está previsto até 20/06. <b>Eric/Araçá 19:</b> R$ 30.000,00 estão previstos para 18/06 e já compõem o caixa líquido acumulado até junho. A comissão de ${BRL(m.com)} foi provisionada no recebimento do saldo final para esta leitura de caixa.</div></div></div>`;
+  };
+
+  window.regrasLancamentoV27=function(cfg, editavel=false){
+    return `<div class="card v26-section"><div class="ch"><div><div class="ch-ttl">Regras comerciais do lançamento</div><div class="sub">Projeção exclusiva do lançamento a partir de 20/06. Percentuais representam teto máximo de negociação.</div></div>${badge('lançamento')}</div><div class="cb"><div class="v27-rule-grid"><div class="v27-rule primary"><small>Valor de lançamento</small><b>${BRL(V27_PRECO_LANCAMENTO)}/m²</b><span>A partir de 20/06/2026</span></div><div class="v27-rule"><small>À vista</small><b>desconto até 10%</b><span>teto máximo</span></div><div class="v27-rule"><small>Entrada de 50%</small><b>desconto até 5%</b><span>teto máximo</span></div><div class="v27-rule"><small>Entrada de 30%</small><b>desconto até 3%</b><span>teto máximo</span></div><div class="v27-rule"><small>Plano até 12x</small><b>desconto até 2%</b><span>12% a.a. · sem correção</span></div></div><div class="info" style="margin-top:12px"><b>Comissão:</b> será calculada na distribuição projetada, conforme a categoria do parceiro em cada bloco de vendas. Para entradas iguais ou superiores a 30%, o sistema acrescenta 1% sobre o valor da entrada.</div></div></div>`;
+  };
+  window.regrasComerciaisV26=function(){return regrasLancamentoV27({},false);};
+
+  function etapaCurtaV284(e){
+    const t=String(e||'');
+    if(t.includes('Venda antecipada')) return 'Venda antecipada';
+    if(t.includes('Dia do lançamento')) return 'Dia 20/06';
+    if(t.includes('21/06')) return '21/06 a 20/07';
+    if(t.includes('Pós-lançamento')) return 'Após 20/07';
+    return t.replace(/Lançamento\s*·\s*/,'');
+  }
+  window.etapaOptionsV24=function(selected){return V24_ETAPAS.map(e=>`<option value="${esc(e)}" ${e===selected?'selected':''}>${esc(etapaCurtaV284(e))}</option>`).join('');};
+
+  const renderMapaBaseV284=window.renderMapa;
+  window.renderMapa=function(){
+    renderMapaBaseV284();
+    const page=id('page-mapa');
+    if(page && !page.querySelector('.v284-map-next')){
+      page.insertAdjacentHTML('beforeend',`<div class="info v284-map-next"><b>Automação do mapa:</b> mantida para a próxima etapa técnica. Para permitir clique direto no lote e mudança de status para vendido, será necessário calibrar coordenadas/áreas clicáveis do mapa para não gerar venda no lote errado. Nesta versão, o mapa segue preservado como leitura visual e a venda continua sendo registrada com segurança pela aba <b>Vendas</b> ou pelo botão <b>Nova Venda</b>.</div>`);
+    }
+  };
+
+  window.CALLIANDRA_V284_CHECKLIST={
+    versao:'V28.4',
+    preservaSimuladorOriginal:true,
+    removeCenarioMiniDashboard:true,
+    fluxoRecebimentosFullWidth:true,
+    incluiEric18Junho:true,
+    regrasLancamentoSemRepeticao:true,
+    printSemMarcaDaguaDeFundo:true,
+    mapaInterativoAdiadoComSeguranca:true
+  };
+})();
+</script>
+
+<script>
+/* V28.4 binding seguro dos overrides globais */
+try{
+  renderDashboard=window.renderDashboard;
+  tabelaFluxoV26=window.tabelaFluxoV26;
+  recebimentosPanelV26=window.recebimentosPanelV26;
+  regrasLancamentoV27=window.regrasLancamentoV27;
+  regrasComerciaisV26=window.regrasComerciaisV26;
+  etapaOptionsV24=window.etapaOptionsV24;
+  renderMapa=window.renderMapa;
+}catch(e){console.warn('V28.4 binding seguro não aplicado integralmente',e);}
+</script>
 </body>
 </html>
