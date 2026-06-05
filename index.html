@@ -3563,5 +3563,68 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
 });
 </script>
 
+
+
+<script>
+/* V28.7 — correção da sincronização da aba Orçado x Realizado
+   A V28.6 criou o painel, mas a última versão ativa de syncData ainda não alimentava STATE.gastos com a nova aba. */
+(function(){
+  function getOrcadoRealizadoRowsV287(data){
+    const nomes=['Orçado x Realizado','Orcado x Realizado','Orçado versus Realizado','Orcado versus Realizado','Orçado vs Realizado','Orcado vs Realizado'];
+    for(const nome of nomes){
+      const raw=getSheet(data,nome);
+      const rows=(raw||[]).map(normOrcadoRealizado).filter(g=>g.item&&!norm(g.item).includes('total geral'));
+      if(rows.length) return {nome,rows};
+    }
+    return {nome:'',rows:[]};
+  }
+
+  window.syncData = async function(){
+    setConn(false,'Sincronizando...');
+    var r=await apiGetAll(35000), data=r.data||r.raw?.data||{};
+    var cfgRows=getSheet(data,'cfg');
+    aplicarCfgPlanilhaV28(cfgRows);
+    var lotesPlanilha=getSheet(data,'lotes').map(normLote).filter(function(l){return l.lote&&l.area>0;});
+    var vendasPlanilha=[...getSheet(data,'vendas'),...getSheet(data,'contratos')].map(normContrato).filter(function(c){return c.lote||c.cliente;});
+    var corretoresPlanilha=[...getSheet(data,'corretores'),...getSheet(data,'parceiros_comerciais')].map(normCorretor).filter(function(c){return c.nome;});
+    var recebimentosPlanilha=getSheet(data,'recebimentos');
+    var orcadoFonte=getOrcadoRealizadoRowsV287(data);
+    var orcadoPlanilha=orcadoFonte.rows;
+
+    if(!lotesPlanilha.length) throw new Error('A API respondeu, mas não trouxe a aba lotes.');
+    STATE.lotes=dedupeLotes(lotesPlanilha);
+    if(vendasPlanilha.length){STATE.contratos=vendasPlanilha;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendasPlanilha));}
+    if(corretoresPlanilha.length) STATE.corretores=dedupe([...corretoresPadrao(),...corretoresPlanilha],'nome');
+    STATE.recebimentos=Array.isArray(recebimentosPlanilha)?recebimentosPlanilha:[];
+    STATE.cfgRows=cfgRows;
+    STATE.metas=getSheet(data,'metas');
+    STATE.regrasComerciais=getSheet(data,'regras_comerciais');
+    STATE.regrasComissionamento=getSheet(data,'regras_comissionamento');
+    STATE.regrasFinanciamento=getSheet(data,'regras_financiamento');
+    STATE.orcamentoRows=orcadoPlanilha;
+    STATE.midiaRows=getSheet(data,'midia');
+    if(orcadoPlanilha.length){
+      STATE.gastos=orcadoPlanilha;
+      safeSet('calliandra_v9_local_gastos',JSON.stringify(orcadoPlanilha));
+    }else{
+      STATE.gastos=[];
+      safeSet('calliandra_v9_local_gastos',JSON.stringify([]));
+    }
+
+    var aud=aplicarAuditoriaEstoqueV28();
+    STATE.lastSync={at:new Date().toISOString(),source:'google_sheets',lotes:lotesPlanilha.length,vendas:vendasPlanilha.length,corretores:corretoresPlanilha.length,recebimentos:STATE.recebimentos.length,cfg:cfgRows.length,metas:STATE.metas.length,regras:STATE.regrasComerciais.length,orcamento:orcadoPlanilha.length,orcamentoFonte:orcadoFonte.nome,comercializaveis:aud.comercializaveis,restritos:aud.restritos};
+    saveLocal();applyRules();setConn(true,'Google Sheets sincronizado');
+  };
+
+  window.CALLIANDRA_V287_CHECKLIST=Object.assign({},window.CALLIANDRA_V285_CHECKLIST||{}, {
+    versao:'V28.7',
+    syncOrcadoRealizadoCorrigido:true,
+    fonteOficialOrcamento:'Orçado x Realizado',
+    naoAlteraSimulador:true,
+    naoAlteraVendasLotesMapaCenarios:true
+  });
+})();
+</script>
+
 </body>
 </html>
