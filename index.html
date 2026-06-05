@@ -81,7 +81,7 @@
   <aside class="sb">
     <div class="sb-head"><img src="./assets/logo-calliandra-white.png" class="sb-logo" alt="Calliandra" onerror="this.style.display='none';document.getElementById('sbFb').style.display='block'"><div id="sbFb" class="sb-fallback hidden">Calliandra</div><div class="sb-sub">Sistema comercial</div></div>
     <button class="sb-item" data-page="dashboard">📊 Dashboard</button>
-    <div class="sb-section">Planejamento</div><button class="sb-item" data-page="cronograma">▦ Cronograma</button><button class="sb-item" data-page="orcamento">💰 Orçamento</button><button class="sb-item" data-page="midia">📡 Plano de Mídia</button>
+    <div class="sb-section">Planejamento</div><button class="sb-item" data-page="cronograma">▦ Cronograma</button><button class="sb-item" data-page="orcamento">💰 Orçado x Realizado</button><button class="sb-item" data-page="midia">📡 Plano de Mídia</button>
     <div class="sb-section">Vendas e resultados</div><button class="sb-item" data-page="simulador">🧮 Simulador</button><button class="sb-item" data-page="contratos">💰 Vendas</button><button class="sb-item" data-page="lotes">🏡 Lotes</button><button class="sb-item" data-page="mapa">🗺️ Mapa Comercial</button><button class="sb-item" data-page="corretores">🤝 Corretores</button>
     <div class="sb-section">Report executivo</div><button class="sb-item" data-page="relatorios">📈 Relatórios</button><button class="sb-item" data-page="cenarios">💹 Cenários e Projeções</button>
     <div class="sb-section">Sistema</div><button class="sb-item" data-page="config">⚙️ Configurações</button>
@@ -120,7 +120,7 @@ const VENDAS_FIXAS=[
 let STATE={lotes:[],contratos:[],corretores:[],acoes:[],gastos:[],midia:[]};
 let editId=null, simCond='ate36';
 let filters={lotes:{q:'',status:'',quadra:'',areaMin:'',areaMax:'',sort:'endereco',dir:'asc'},contratos:{q:'',status:'',corretor:''}};
-const titles={dashboard:'Dashboard',mapa:'Mapa Comercial',cronograma:'Cronograma',orcamento:'Orçamento',midia:'Plano de Mídia',simulador:'Simulador de Preços',contratos:'Vendas',lotes:'Lotes',relatorios:'Relatórios',corretores:'Corretores',config:'Configurações'};
+const titles={dashboard:'Dashboard',mapa:'Mapa Comercial',cronograma:'Cronograma',orcamento:'Orçado x Realizado',midia:'Plano de Mídia',simulador:'Simulador de Preços',contratos:'Vendas',lotes:'Lotes',relatorios:'Relatórios',corretores:'Corretores',config:'Configurações'};
 window.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginForm').addEventListener('submit',login);document.querySelectorAll('.sb-item').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));const u=readJSON(USER,null);if(u)openApp(u);else showLogin();});
 function showLogin(){id('loginScreen').classList.remove('hidden');id('app').classList.add('hidden')}
 function login(e){e.preventDefault();const email=val('loginEmail').trim().toLowerCase(),senha=val('loginSenha').trim();if(email==='admin@calliandra.local'&&senha==='123456'){openApp({nome:'Administrador',email,perfil:'gestor'});return}loginError('Login local: use admin@calliandra.local e senha 123456. A API só será usada depois que o sistema abrir.')}
@@ -350,7 +350,7 @@ function go(page){
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.toggle('on',b.dataset.page===page));
   const target=id('page-'+page) || id('page-dashboard');
   target.classList.add('on');
-  const localTitles={dashboard:'Dashboard',mapa:'Mapa Comercial',cronograma:'Cronograma',orcamento:'Orçamento',midia:'Plano de Mídia',simulador:'Simulador de Preços',contratos:'Vendas',lotes:'Lotes',relatorios:'Relatórios',cenarios:'Cenários de Preço',corretores:'Corretores',config:'Configurações'};
+  const localTitles={dashboard:'Dashboard',mapa:'Mapa Comercial',cronograma:'Cronograma',orcamento:'Orçado x Realizado',midia:'Plano de Mídia',simulador:'Simulador de Preços',contratos:'Vendas',lotes:'Lotes',relatorios:'Relatórios',cenarios:'Cenários de Preço',corretores:'Corretores',config:'Configurações'};
   id('topTitle').textContent=localTitles[page]||'Sistema';
   document.body.classList.remove('nav-open');
   ({dashboard:renderDashboard,mapa:renderMapa,cronograma:renderCronograma,orcamento:renderOrcamento,midia:renderMidia,simulador:renderSimulador,contratos:renderVendas,lotes:renderLotes,relatorios:renderRelatorios,cenarios:renderCenarios,corretores:renderCorretores,config:renderConfig}[page]||renderDashboard)();
@@ -470,7 +470,7 @@ function go(page){
   const localTitles={
     dashboard:'Dashboard',
     cronograma:'Cronograma',
-    orcamento:'Orçamento',
+    orcamento:'Orçado x Realizado',
     midia:'Plano de Mídia',
     simulador:'Simulador de Preços',
     contratos:'Vendas',
@@ -3622,6 +3622,104 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
     fonteOficialOrcamento:'Orçado x Realizado',
     naoAlteraSimulador:true,
     naoAlteraVendasLotesMapaCenarios:true
+  });
+})();
+</script>
+
+
+<style>
+/* V28.8 — painéis analíticos e integração executiva de orçamento, mídia e parceiros */
+.v288-budget-board{margin:16px 0;display:grid;grid-template-columns:1.45fr .9fr;gap:18px;align-items:stretch}
+.v288-budget-board .v288-budget-text{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.v288-mini{background:#fbf7ef;border:1px solid var(--borda);border-radius:16px;padding:13px 14px;min-height:92px}
+.v288-mini small{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:900;color:#7d756d;margin-bottom:7px}
+.v288-mini b{display:block;color:var(--verde);font-size:21px;line-height:1.1}
+.v288-mini span{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+.v288-pie-card{display:flex;align-items:center;justify-content:center;gap:18px;background:#fff;border:1px solid var(--borda);border-radius:18px;padding:16px}
+.v288-pie{width:132px;height:132px;border-radius:50%;position:relative;box-shadow:inset 0 0 0 13px #fff}
+.v288-pie:after{content:"";position:absolute;inset:35px;background:#fff;border-radius:50%;border:1px solid var(--borda)}
+.v288-pie-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;font-size:19px;font-weight:900;color:var(--verde)}
+.v288-pie-legend{font-size:12px;color:var(--muted);font-weight:800;line-height:1.65}
+.v288-pie-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.v288-l1{background:var(--verde)}.v288-l2{background:#efe6d9}.v288-l3{background:#ac4a4a}.v288-l4{background:#e8924c}
+.v288-bar-chart{display:grid;gap:12px;margin-top:10px}
+.v288-bar-row{display:grid;grid-template-columns:160px 1fr 110px;gap:10px;align-items:center;font-size:12px}
+.v288-bar-label{font-weight:900;color:var(--verde);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v288-bar-track{height:14px;background:#efe6d9;border-radius:999px;overflow:hidden}
+.v288-bar-track i{display:block;height:100%;background:var(--verde);border-radius:999px}
+.v288-bar-value{text-align:right;font-weight:900;color:var(--verde)}
+.v288-small-note{font-size:12px;color:var(--muted);font-weight:700;margin-top:8px}
+.v288-analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.v288-report-note{margin-top:12px}
+.v288-media-official{margin-top:16px}
+.v288-map-plan li{margin-bottom:7px}
+.v23-curve .marketing-line{fill:none;stroke:#2f73b7;stroke-width:3.2;stroke-dasharray:7 5}
+.v23-curve .marketing-dot{fill:#2f73b7}
+.v23-lg-marketing{background:#2f73b7}
+@media(max-width:1100px){.v288-budget-board,.v288-analysis-grid{grid-template-columns:1fr}.v288-budget-board .v288-budget-text{grid-template-columns:1fr}.v288-bar-row{grid-template-columns:120px 1fr 90px}}
+@media print{.v288-budget-board,.v288-analysis-grid{grid-template-columns:1fr 1fr!important;break-inside:avoid}.v288-pie{width:96px;height:96px}.v288-pie:after{inset:27px}.v288-bar-row{grid-template-columns:120px 1fr 90px}}
+</style>
+
+<script>
+/* V28.8 — painéis analíticos de orçamento, mídia, parceiros e linha de marketing nos cenários */
+(function(){
+  function clampV288(v,min,max){return Math.max(min,Math.min(max,Number(v)||0));}
+  function rowsOrcV288(){return (STATE.gastos||[]).filter(function(g){return g&&g.item&&!norm(g.item).includes('total geral');});}
+  function orcResumoSafeV288(){try{return orcResumo();}catch(e){return {rows:[],previsto:0,realizado:0,saldo:0,exec:0,categorias:[],meses:[],realizados:[],estourados:[],semExecucao:[],diferencaMensal:0,mensalTotal:0};}}
+  function budgetRowMatchV288(r,term){var t=norm((r.item||'')+' '+(r.categoria||''));return t.includes(norm(term));}
+  function budgetByTermV288(term){var rows=rowsOrcV288().filter(function(r){return budgetRowMatchV288(r,term);});return {rows:rows,previsto:sum(rows,'previsto'),realizado:sum(rows,'realizado'),saldo:sum(rows,'saldo'),exec:sum(rows,'previsto')?sum(rows,'realizado')/sum(rows,'previsto')*100:0};}
+  function budgetMediaTotalV288(){var rows=rowsOrcV288().filter(function(r){var t=norm((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('panflet')||t.includes('outdoor');});return {rows:rows,previsto:sum(rows,'previsto'),realizado:sum(rows,'realizado'),saldo:sum(rows,'saldo')};}
+  function pieV288(realizado,saldo,extraLabel){var total=Math.max(num(realizado)+num(saldo),1),deg=clampV288(realizado/total*360,0,360),pctExec=total?realizado/total*100:0;return `<div class="v288-pie-card"><div class="v288-pie" style="background:conic-gradient(var(--verde) 0deg ${deg}deg,#efe6d9 ${deg}deg 360deg)"><div class="v288-pie-center">${PCT2(pctExec)}</div></div><div class="v288-pie-legend"><div><i class="v288-l1"></i>Realizado: <b>${BRL(realizado)}</b></div><div><i class="v288-l2"></i>Saldo: <b>${BRL(saldo)}</b></div>${extraLabel||''}</div></div>`;}
+  function budgetBoardV288(title){var o=orcResumoSafeV288();return `<div class="card v288-budget-board"><div><div class="ch"><div><div class="ch-ttl">${title||'Orçado x realizado'}</div><div class="sub">Fonte oficial: aba Orçado x Realizado da planilha-base.</div></div>${badge('orçamento')}</div><div class="v288-budget-text"><div class="v288-mini"><small>Orçado</small><b>${BRL(o.previsto)}</b><span>coluna Total Orç.</span></div><div class="v288-mini"><small>Realizado</small><b>${BRL(o.realizado)}</b><span>lançado na planilha</span></div><div class="v288-mini"><small>Saldo</small><b>${BRL(o.saldo)}</b><span>a executar</span></div></div><div class="v288-small-note"><b>Execução:</b> ${PCT2(o.exec)} do orçamento total. ${o.estourados&&o.estourados.length?'<b>Atenção:</b> há itens acima do orçado.':'Sem estouro estrutural no orçamento consolidado.'}</div></div>${pieV288(o.realizado,o.saldo)}</div>`;}
+  function monthBudgetRowsV288(filterFn){var rows=rowsOrcV288().filter(filterFn||function(){return true;});return ORC_MESES.map(function(m){return {key:m.key,label:m.label,ym:'2026-'+String(ORC_MESES.indexOf(m)+1).padStart(2,'0'),valor:sum(rows,m.key)};});}
+  function marketingAcumByYmV288(ym){var months=monthBudgetRowsV288();var total=0;months.forEach(function(m){if(m.ym<=ym)total+=num(m.valor);});return total;}
+  function partnerKeyV288(nome){var t=norm(nome||'');if(t.includes('house'))return 'House';if(t.includes('human'))return 'Humanize';if(t.includes('torres'))return 'Torres';if(t.includes('beira'))return 'Beira-mar';if(t.includes('gm'))return 'GM Imóveis';if(t.includes('mendes'))return 'Mendes';if(t.includes('nao se aplica')||t.includes('não se aplica')||t.includes('permuta'))return 'Não se aplica';return nome||'Não informado';}
+  function partnerRowsV288(){var map={};soldV23().filter(function(v){return isVendido(v.status);}).forEach(function(v){var k=partnerKeyV288(v.corretor);if(!map[k])map[k]={nome:k,qtd:0,vgv:0,comissao:0,liquido:0};map[k].qtd++;map[k].vgv+=num(v.valorFinal);map[k].comissao+=comissaoValorVenda(v);map[k].liquido+=valorLiquidoUP(v);});return Object.values(map).filter(function(r){return r.nome!=='Não se aplica';}).sort(function(a,b){return b.vgv-a.vgv;});}
+  function partnerBarV288(rows){var max=Math.max.apply(null,rows.map(function(r){return r.vgv;}).concat([1]));return `<div class="v288-bar-chart">${rows.map(function(r){return `<div class="v288-bar-row"><div class="v288-bar-label">${esc(r.nome)}</div><div class="v288-bar-track"><i style="width:${pct(r.vgv,max)}%"></i></div><div class="v288-bar-value">${r.qtd} un. · ${BRLShort(r.vgv)}</div></div>`;}).join('')}</div>`;}
+  function partnerPanelV288(){var rows=partnerRowsV288();return `<div class="card"><div class="ch"><div><div class="ch-ttl">Performance por parceiro comercial</div><div class="sub">Unidades vendidas e VGV contratado por imobiliária/canal.</div></div>${badge(rows.length+' parceiros')}</div><div class="cb">${partnerBarV288(rows)}<div class="tw" style="margin-top:14px"><table><thead><tr><th>Parceiro</th><th>Unidades</th><th>VGV contratado</th><th>Comissão</th><th>VGV pós-comissão</th></tr></thead><tbody>${rows.map(function(r){return `<tr><td><b>${esc(r.nome)}</b></td><td>${r.qtd}</td><td>${BRL(r.vgv)}</td><td>${BRL(r.comissao)}</td><td>${BRL(r.liquido)}</td></tr>`;}).join('')||empty(5)}</tbody></table></div><div class="v288-small-note">A normalização considera House/HouseUP como House e GM/GM Imóveis como o mesmo canal.</div></div></div>`;}
+  function budgetCategoryPanelV288(){var o=orcResumoSafeV288(),max=Math.max.apply(null,o.categorias.map(function(c){return c.previsto;}).concat([1]));return `<div class="card"><div class="ch"><div><div class="ch-ttl">Orçamento por categoria</div><div class="sub">Orçado, realizado e saldo por grupo de despesa.</div></div>${badge(o.categorias.length+' categorias')}</div><div class="cb">${o.categorias.slice(0,8).map(function(c){return orcBar(c.categoria,c.previsto,c.realizado,max);}).join('')||'<div class="sub">Sem orçamento sincronizado.</div>'}</div></div>`;}
+
+  const renderDashboardBaseV288=window.renderDashboard;
+  window.renderDashboard=function(){renderDashboardBaseV288();var page=id('page-dashboard');if(!page||page.querySelector('.v288-budget-board'))return;var anchor=page.querySelector('.v284-dashboard-flow')||page.querySelector('.section-gap');if(anchor)anchor.insertAdjacentHTML('beforebegin',budgetBoardV288('Orçado x realizado de marketing'));};
+
+  window.renderMidia=function(){var digital=budgetByTermV288('MÍDIA DIGITAL'),midias=budgetMediaTotalV288(),previstoPlano=sum(STATE.midia||[],'previsto'),realPlano=sum(STATE.midia||[],'realizado'),leads=sum(STATE.midia||[],'leads');id('page-midia').innerHTML=`<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">O orçamento oficial vem da aba Orçado x Realizado. O detalhamento de canais pode ser ajustado manualmente nesta tela.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage('midia')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div><div class="kpi-row">${kpi('Verba mídia digital',BRL(digital.previsto),'fonte: Orçado x Realizado','g',digital.exec)}${kpi('Realizado digital',BRL(digital.realizado),PCT2(digital.exec)+' executado','o',digital.exec)}${kpi('Saldo digital',BRL(digital.previsto-digital.realizado),'a executar','l')}${kpi('Mídia total',BRL(midias.previsto),'digital + offline + panfletagem')}</div><div class="info v288-media-official"><b>Leitura gerencial:</b> a verba oficial de mídia digital é ${BRL(digital.previsto)}. O valor total de mídia e distribuição relacionada soma ${BRL(midias.previsto)} na planilha. O plano abaixo detalha campanhas/canais e não substitui o orçamento oficial.</div><div class="table-card v288-media-official"><div class="ch"><div><div class="ch-ttl">Detalhamento operacional de mídia</div><div class="sub">Campanhas, canais, previsto, realizado, leads e CPL.</div></div>${badge((STATE.midia||[]).length+' itens')}</div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>${(STATE.midia||[]).map(function(m){return `<tr><td>${esc(m.campanha)}</td><td>${esc(m.canal)}</td><td>${esc(m.objetivo)}</td><td>${esc(m.periodo)}</td><td>${BRL(m.previsto)}</td><td>${BRL(m.realizado)}</td><td>${num(m.leads)}</td><td>${BRL(num(m.realizado)/Math.max(num(m.leads),1))}</td><td>${badge(m.status)}</td><td><button class="icon edit" onclick="openMidia('${m.id}')">✎</button> <button class="icon del" onclick="delItem('midia','${m.id}','midia')">🗑</button></td></tr>`;}).join('')||empty(10)}</tbody></table></div></div>`;};
+
+  window.renderCorretores=function(){var rows=partnerRowsV288();id('page-corretores').innerHTML=`<div class="sh"><div><div class="ttl">Corretores e parceiros</div><div class="sub">Performance comercial por parceiro, com normalização de nomes equivalentes.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('corretores')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openCorretor()">+ Novo Parceiro</button></div></div>${partnerPanelV288()}<div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Cadastro de parceiros</div><div class="sub">Base de categorias e comissionamento. A performance acima vem das vendas fechadas.</div></div></div><div class="tw"><table><thead><tr><th>Parceiro cadastrado</th><th>Categoria</th><th>Comissão</th><th>Ações</th></tr></thead><tbody>${STATE.corretores.map(function(c){return `<tr><td>${esc(c.nome)}</td><td>${catBadge(c.categoria)}</td><td>${esc(c.comissao)}</td><td><button class="icon edit" onclick="openCorretor('${c.id}')">✎</button> <button class="icon del" onclick="delCorretor('${c.id}')">🗑</button></td></tr>`;}).join('')||empty(4)}</tbody></table></div></div>`;};
+
+  const renderRelatoriosBaseV288=window.renderRelatorios;
+  window.renderRelatorios=function(){renderRelatoriosBaseV288();var page=id('page-relatorios');if(!page||page.querySelector('.v288-report-budget'))return;var block=`<div class="v288-analysis-grid v288-report-budget">${budgetCategoryPanelV288()}${partnerPanelV288()}</div><div class="info v288-report-note"><b>Diferença em relação ao Dashboard:</b> o Dashboard mostra a situação geral; este relatório acrescenta leituras analíticas por categoria de orçamento, performance por parceiro e pontos de atenção para tomada de decisão.</div>`;page.insertAdjacentHTML('beforeend',block);};
+
+  const curveSvgBaseV288=window.curveSvgV24 || curveSvgV24;
+  window.curveSvgV24=function(rows){var withMkt=(rows||[]).map(function(r){return Object.assign({},r,{marketingAcum:marketingAcumByYmV288(r.ym)});});var w=1120,h=315,p={l:78,r:24,t:22,b:42},max=Math.max.apply(null,withMkt.map(function(r){return Math.max(r.receitaLiquidaAcum,r.caixaAcum,r.acum,r.marketingAcum||0);} ).concat([1]))*1.08,X=function(i){return p.l+i*((w-p.l-p.r)/(withMkt.length-1||1));},Y=function(v){return p.t+(h-p.t-p.b)*(1-v/max);},path=function(k){return withMkt.map(function(r,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(r[k]||0).toFixed(1);}).join(' ');},ticks=[0,.25,.5,.75,1];return `<div class="v23-curve"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="VGV acumulado pós-comissão, caixa líquido acumulado, desembolso acumulado da obra e orçamento de marketing acumulado">${ticks.map(function(t){return `<line class="grid" x1="${p.l}" y1="${Y(max*t)}" x2="${w-p.r}" y2="${Y(max*t)}"></line><text x="7" y="${Y(max*t)+4}">${BRLShort(max*t)}</text>`;}).join('')}<path class="economic-line" d="${path('receitaLiquidaAcum')}"></path><path class="cash-line" d="${path('caixaAcum')}"></path><path class="work-line" d="${path('acum')}"></path><path class="marketing-line" d="${path('marketingAcum')}"></path>${withMkt.map(function(r,i){return `<circle class="economic-dot" cx="${X(i)}" cy="${Y(r.receitaLiquidaAcum)}" r="3"></circle><circle class="cash-dot" cx="${X(i)}" cy="${Y(r.caixaAcum)}" r="3"></circle><circle class="work-dot" cx="${X(i)}" cy="${Y(r.acum)}" r="3"></circle><circle class="marketing-dot" cx="${X(i)}" cy="${Y(r.marketingAcum||0)}" r="3"></circle><text x="${X(i)-14}" y="${h-9}">${r.mes}</text>`;}).join('')}</svg><div class="v23-legend"><span><i class="v23-lg-economic"></i>VGV acumulado pós-comissão</span><span><i class="v23-lg-cash"></i>Caixa líquido acumulado</span><span><i class="v23-lg-obra"></i>Desembolso acumulado da obra</span><span><i class="v23-lg-marketing"></i>Orçamento de marketing acumulado</span></div></div>`;};
+
+  const cashPanelBaseV288=window.cashPanelV24 || cashPanelV24;
+  window.cashPanelV24=function(model,cfg){var html=cashPanelBaseV288(model,cfg);var o=orcResumoSafeV288();return html.replace('<div class="v24-premissa"><b>Premissa de caixa:</b>',`<div class="v24-premissa"><b>Orçamento de marketing:</b> ${BRL(o.previsto)} orçados, ${BRL(o.realizado)} realizados e ${PCT2(o.exec)} executado. A linha azul mostra o orçamento acumulado de marketing na mesma régua temporal, sem alterar a leitura original de obra. </div><div class="v24-premissa"><b>Premissa de caixa:</b>`);};
+
+  const renderMapaBaseV288=window.renderMapa;
+  window.renderMapa=function(){try{renderMapaBaseV288();}catch(e){console.warn('Mapa base não renderizado',e);}var page=id('page-mapa');if(page&&!page.querySelector('.v288-map-plan'))page.insertAdjacentHTML('beforeend',`<div class="info v288-map-plan"><b>Próxima automação do mapa comercial:</b><ul><li>Etapa 1: criar uma matriz técnica lote → coordenada, para cada bolinha do mapa.</li><li>Etapa 2: ao clicar no lote, abrir painel lateral com status, cliente, parceiro, valor e observação.</li><li>Etapa 3: permitir mudar para Disponível, Reservado, Proposta, Vendido ou Restrito, gravando na planilha após confirmação.</li><li>Regra de segurança: nenhuma alteração automática deve ocorrer sem confirmação, para evitar marcar lote errado.</li></ul></div>`);};
+
+  try{
+    renderDashboard=window.renderDashboard;
+    renderMidia=window.renderMidia;
+    renderCorretores=window.renderCorretores;
+    renderRelatorios=window.renderRelatorios;
+    curveSvgV24=window.curveSvgV24;
+    cashPanelV24=window.cashPanelV24;
+    renderMapa=window.renderMapa;
+    if(typeof titles!=='undefined') titles.orcamento='Orçado x Realizado';
+    var btn=document.querySelector('.sb-item[data-page="orcamento"]');if(btn)btn.textContent='💰 Orçado x Realizado';
+  }catch(e){console.warn('V28.8 binding seguro não aplicado integralmente',e);}
+
+  window.CALLIANDRA_V288_CHECKLIST=Object.assign({},window.CALLIANDRA_V287_CHECKLIST||{}, {
+    versao:'V28.8',
+    dashboardOrcadoRealizado:true,
+    menuOrcadoRealizado:true,
+    midiaLendoOrcamentoDigital:true,
+    corretoresGraficoPerformance:true,
+    relatorioAnaliticoComOrcamento:true,
+    cenariosLinhaMarketing:true,
+    mapaAutomacaoPlanejadaComSeguranca:true,
+    simuladorNaoAlterado:true
   });
 })();
 </script>
