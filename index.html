@@ -1876,7 +1876,7 @@ function printDocumentV22(page,orientation){
       ? `<div class="sim-v2819-condition-grid cash">${mode}<div class="sim-v2819-field"><label>Entrada</label><div class="sim-v2819-cash-summary"><span>100%</span><small>sem saldo financiado</small></div><small>&nbsp;</small></div><div class="sim-v2819-field sim-v2819-number"><label>Desconto (%)</label><input id="simDesc" type="text" inputmode="decimal" autocomplete="off" value="${esc(raw(s.desconto||0))}" placeholder="0" oninput="setSimFieldV22('desconto',this.value)" onblur="normalizeDescV2818()"><small>Manual</small></div><div class="sim-v2819-field"><label>Observação</label><input id="simObs" value="${esc(s.observacao)}" placeholder="Condição comercial da proposta" oninput="setSimFieldV22('observacao',this.value)"><small>Opcional</small></div></div>`
       : `<div class="sim-v2819-condition-grid">${mode}<div class="sim-v2819-field sim-v2819-number"><label>Entrada (%)</label><input id="simEntrada" type="text" inputmode="decimal" autocomplete="off" value="${esc(raw(s.entradaPct||50))}" placeholder="Ex.: 17,5" oninput="setSimFieldV22('entradaPct',this.value)" onblur="normalizeEntradaV2818()"><small>Qualquer valor de 10 a 100</small></div><div class="sim-v2819-field sim-v2819-number"><label>Parcelas</label><input id="simParcelas" type="text" inputmode="numeric" autocomplete="off" value="${esc(raw(s.parcelas||36))}" placeholder="36" oninput="setSimFieldV22('parcelas',this.value)" onblur="normalizeParcelasV2818()"><small>Até 120 meses</small></div><div class="sim-v2819-field sim-v2819-number"><label>Desconto (%)</label><input id="simDesc" type="text" inputmode="decimal" autocomplete="off" value="${esc(raw(s.desconto||0))}" placeholder="0" oninput="setSimFieldV22('desconto',this.value)" onblur="normalizeDescV2818()"><small>Manual</small></div><div class="sim-v2819-field"><label>Observação</label><input id="simObs" value="${esc(s.observacao)}" placeholder="Condição comercial da proposta" oninput="setSimFieldV22('observacao',this.value)"><small>Opcional</small></div></div>`;
     id('page-simulador').innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Proposta comercial com preço, entrada e desconto editáveis.</div></div><div class="sh-r">${printActionsV19('simulador')}</div></div><div class="sim-v2819-wrap no-print"><section class="sim-v2819-card"><div class="sim-v2819-head"><div><h2>Simulação de proposta</h2><p>Campos livres para negociação. Entrada mínima de 10%, máxima de 100%. Desconto sempre manual.</p></div><div class="sim-v2819-rate">12% a.a. · ${fmtTax(JUROS_MES_EQ)} a.m.</div></div><div class="sim-v2819-body">${dados}<div class="sim-v2819-section"><div class="sim-v2819-label">Condição comercial</div>${cond}</div><div class="sim-v2819-footer"><div class="sim-v2819-footnote"><b>Validação financeira:</b> Price e SAC usam a taxa mensal equivalente de 12% a.a. O IPCA é informado quando aplicável, sem projeção automática.</div><button type="button" class="sim-v2819-primary" onclick="calcSim()">Atualizar proposta</button></div></div></section></div><div id="simResult" class="sim-v2819-result"></div>`;
-    calcSim();
+    if(typeof window.calcSim==='function')window.calcSim();
   };
   calcSim=function(){
     const s=captureSimV22(),lots=safeLots(),l=STATE.lotes.find(x=>String(x.id)===String(s.lote))||lots[0];
@@ -1907,6 +1907,133 @@ function printDocumentV22(page,orientation){
   };
   window.CALLIANDRA_BUILD=BUILD;
   window.CALLIANDRA_V2819_AUDITORIA={jurosAno:0.12,jurosMes:JUROS_MES_EQ,jurosMesPercentual:JUROS_MES_EQ*100,entradaMinima:10,entradaMaxima:100,descontoManual:true,precoM2Livre:true,atalhosEntrada:false,layout:'clean-commercial-grid'};
+})();
+</script>
+
+
+
+<!-- V28.20 - Simulador comercial final operacional: layout em 2 linhas + cálculo autônomo -->
+<style id="calliandra-v2820-simulador-final-css">
+#page-simulador .sim20-wrap{margin-top:14px;max-width:1480px;display:grid;gap:14px}
+.sim20-card{background:#fff;border:1px solid #e9e2d8;border-radius:20px;box-shadow:0 14px 34px rgba(18,63,53,.06);padding:20px 22px 22px}
+.sim20-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:1px solid #f0ebe3;padding-bottom:14px;margin-bottom:18px}
+.sim20-head h2{margin:0;color:#0f4037;font-size:21px;letter-spacing:-.015em;line-height:1.12}
+.sim20-head p{margin:5px 0 0;color:#687873;font-size:13px;line-height:1.35}
+.sim20-rate{align-self:flex-start;border:1px solid #d7e7df;background:#f4fbf7;color:#174d3f;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;white-space:nowrap}
+.sim20-form{display:grid;gap:14px}
+.sim20-row{display:grid;gap:12px;align-items:end}
+.sim20-row-main{grid-template-columns:minmax(220px,1fr) minmax(210px,.9fr) minmax(360px,1.55fr)}
+.sim20-row-fin{grid-template-columns:150px 226px 112px 124px 138px;align-items:end}
+.sim20-field{display:grid;grid-template-rows:16px 44px;gap:6px;min-width:0}
+.sim20-field label{margin:0;color:#0f4037;font-weight:950;text-transform:uppercase;letter-spacing:.095em;font-size:10.5px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sim20-field input,.sim20-field select,.sim20-field textarea{width:100%;box-sizing:border-box;border:1px solid #dce4e0;background:#fff;color:#073a32;border-radius:12px;font-size:14px;outline:none;transition:border .15s ease,box-shadow .15s ease,background .15s ease}
+.sim20-field input,.sim20-field select{height:44px;padding:0 13px;line-height:44px}
+.sim20-field textarea{min-height:68px;resize:vertical;padding:12px 13px;line-height:1.35;font-family:inherit}
+.sim20-field input:focus,.sim20-field select:focus,.sim20-field textarea:focus{border-color:#1d755f;box-shadow:0 0 0 3px rgba(29,117,95,.13)}
+.sim20-money input,.sim20-num input{text-align:right;font-weight:850;font-variant-numeric:tabular-nums}
+.sim20-payment{height:44px;border:1px solid #dce4e0;background:#faf8f4;border-radius:12px;padding:3px;display:grid;grid-template-columns:1fr 1fr;gap:3px;box-sizing:border-box}
+.sim20-payment button{border:0;border-radius:9px;background:transparent;color:#264d45;font-weight:900;font-size:13px;cursor:pointer;padding:0 10px;white-space:nowrap}
+.sim20-payment button.on{background:#123f35;color:#fff;box-shadow:0 6px 14px rgba(18,63,53,.14)}
+.sim20-payment button:focus-visible{outline:3px solid rgba(29,117,95,.24);outline-offset:1px}
+.sim20-observation{display:grid;grid-template-columns:1fr;gap:10px}
+.sim20-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;border-top:1px solid #f1ece4;padding-top:14px;margin-top:2px}
+.sim20-note{margin-right:auto;color:#687873;font-size:12px;line-height:1.35}.sim20-note b{color:#0f4037}
+.sim20-primary{height:44px;border:0;border-radius:12px;background:#b24b4b;color:#fff;font-weight:950;padding:0 22px;cursor:pointer;box-shadow:0 10px 20px rgba(178,75,75,.16)}
+.sim20-primary:hover{filter:brightness(.98)}
+.sim20-result{margin-top:14px}.sim20-result-card{background:#fff;border:1px solid #e9e2d8;border-radius:20px;box-shadow:0 12px 30px rgba(18,63,53,.055);padding:20px 22px}.sim20-result-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid #f0ebe3;padding-bottom:14px;margin-bottom:14px}.sim20-result-head h3{margin:0;color:#0f4037;font-size:21px;line-height:1.12}.sim20-result-head p{margin:5px 0 0;color:#687873;font-size:13px;line-height:1.4}.sim20-total{text-align:right;min-width:250px}.sim20-total span{display:block;color:#6f7c78;text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;font-weight:950}.sim20-total b{display:block;margin-top:4px;color:#0f4037;font-size:28px;line-height:1.12}.sim20-total small{display:block;margin-top:4px;color:#a84343;font-weight:850}.sim20-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.sim20-metric{border:1px solid #e8e1d7;background:#fffdf9;border-radius:15px;padding:13px;min-width:0}.sim20-metric span{display:block;color:#6f7c78;text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:950}.sim20-metric b{display:block;margin-top:6px;color:#0f4037;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sim20-metric small{display:block;margin-top:4px;color:#78837f;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sim20-methods{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.sim20-method{border:1px solid #dbe8e2;background:#f6fbf8;border-radius:17px;padding:14px}.sim20-method:nth-child(2){border-color:#ead7ca;background:#fff8f2}.sim20-method span{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:#64746f;font-weight:950}.sim20-method b{display:block;margin-top:6px;color:#0f4037;font-size:23px}.sim20-method small{display:block;margin-top:4px;color:#6f7c78;font-size:12px}.sim20-audit{margin-top:12px;border-radius:13px;background:#edf8f1;border:1px solid #cce6d5;color:#174d3c;padding:11px 13px;font-size:12px;line-height:1.4}.sim20-audit.warn{background:#fff7ea;border-color:#f1d39a;color:#7b5518}.sim20-table{margin-top:14px}
+@media(max-width:1280px){.sim20-row-main{grid-template-columns:1fr 1fr}.sim20-row-main .sim20-field:nth-child(3){grid-column:1/-1}.sim20-row-fin{grid-template-columns:150px 226px 112px 124px 138px}.sim20-metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sim20-head,.sim20-result-head{flex-direction:column;align-items:stretch}.sim20-row-main,.sim20-row-fin{grid-template-columns:1fr}.sim20-total{text-align:left;min-width:0}.sim20-metrics,.sim20-methods{grid-template-columns:1fr}.sim20-actions{display:grid}.sim20-note{margin:0}.sim20-primary{width:100%}}
+@media print{.sim20-wrap{display:none!important}.sim20-result{margin-top:0}.sim20-result-card{box-shadow:none;break-inside:avoid}.sim20-metrics{grid-template-columns:repeat(2,1fr)}}
+</style>
+<script id="calliandra-v2820-simulador-final-js">
+(function(){
+  const BUILD='v28.20-simulador-final-operacional';
+  const STORE='CALLIANDRA_SIM_V2820';
+  const JUROS_ANO=0.12;
+  const JUROS_MES=Math.pow(1+JUROS_ANO,1/12)-1;
+  function el(k){return document.getElementById(k)}
+  function toText(v){return String(v??'')}
+  function nval(v){
+    if(typeof v==='number')return isFinite(v)?v:0;
+    let s=toText(v).replace(/R\$/gi,'').replace(/%/g,'').replace(/\s+/g,'').trim();
+    if(!s)return 0;
+    if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+    else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');
+    const n=Number(s.replace(/[^0-9.-]/g,''));
+    return isFinite(n)?n:0;
+  }
+  function money(v){try{return typeof BRL==='function'?BRL(v):new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)}catch(e){return 'R$ '+(Number(v)||0).toFixed(2)}}
+  function area(v){try{return typeof AREA==='function'?AREA(v):(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m²'}catch(e){return v+' m²'}}
+  function safe(s){try{return typeof esc==='function'?esc(s):toText(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}catch(e){return toText(s)}}
+  function lotName(l){try{return typeof loteNome==='function'?loteNome(l):((l.rua||l.quadra||'Lote')+' '+(l.numero||l.lote||l.id||''))}catch(e){return l?.id||'Lote'}}
+  function statusBadge(v){try{return typeof badge==='function'?badge(v):safe(v||'-')}catch(e){return safe(v||'-')}}
+  function lots(){
+    try{if(typeof lotesSim==='function'){const a=lotesSim();if(Array.isArray(a)&&a.length)return a}}catch(e){}
+    try{if(typeof simulaveis==='function'){const a=simulaveis();if(Array.isArray(a)&&a.length)return a}}catch(e){}
+    const base=(window.STATE&&Array.isArray(STATE.lotes))?STATE.lotes:[];
+    return base.filter(l=>l&&l.status!=='Vendido'&&l.vendavel!==false);
+  }
+  function baseM2(l){const area=nval(l?.area);return nval(l?.precoM2)||nval(l?.preco)||((area&&nval(l?.valorTabela))?nval(l.valorTabela)/area:1429.27)}
+  function round2(v){return Math.round((Number(v)||0)*100)/100}
+  function fmt(v,d=2){return (Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:d})}
+  function fmtInput(v,d=2){return (Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:d})}
+  function fmtTax(v){return (Number(v||0)*100).toLocaleString('pt-BR',{minimumFractionDigits:6,maximumFractionDigits:6})+'%'}
+  function clampEntrada(v){const n=nval(v);if(!isFinite(n)||n<=0)return 10;return Math.max(10,Math.min(100,n))}
+  function clampParcelas(v){const n=Math.round(nval(v));if(!isFinite(n)||n<=0)return 36;return Math.max(1,Math.min(120,n))}
+  function clampDesc(v){const n=nval(v);if(!isFinite(n)||n<=0)return 0;return Math.max(0,Math.min(100,n))}
+  function price(pv,n,t=JUROS_MES){pv=Number(pv)||0;n=Math.max(0,Math.round(Number(n)||0));if(!pv||!n)return 0;if(!t)return pv/n;return pv*t/(1-Math.pow(1+t,-n))}
+  function sac(pv,n,t=JUROS_MES){pv=Number(pv)||0;n=Math.max(0,Math.round(Number(n)||0));if(!pv||!n)return{primeira:0,ultima:0,total:0,amortizacao:0};const amort=pv/n;let saldo=pv,total=0,primeira=0,ultima=0;for(let i=1;i<=n;i++){const p=amort+(saldo*t);if(i===1)primeira=p;if(i===n)ultima=p;total+=p;saldo-=amort}return{primeira,ultima,total,amortizacao:amort}}
+  function read(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch(e){return {}}}
+  function write(s){try{localStorage.setItem(STORE,JSON.stringify(s))}catch(e){}return s}
+  function username(){try{const u=typeof readJSON==='function'?readJSON(USER,{}):{};return u?.nome||'Caetano Setúbal'}catch(e){return 'Caetano Setúbal'}}
+  function state(selected){
+    const ls=lots();let s=Object.assign({cliente:'',responsavel:username(),lote:'',precoM2:'',cond:'entrada',entrada:'30',parcelas:'36',desconto:'0',obs:''},read());
+    if(selected)s.lote=selected;
+    if(!ls.some(l=>String(l.id)===String(s.lote)))s.lote=ls[0]?.id||'';
+    const l=ls.find(x=>String(x.id)===String(s.lote));
+    if(!s.precoM2&&l)s.precoM2=String(round2(baseM2(l))).replace('.',',');
+    if(s.cond==='avista'){s.entrada='100';s.parcelas='0'}
+    return write(s);
+  }
+  function update(k,v,rerender){const s=state();s[k]=v;write(s);if(rerender)renderSimulador(s.lote);else if(typeof window.calcSim==='function')window.calcSim()}
+  function normalize(k,type){const s=state();if(type==='entrada')s[k]=fmtInput(clampEntrada(s[k]));else if(type==='parcelas')s[k]=String(clampParcelas(s[k]));else if(type==='desconto')s[k]=fmtInput(clampDesc(s[k]));else if(type==='m2')s[k]=fmtInput(nval(s[k]||1429.27),2);write(s);renderSimulador(s.lote)}
+  function setLote(idv){const ls=lots();const l=ls.find(x=>String(x.id)===String(idv));const s=state();s.lote=idv;s.precoM2=l?String(round2(baseM2(l))).replace('.',','):s.precoM2;write(s);renderSimulador(idv)}
+  function setCond(c){const s=state();s.cond=c;if(c==='avista'){s.entrada='100';s.parcelas='0'}else{if(!s.entrada||nval(s.entrada)>=100)s.entrada='30';if(!s.parcelas||nval(s.parcelas)<=0)s.parcelas='36'}write(s);renderSimulador(s.lote)}
+  function option(l,s){return `<option value="${safe(l.id)}" ${String(l.id)===String(s.lote)?'selected':''}>${safe(lotName(l))} · ${area(l.area)} · ${money(nval(l.valorTabela)||nval(l.area)*baseM2(l))} · ${safe(l.status||'')}</option>`}
+  function rows(saldo,parcelas,priceVal,sacObj){let out='';const amort=sacObj.amortizacao||saldo/parcelas;let saldoSac=saldo;for(let i=1;i<=parcelas;i++){const sacPar=amort+(saldoSac*JUROS_MES);saldoSac-=amort;out+=`<tr><td>${i}</td><td>${money(priceVal)}</td><td>${money(sacPar)}</td></tr>`}return out}
+  window.sim20Update=update;window.sim20Normalize=normalize;window.sim20SetLote=setLote;window.sim20SetCond=setCond;
+  window.renderSimulador=function(selected=''){
+    const ls=lots(),s=state(selected),cash=s.cond==='avista';
+    const disabled=cash?'disabled':'';
+    const page=el('page-simulador');if(!page)return;
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Preço do m², entrada e desconto digitáveis. Entrada mínima: 10%.</div></div><div class="sh-r">${typeof printActionsV19==='function'?printActionsV19('simulador'):`<button class="btn btn-ghost" onclick="printPage('simulador')">🖨 Imprimir / PDF</button>`}</div></div><div class="sim20-wrap no-print"><section class="sim20-card"><div class="sim20-head"><div><h2>Simulação comercial</h2><p>Preencha os dados e atualize a proposta. A matemática financeira usa 12% a.a. com taxa mensal equivalente.</p></div><div class="sim20-rate">12% a.a. · ${fmtTax(JUROS_MES)} a.m.</div></div><div class="sim20-form"><div class="sim20-row sim20-row-main"><div class="sim20-field"><label>Nome do cliente</label><input id="simCliente" value="${safe(s.cliente)}" placeholder="Nome do cliente" oninput="sim20Update('cliente',this.value)"></div><div class="sim20-field"><label>Responsável</label><input id="simResp" value="${safe(s.responsavel)}" placeholder="Responsável" oninput="sim20Update('responsavel',this.value)"></div><div class="sim20-field"><label>Lote</label><select id="simLote" onchange="sim20SetLote(this.value)">${ls.map(l=>option(l,s)).join('')}</select></div></div><div class="sim20-row sim20-row-fin"><div class="sim20-field sim20-money"><label>Valor do m²</label><input id="simPrecoM2" type="text" inputmode="decimal" autocomplete="off" value="${safe(s.precoM2)}" placeholder="1429,27" oninput="sim20Update('precoM2',this.value)" onblur="sim20Normalize('precoM2','m2')"></div><div class="sim20-field"><label>Forma de pagamento</label><div class="sim20-payment"><button type="button" class="${cash?'on':''}" onclick="sim20SetCond('avista')">À vista</button><button type="button" class="${!cash?'on':''}" onclick="sim20SetCond('entrada')">Com entrada</button></div></div><div class="sim20-field sim20-num"><label>Entrada (%)</label><input id="simEntrada" type="text" inputmode="decimal" autocomplete="off" value="${safe(s.entrada)}" ${disabled} oninput="sim20Update('entrada',this.value)" onblur="sim20Normalize('entrada','entrada')"></div><div class="sim20-field sim20-num"><label>Número de parcelas</label><input id="simParcelas" type="text" inputmode="numeric" autocomplete="off" value="${safe(s.parcelas)}" ${disabled} oninput="sim20Update('parcelas',this.value)" onblur="sim20Normalize('parcelas','parcelas')"></div><div class="sim20-field sim20-num"><label>Desconto negociado (%)</label><input id="simDesc" type="text" inputmode="decimal" autocomplete="off" value="${safe(s.desconto)}" placeholder="0" oninput="sim20Update('desconto',this.value)" onblur="sim20Normalize('desconto','desconto')"></div></div><div class="sim20-observation"><div class="sim20-field" style="grid-template-rows:16px auto"><label>Observação da proposta</label><textarea id="simObs" placeholder="Condição comercial, validade da proposta ou observação para impressão/PDF" oninput="sim20Update('obs',this.value)">${safe(s.obs)}</textarea></div></div><div class="sim20-actions"><div class="sim20-note"><b>Auditoria:</b> juros mensais equivalentes calculados por (1 + 12%)^(1/12) - 1.</div><button type="button" class="sim20-primary" onclick="calcSim()">Atualizar proposta</button></div></div></section></div><div id="simResult" class="sim20-result"></div>`;
+    calcSim();
+  };
+  window.calcSim=function(){
+    const s=state(),ls=lots(),l=ls.find(x=>String(x.id)===String(s.lote))||ls[0],target=el('simResult');
+    if(!target)return;if(!l){target.innerHTML='<div class="warnbox">Nenhum lote simulável encontrado. Sincronize ou confira a planilha.</div>';return}
+    const cash=s.cond==='avista';
+    const entradaPct=cash?100:clampEntrada(s.entrada);
+    const parcelas=cash?0:clampParcelas(s.parcelas);
+    const a=nval(l.area);
+    const pm2=nval(s.precoM2)||baseM2(l);
+    const valorTabela=round2(a*pm2);
+    const desc=clampDesc(s.desconto);
+    const economia=round2(valorTabela*desc/100);
+    const negociado=round2(valorTabela-economia);
+    const entrada=round2(negociado*entradaPct/100);
+    const saldo=round2(Math.max(0,negociado-entrada));
+    const financed=!cash&&saldo>0&&parcelas>0;
+    const p=financed?price(saldo,parcelas):0;
+    const sc=financed?sac(saldo,parcelas):sac(0,0);
+    const totalPrice=financed?round2(entrada+p*parcelas):negociado;
+    const totalSac=financed?round2(entrada+sc.total):negociado;
+    const ipca=financed&&parcelas>36;
+    const forma=cash?'À vista':'Entrada de '+fmt(entradaPct)+'% + saldo em '+parcelas+' parcelas';
+    target.innerHTML=`<section class="sim20-result-card"><div class="sim20-result-head"><div><h3>Proposta simulada</h3><p>${safe(lotName(l))} · ${area(a)} · ${statusBadge(l.status)} · <b>${forma}</b></p><p>Cliente: <b>${safe(s.cliente||'não informado')}</b> · Responsável: <b>${safe(s.responsavel||'-')}</b></p></div><div class="sim20-total"><span>Valor negociado</span><b>${money(negociado)}</b><small>${fmt(desc)}% de desconto manual</small></div></div><div class="sim20-metrics"><div class="sim20-metric"><span>Valor de tabela</span><b>${money(valorTabela)}</b><small>${money(pm2)}/m² informado</small></div><div class="sim20-metric"><span>Economia</span><b>${money(economia)}</b><small>desconto aplicado</small></div><div class="sim20-metric"><span>Entrada</span><b>${money(entrada)}</b><small>${fmt(entradaPct)}% do valor negociado</small></div><div class="sim20-metric"><span>Saldo</span><b>${financed?money(saldo):'Não se aplica'}</b><small>${financed?parcelas+' parcelas':'sem financiamento'}</small></div></div>${financed?`<div class="sim20-methods"><div class="sim20-method"><span>Price</span><b>${money(p)}</b><small>parcela fixa · total ${money(totalPrice)}</small></div><div class="sim20-method"><span>SAC</span><b>${money(sc.primeira)}</b><small>1ª parcela · última ${money(sc.ultima)} · total ${money(totalSac)}</small></div></div>`:`<div class="payment-full-v22" style="margin-top:12px"><span>Total a pagar</span><b>${money(negociado)}</b></div>`}${s.obs?`<div class="info sim-note-v22"><b>Observação:</b> ${safe(s.obs)}</div>`:''}<div class="sim20-audit ${ipca?'warn':''}"><b>Auditoria financeira:</b> 12% a.a. = <b>${fmtTax(JUROS_MES)} a.m.</b>. Price e SAC usam a mesma taxa mensal equivalente. ${ipca?'IPCA indicado para prazo acima de 36 meses, sem projeção automática.':'Sem correção monetária projetada até 36 parcelas.'}</div></section>${financed?`<div class="table-card sim20-table v21-print-flow sim-installments-v22"><div class="ch"><div><div class="ch-ttl">Parcelamento · Price x SAC</div><small>${parcelas} parcelas · entrada ${fmt(entradaPct)}% · taxa ${fmtTax(JUROS_MES)} a.m.</small></div><span>${money(negociado/a)}/m² negociado</span></div><div class="tw"><table><thead><tr><th>Parcela</th><th>Sistema Price</th><th>Sistema SAC</th></tr></thead><tbody>${rows(saldo,parcelas,p,sc)}</tbody></table></div></div>`:''}`;
+  };
+  window.CALLIANDRA_BUILD=BUILD;
+  window.CALLIANDRA_V2820_AUDITORIA={jurosAno:JUROS_ANO,jurosMes:JUROS_MES,jurosMesPercentual:JUROS_MES*100,formula:'(1+0.12)^(1/12)-1',price:'PV*i/(1-(1+i)^-n)',sac:'amortizacao constante + juros sobre saldo',entradaMinima:10,entradaMaxima:100,parcelasMaximas:120,precoM2Livre:true,descontoManual:true,layout:'2 linhas operacional'};
 })();
 </script>
 
