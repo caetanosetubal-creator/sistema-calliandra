@@ -1810,7 +1810,199 @@ function printDocumentV22(page,orientation){
   const header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>';
   const orientationCss=orientation==='portrait'?'portrait':'landscape';
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div>
+<script id="v28-12-producao-final">
+/* === V28.12 PRODUÇÃO · sincronização final, orçamento/marketing preservados e fluxo Edson validado === */
+(function(){
+  const PROD_VERSION='V28.12 produção';
+  const API_DEFAULT='/api/sheets';
+  try{ localStorage.removeItem('calliandra_api_url_v2811'); }catch(e){}
+
+  function nrm2812(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+  function key2812(v){return nrm2812(v).replace(/[^a-z0-9]/g,'');}
+  function num2812(v){return (typeof num==='function')?num(v):(Number(v)||0);}
+  function pick2812(o,keys){
+    if(!o)return'';
+    for(const k of keys){ if(o[k]!==undefined && o[k]!==null && o[k]!=='') return o[k]; }
+    const normed={}; Object.keys(o||{}).forEach(k=>{normed[key2812(k)]=o[k];});
+    for(const k of keys){ const v=normed[key2812(k)]; if(v!==undefined && v!==null && v!=='') return v; }
+    return'';
+  }
+  function getDataObj2812(r){return (r&&r.data)||(r&&r.raw&&r.raw.data)||(r&&r.sheets)||(r&&r.result&&r.result.data)||{};}
+  function asRows2812(v){return Array.isArray(v)?v:(Array.isArray(v&&v.rows)?v.rows:(Array.isArray(v&&v.data)?v.data:[]));}
+  function getSheet2812(data,names){
+    const wanted=(Array.isArray(names)?names:[names]).map(key2812);
+    const entries=Object.keys(data||{});
+    for(const k of entries){ if(wanted.includes(key2812(k))) return asRows2812(data[k]); }
+    return [];
+  }
+  function findBudgetSheet2812(data){
+    const named=getSheet2812(data,['Orçado x Realizado','Orcado x Realizado','Orçado versus Realizado','Orcado versus Realizado','Orçamento','Orcamento','orcamento']);
+    if(named.length) return {name:'Orçado x Realizado',rows:named};
+    for(const name of Object.keys(data||{})){
+      const rows=asRows2812(data[name]);
+      if(!rows.length)continue;
+      const sample=Object.keys(rows[0]||{}).map(key2812).join('|');
+      if(sample.includes('itemdedespesa') && (sample.includes('totalorc')||sample.includes('totalorcado')) && sample.includes('realizado')) return {name,rows};
+    }
+    return {name:'',rows:[]};
+  }
+  const MESES2812=[
+    ['jan',['JAN','Jan','janeiro','Janeiro']],['fev',['FEV','Fev','fevereiro','Fevereiro']],['mar',['MAR','Mar','março','marco','Março','Marco']],
+    ['abr',['ABR','Abr','abril','Abril']],['mai',['MAIO','MAI','Mai','maio','Maio']],['jun',['JUN','Jun','junho','Junho']],
+    ['jul',['JUL','Jul','julho','Julho']],['ago',['AGO','Ago','agosto','Agosto']],['set',['SET','Set','setembro','Setembro']],
+    ['out',['OUT','Out','outubro','Outubro']],['nov',['NOV','Nov','novembro','Novembro']],['dez',['DEZ','Dez','dezembro','Dezembro']]
+  ];
+  function normOrc2812(r,i){
+    const item=String(pick2812(r,['Item de Despesa','Item despesa','item_despesa','item','despesa','Descrição','Descricao'])||'').trim();
+    const categoria=String(pick2812(r,['Categoria','categoria','Macro categoria','macro_categoria'])||'Sem categoria').trim()||'Sem categoria';
+    const previsto=num2812(pick2812(r,['TOTAL ORÇ','TOTAL ORÇ.','TOTAL ORC','TOTAL ORC.','TOTAL ORÇADO','TOTAL ORCADO','Total Orç.','Total Orç','Total Orçado','Total Orcado','total_orc','total_orcado','Orçado','Orcado','Previsto']));
+    const realizado=num2812(pick2812(r,['REALIZADO','Realizado','valor_realizado','executado','Pago','Valor pago','Realizado R$']));
+    const saldoRaw=pick2812(r,['SALDO','Saldo','saldo']);
+    const saldo=saldoRaw!==''?num2812(saldoRaw):(previsto-realizado);
+    const out={id:pick2812(r,['id','ID'])||('ORC-'+String(i+1).padStart(3,'0')),item,categoria,previsto,realizado,saldo,percentual:previsto?realizado/previsto*100:0,raw:r};
+    let mensal=0; MESES2812.forEach(([key,keys])=>{out[key]=num2812(pick2812(r,keys)); mensal+=out[key];});
+    out.mensal=mensal;
+    out.divergenciaMensal=mensal-previsto;
+    out.status=previsto&&realizado>previsto?'Estourado':(realizado>0?'Em execução':(previsto>0?'Não iniciado':'Sem orçamento'));
+    out.desempenho=realizado>0?'Desempenhado':'Não desempenhado';
+    return out;
+  }
+  function budgetRows2812(){
+    const rows=(STATE.orcamentoRows&&STATE.orcamentoRows.length?STATE.orcamentoRows:STATE.gastos)||[];
+    return rows.filter(r=>r&&r.item&&!nrm2812(r.item).includes('total geral'));
+  }
+  function categoriaMacro2812(rows){
+    const map={};
+    (rows||[]).forEach(r=>{
+      const k=r.categoria||'Sem categoria';
+      if(!map[k]) map[k]={categoria:k,previsto:0,realizado:0,saldo:0,qtd:0,desempenhados:0,naoDesempenhados:0,estourados:0};
+      const c=map[k]; c.previsto+=num2812(r.previsto); c.realizado+=num2812(r.realizado); c.saldo+=num2812(r.previsto)-num2812(r.realizado); c.qtd++;
+      if(num2812(r.realizado)>0)c.desempenhados++; else if(num2812(r.previsto)>0)c.naoDesempenhados++;
+      if(num2812(r.previsto)>0 && num2812(r.realizado)>num2812(r.previsto))c.estourados++;
+    });
+    return Object.values(map).map(c=>{c.exec=c.previsto?c.realizado/c.previsto*100:0;c.status=c.estourados?'Atenção':(c.realizado>0?'Em execução':'Não iniciado');return c;}).sort((a,b)=>b.previsto-a.previsto);
+  }
+  window.orcResumo=function(){
+    const rows=budgetRows2812();
+    const previsto=sum(rows,'previsto'),realizado=sum(rows,'realizado'),saldo=previsto-realizado;
+    const mensalTotal=MESES2812.reduce((s,m)=>s+sum(rows,m[0]),0);
+    const categorias=categoriaMacro2812(rows);
+    const meses=MESES2812.map(m=>({mes:m[1][0],key:m[0],previsto:sum(rows,m[0])}));
+    const realizados=rows.filter(r=>num2812(r.realizado)>0).sort((a,b)=>num2812(b.realizado)-num2812(a.realizado));
+    const estourados=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)>num2812(r.previsto));
+    const semExecucao=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)===0);
+    const realizadosSemOrcamento=rows.filter(r=>num2812(r.previsto)===0&&num2812(r.realizado)>0);
+    return {rows,previsto,realizado,saldo,exec:previsto?realizado/previsto*100:0,mensalTotal,categorias,meses,realizados,estourados,semExecucao,realizadosSemOrcamento,diferencaMensal:mensalTotal-previsto};
+  };
+  try{orcResumo=window.orcResumo;}catch(e){}
+
+  function mediaResumo2812(){
+    const rows=budgetRows2812();
+    const all=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('marketing')||t.includes('trafego')||t.includes('panflet')||t.includes('outdoor')||t.includes('comunicacao');});
+    const digital=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia digital')||t.includes('marketing digital')||t.includes('trafego')||t.includes('agencia digital')||t.includes('digital');});
+    const useDigital=digital.length?digital:all;
+    const previsto=sum(useDigital,'previsto'),realizado=sum(useDigital,'realizado');
+    return {digital:useDigital,all,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0,totalPrevisto:sum(all,'previsto'),totalRealizado:sum(all,'realizado')};
+  }
+  window.CALLIANDRA_MEDIA_RESUMO=mediaResumo2812;
+
+  function apiBase2812(){return API_DEFAULT;}
+  async function fetchJson2812(url,opts,timeout){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),timeout||60000);
+    try{
+      const res=await fetch(url,Object.assign({cache:'no-store',credentials:'same-origin',signal:ctrl.signal,headers:{'Pragma':'no-cache','Cache-Control':'no-cache'}},opts||{}));
+      const txt=await res.text();
+      if(!res.ok) throw new Error('API '+res.status+': '+txt.slice(0,180));
+      try{return JSON.parse(txt);}catch(e){throw new Error('API respondeu fora do padrão JSON: '+txt.slice(0,180));}
+    }finally{clearTimeout(t);}
+  }
+  apiGetAll=async function(timeout=60000){
+    const base=apiBase2812(); const sep=base.includes('?')?'&':'?';
+    try{return await fetchJson2812(base+sep+'action=getAll&nocache=1&_v=28_12&_t='+Date.now(),{method:'GET'},timeout);}
+    catch(first){
+      try{return await fetchJson2812(base,{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify({action:'getAll',nocache:Date.now(),version:'28.12'})},timeout);}
+      catch(second){throw new Error((second&&second.message)||(first&&first.message)||'API indisponível');}
+    }
+  };
+  window.apiGetAll=apiGetAll;
+  api=async function(payload,timeout=30000){
+    return fetchJson2812(apiBase2812(),{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify(payload||{})},timeout);
+  };
+  window.api=api;
+
+  function applySheets2812(data){
+    let changed=0;
+    const lotes=getSheet2812(data,['lotes','Lotes']);
+    if(lotes.length){STATE.lotes=dedupeLotes(lotes.map(normLote).filter(l=>l.lote&&l.area>0));changed++;}
+    const vendas=[...getSheet2812(data,['vendas','Vendas']),...getSheet2812(data,['contratos','Contratos'])].map(normContrato).filter(c=>c.lote||c.cliente);
+    if(vendas.length){STATE.contratos=vendas;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendas));changed++;}
+    const corr=[...getSheet2812(data,['corretores','Corretores']),...getSheet2812(data,['parceiros_comerciais','Parceiros Comerciais','parceiros'])].map(normCorretor).filter(c=>c.nome);
+    if(corr.length){STATE.corretores=dedupe([...corretoresPadrao(),...corr],'nome');changed++;}
+    const b=findBudgetSheet2812(data);
+    const orc=(b.rows||[]).map(normOrc2812).filter(r=>r.item&&!nrm2812(r.item).includes('total geral'));
+    if(orc.length){STATE.orcamentoRows=orc;STATE.gastos=orc;safeSet('calliandra_v9_local_gastos',JSON.stringify(orc));changed++;}
+    const mid=getSheet2812(data,['midia','mídia','Plano de Mídia','Plano de Midia']).map(normMidia).filter(m=>m.campanha||m.canal);
+    if(mid.length){STATE.midia=mid;changed++;}
+    if(typeof ensureMWParceiroV2810==='function')try{ensureMWParceiroV2810();}catch(e){}
+    if(typeof atualizaEdsonStateV2811==='function')try{atualizaEdsonStateV2811();}catch(e){}
+    if(typeof applyLoteStatusFromSalesV2810==='function')try{applyLoteStatusFromSalesV2810();}catch(e){}
+    let aud=null; if(typeof aplicarAuditoriaEstoqueV28==='function')try{aud=aplicarAuditoriaEstoqueV28();}catch(e){}
+    const o=window.orcResumo(); const m=mediaResumo2812();
+    STATE.lastSync={at:new Date().toISOString(),source:'google_sheets_api_v28_12',lotes:lotes.length,vendas:vendas.length,corretores:corr.length,orcamento:orc.length,orcamentoFonte:b.name||'não localizada',midia:mid.length,marketingPrevisto:m.previsto,marketingRealizado:m.realizado,comercializaveis:aud&&aud.comercializaveis?aud.comercializaveis:38};
+    CFG.disponiveis=38;
+    CFG.verbaMidia=m.previsto||CFG.verbaMidia;
+    return {changed,orcamento:orc.length,lotes:lotes.length,vendas:vendas.length,corretores:corr.length,midia:mid.length,orc:o,media:m};
+  }
+
+  syncData=async function(){
+    setConn(false,'Sincronizando Google Sheets...');
+    const response=await apiGetAll(60000);
+    const data=getDataObj2812(response);
+    const result=applySheets2812(data);
+    if(!result.changed) throw new Error('A API respondeu, mas não trouxe abas reconhecidas da planilha oficial.');
+    saveLocal(); applyRules();
+    setConn(true,'Google Sheets sincronizado');
+    return result;
+  };
+  window.syncData=syncData;
+  syncSilent=async function(){try{await syncData();go(currentPage());}catch(e){console.warn(e);setConn(false,'Base local carregada');}};
+  window.syncSilent=syncSilent;
+  syncManual=async function(){
+    try{const r=await syncData();toast('Planilha sincronizada: '+r.orcamento+' linhas de orçamento, '+r.vendas+' vendas e '+r.lotes+' lotes.');go(currentPage());}
+    catch(e){console.error(e);toast('Sincronização não concluída: '+(e&&e.message?e.message:e),'err');setConn(false,'Base local carregada');}
+  };
+  window.syncManual=syncManual;
+
+  const renderMidiaBase2812=typeof renderMidia==='function'?renderMidia:null;
+  renderMidia=function(){
+    const m=mediaResumo2812(), leads=sum(STATE.midia||[],'leads'), opPrev=sum(STATE.midia||[],'previsto'), opReal=sum(STATE.midia||[],'realizado');
+    const digitalRows=m.digital||[];
+    id('page-midia').innerHTML=`<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">Conciliação da verba de mídia com a aba Orçado x Realizado. Detalhamento operacional abaixo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage('midia')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div>
+    <div class="kpi-row">${kpi('Mídia digital orçada',BRL(m.previsto),'fonte: Orçado x Realizado','g',100)}${kpi('Marketing realizado',BRL(m.realizado),PCT2(m.exec)+' executado','o',m.exec)}${kpi('Saldo de mídia',BRL(m.saldo),'a executar','l')}${kpi('Mídia/marketing total',BRL(m.totalPrevisto),'linhas de mídia e comunicação')}</div>
+    <div class="card v288-budget-board"><div><div class="ch"><div><div class="ch-ttl">Orçado x realizado — mídia/marketing</div><div class="sub">O realizado lançado na planilha não é substituído pelo plano operacional.</div></div>${badge('oficial')}</div><div class="v288-budget-text"><div class="v288-mini"><small>Orçado</small><b>${BRL(m.previsto)}</b><span>mídia digital</span></div><div class="v288-mini"><small>Realizado</small><b>${BRL(m.realizado)}</b><span>marketing executado</span></div><div class="v288-mini"><small>Saldo</small><b>${BRL(m.saldo)}</b><span>disponível</span></div></div></div>${typeof pieV289==='function'?pieV289(m.realizado,m.saldo):''}</div>
+    <div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Linhas orçamentárias de mídia/marketing</div><div class="sub">Leitura direta da aba Orçado x Realizado.</div></div>${badge(digitalRows.length+' linhas')}</div><div class="tw"><table><thead><tr><th>Item</th><th>Categoria</th><th>Orçado</th><th>Realizado</th><th>Saldo</th><th>% Exec.</th><th>Status</th></tr></thead><tbody>${digitalRows.map(r=>`<tr><td>${esc(r.item)}</td><td>${esc(r.categoria)}</td><td>${BRL(r.previsto)}</td><td>${BRL(r.realizado)}</td><td>${BRL(r.saldo)}</td><td>${PCT2(r.percentual)}</td><td>${badge(r.status)}</td></tr>`).join('')||empty(7)}</tbody></table></div></div>
+    <div class="table-card v288-media-official" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Detalhamento operacional de mídia</div><div class="sub">Campanhas, canais, previsto operacional, realizado operacional, leads e CPL. Este quadro não altera o orçamento oficial.</div></div>${badge((STATE.midia||[]).length+' itens')}</div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado operacional</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>${(STATE.midia||[]).map(x=>`<tr><td>${esc(x.campanha)}</td><td>${esc(x.canal)}</td><td>${esc(x.objetivo)}</td><td>${esc(x.periodo)}</td><td>${BRL(x.previsto)}</td><td>${BRL(x.realizado)}</td><td>${num2812(x.leads)}</td><td>${num2812(x.leads)?BRL(num2812(x.realizado)/num2812(x.leads)):'-'}</td><td>${badge(x.status||'-')}</td><td><button class="icon edit" onclick="openMidia('${x.id}')">✎</button></td></tr>`).join('')||empty(10)}</tbody></table></div></div>`;
+  };
+  window.renderMidia=renderMidia;
+
+  const renderConfigBase2812=typeof renderConfig==='function'?renderConfig:null;
+  renderConfig=function(){
+    if(renderConfigBase2812)renderConfigBase2812();
+    const el=document.createElement('div'); el.className='card'; el.style.marginTop='16px';
+    const ls=STATE.lastSync||{}, o=window.orcResumo(), m=mediaResumo2812();
+    el.innerHTML=`<div class="ch"><div><div class="ch-ttl">Sincronização Google Sheets — produção</div><div class="sub">Versão ${PROD_VERSION}. Endpoint definitivo: <b>/api/sheets</b>.</div></div>${badge('produção')}</div><div class="cb"><div class="success"><b>Status operacional:</b> o sistema preserva a última base válida e só substitui orçamento/marketing quando a API retorna linhas reconhecidas.</div><div class="info" style="margin-top:10px"><b>Última sincronização:</b> ${esc(ls.at||'sem registro')} · Orçamento: ${num2812(ls.orcamento)} linhas · Lotes: ${num2812(ls.lotes)} · Vendas: ${num2812(ls.vendas)} · Comercializáveis oficiais: 38.</div><div class="info" style="margin-top:10px"><b>Orçado x realizado:</b> ${BRL(o.previsto)} orçados, ${BRL(o.realizado)} realizados, ${PCT2(o.exec)} executado.</div><div class="info" style="margin-top:10px"><b>Mídia/marketing:</b> ${BRL(m.previsto)} orçados, ${BRL(m.realizado)} realizados, saldo de ${BRL(m.saldo)}.</div></div>`;
+    id('page-config').appendChild(el);
+  };
+  window.renderConfig=renderConfig;
+
+  try{CFG.disponiveis=38; if(typeof atualizaEdsonStateV2811==='function')atualizaEdsonStateV2811(); saveLocal();}catch(e){}
+  window.CALLIANDRA_V2812_CHECKLIST={versao:PROD_VERSION,apiSheetsObrigatoria:true,syncGetPost:true,orcamentoNaoZeraMarketing:true,marketingRealizadoPreservado:true,comercializaveisOficiais:38,fluxoEdson:'sinal 165k junho + 5x 64k julho-novembro'};
+})();
+
+
+</script>
+</body></html>`);
   popup.document.close();
   setTimeout(()=>{popup.focus();popup.print();},420);
 }
@@ -2526,7 +2718,199 @@ function printDocumentV25(page,orientation){
   const orientationCss=orientation==='portrait'?'portrait':'landscape';
   const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 10px!important;padding:0 0 9px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 12px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .v24-section,.print-doc .v24-price-logic,.print-doc .cash-curve-section,.print-doc .scenario-section{break-inside:auto!important;page-break-inside:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v25-recovery-head,.print-doc .sim-price-v22,.print-doc .sim-pay-v22{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card,.print-doc .v25-recovery{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc table thead{display:table-header-group!important}.print-doc table tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-curve{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-input-card{display:none!important}`;
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div>
+<script id="v28-12-producao-final">
+/* === V28.12 PRODUÇÃO · sincronização final, orçamento/marketing preservados e fluxo Edson validado === */
+(function(){
+  const PROD_VERSION='V28.12 produção';
+  const API_DEFAULT='/api/sheets';
+  try{ localStorage.removeItem('calliandra_api_url_v2811'); }catch(e){}
+
+  function nrm2812(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+  function key2812(v){return nrm2812(v).replace(/[^a-z0-9]/g,'');}
+  function num2812(v){return (typeof num==='function')?num(v):(Number(v)||0);}
+  function pick2812(o,keys){
+    if(!o)return'';
+    for(const k of keys){ if(o[k]!==undefined && o[k]!==null && o[k]!=='') return o[k]; }
+    const normed={}; Object.keys(o||{}).forEach(k=>{normed[key2812(k)]=o[k];});
+    for(const k of keys){ const v=normed[key2812(k)]; if(v!==undefined && v!==null && v!=='') return v; }
+    return'';
+  }
+  function getDataObj2812(r){return (r&&r.data)||(r&&r.raw&&r.raw.data)||(r&&r.sheets)||(r&&r.result&&r.result.data)||{};}
+  function asRows2812(v){return Array.isArray(v)?v:(Array.isArray(v&&v.rows)?v.rows:(Array.isArray(v&&v.data)?v.data:[]));}
+  function getSheet2812(data,names){
+    const wanted=(Array.isArray(names)?names:[names]).map(key2812);
+    const entries=Object.keys(data||{});
+    for(const k of entries){ if(wanted.includes(key2812(k))) return asRows2812(data[k]); }
+    return [];
+  }
+  function findBudgetSheet2812(data){
+    const named=getSheet2812(data,['Orçado x Realizado','Orcado x Realizado','Orçado versus Realizado','Orcado versus Realizado','Orçamento','Orcamento','orcamento']);
+    if(named.length) return {name:'Orçado x Realizado',rows:named};
+    for(const name of Object.keys(data||{})){
+      const rows=asRows2812(data[name]);
+      if(!rows.length)continue;
+      const sample=Object.keys(rows[0]||{}).map(key2812).join('|');
+      if(sample.includes('itemdedespesa') && (sample.includes('totalorc')||sample.includes('totalorcado')) && sample.includes('realizado')) return {name,rows};
+    }
+    return {name:'',rows:[]};
+  }
+  const MESES2812=[
+    ['jan',['JAN','Jan','janeiro','Janeiro']],['fev',['FEV','Fev','fevereiro','Fevereiro']],['mar',['MAR','Mar','março','marco','Março','Marco']],
+    ['abr',['ABR','Abr','abril','Abril']],['mai',['MAIO','MAI','Mai','maio','Maio']],['jun',['JUN','Jun','junho','Junho']],
+    ['jul',['JUL','Jul','julho','Julho']],['ago',['AGO','Ago','agosto','Agosto']],['set',['SET','Set','setembro','Setembro']],
+    ['out',['OUT','Out','outubro','Outubro']],['nov',['NOV','Nov','novembro','Novembro']],['dez',['DEZ','Dez','dezembro','Dezembro']]
+  ];
+  function normOrc2812(r,i){
+    const item=String(pick2812(r,['Item de Despesa','Item despesa','item_despesa','item','despesa','Descrição','Descricao'])||'').trim();
+    const categoria=String(pick2812(r,['Categoria','categoria','Macro categoria','macro_categoria'])||'Sem categoria').trim()||'Sem categoria';
+    const previsto=num2812(pick2812(r,['TOTAL ORÇ','TOTAL ORÇ.','TOTAL ORC','TOTAL ORC.','TOTAL ORÇADO','TOTAL ORCADO','Total Orç.','Total Orç','Total Orçado','Total Orcado','total_orc','total_orcado','Orçado','Orcado','Previsto']));
+    const realizado=num2812(pick2812(r,['REALIZADO','Realizado','valor_realizado','executado','Pago','Valor pago','Realizado R$']));
+    const saldoRaw=pick2812(r,['SALDO','Saldo','saldo']);
+    const saldo=saldoRaw!==''?num2812(saldoRaw):(previsto-realizado);
+    const out={id:pick2812(r,['id','ID'])||('ORC-'+String(i+1).padStart(3,'0')),item,categoria,previsto,realizado,saldo,percentual:previsto?realizado/previsto*100:0,raw:r};
+    let mensal=0; MESES2812.forEach(([key,keys])=>{out[key]=num2812(pick2812(r,keys)); mensal+=out[key];});
+    out.mensal=mensal;
+    out.divergenciaMensal=mensal-previsto;
+    out.status=previsto&&realizado>previsto?'Estourado':(realizado>0?'Em execução':(previsto>0?'Não iniciado':'Sem orçamento'));
+    out.desempenho=realizado>0?'Desempenhado':'Não desempenhado';
+    return out;
+  }
+  function budgetRows2812(){
+    const rows=(STATE.orcamentoRows&&STATE.orcamentoRows.length?STATE.orcamentoRows:STATE.gastos)||[];
+    return rows.filter(r=>r&&r.item&&!nrm2812(r.item).includes('total geral'));
+  }
+  function categoriaMacro2812(rows){
+    const map={};
+    (rows||[]).forEach(r=>{
+      const k=r.categoria||'Sem categoria';
+      if(!map[k]) map[k]={categoria:k,previsto:0,realizado:0,saldo:0,qtd:0,desempenhados:0,naoDesempenhados:0,estourados:0};
+      const c=map[k]; c.previsto+=num2812(r.previsto); c.realizado+=num2812(r.realizado); c.saldo+=num2812(r.previsto)-num2812(r.realizado); c.qtd++;
+      if(num2812(r.realizado)>0)c.desempenhados++; else if(num2812(r.previsto)>0)c.naoDesempenhados++;
+      if(num2812(r.previsto)>0 && num2812(r.realizado)>num2812(r.previsto))c.estourados++;
+    });
+    return Object.values(map).map(c=>{c.exec=c.previsto?c.realizado/c.previsto*100:0;c.status=c.estourados?'Atenção':(c.realizado>0?'Em execução':'Não iniciado');return c;}).sort((a,b)=>b.previsto-a.previsto);
+  }
+  window.orcResumo=function(){
+    const rows=budgetRows2812();
+    const previsto=sum(rows,'previsto'),realizado=sum(rows,'realizado'),saldo=previsto-realizado;
+    const mensalTotal=MESES2812.reduce((s,m)=>s+sum(rows,m[0]),0);
+    const categorias=categoriaMacro2812(rows);
+    const meses=MESES2812.map(m=>({mes:m[1][0],key:m[0],previsto:sum(rows,m[0])}));
+    const realizados=rows.filter(r=>num2812(r.realizado)>0).sort((a,b)=>num2812(b.realizado)-num2812(a.realizado));
+    const estourados=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)>num2812(r.previsto));
+    const semExecucao=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)===0);
+    const realizadosSemOrcamento=rows.filter(r=>num2812(r.previsto)===0&&num2812(r.realizado)>0);
+    return {rows,previsto,realizado,saldo,exec:previsto?realizado/previsto*100:0,mensalTotal,categorias,meses,realizados,estourados,semExecucao,realizadosSemOrcamento,diferencaMensal:mensalTotal-previsto};
+  };
+  try{orcResumo=window.orcResumo;}catch(e){}
+
+  function mediaResumo2812(){
+    const rows=budgetRows2812();
+    const all=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('marketing')||t.includes('trafego')||t.includes('panflet')||t.includes('outdoor')||t.includes('comunicacao');});
+    const digital=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia digital')||t.includes('marketing digital')||t.includes('trafego')||t.includes('agencia digital')||t.includes('digital');});
+    const useDigital=digital.length?digital:all;
+    const previsto=sum(useDigital,'previsto'),realizado=sum(useDigital,'realizado');
+    return {digital:useDigital,all,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0,totalPrevisto:sum(all,'previsto'),totalRealizado:sum(all,'realizado')};
+  }
+  window.CALLIANDRA_MEDIA_RESUMO=mediaResumo2812;
+
+  function apiBase2812(){return API_DEFAULT;}
+  async function fetchJson2812(url,opts,timeout){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),timeout||60000);
+    try{
+      const res=await fetch(url,Object.assign({cache:'no-store',credentials:'same-origin',signal:ctrl.signal,headers:{'Pragma':'no-cache','Cache-Control':'no-cache'}},opts||{}));
+      const txt=await res.text();
+      if(!res.ok) throw new Error('API '+res.status+': '+txt.slice(0,180));
+      try{return JSON.parse(txt);}catch(e){throw new Error('API respondeu fora do padrão JSON: '+txt.slice(0,180));}
+    }finally{clearTimeout(t);}
+  }
+  apiGetAll=async function(timeout=60000){
+    const base=apiBase2812(); const sep=base.includes('?')?'&':'?';
+    try{return await fetchJson2812(base+sep+'action=getAll&nocache=1&_v=28_12&_t='+Date.now(),{method:'GET'},timeout);}
+    catch(first){
+      try{return await fetchJson2812(base,{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify({action:'getAll',nocache:Date.now(),version:'28.12'})},timeout);}
+      catch(second){throw new Error((second&&second.message)||(first&&first.message)||'API indisponível');}
+    }
+  };
+  window.apiGetAll=apiGetAll;
+  api=async function(payload,timeout=30000){
+    return fetchJson2812(apiBase2812(),{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify(payload||{})},timeout);
+  };
+  window.api=api;
+
+  function applySheets2812(data){
+    let changed=0;
+    const lotes=getSheet2812(data,['lotes','Lotes']);
+    if(lotes.length){STATE.lotes=dedupeLotes(lotes.map(normLote).filter(l=>l.lote&&l.area>0));changed++;}
+    const vendas=[...getSheet2812(data,['vendas','Vendas']),...getSheet2812(data,['contratos','Contratos'])].map(normContrato).filter(c=>c.lote||c.cliente);
+    if(vendas.length){STATE.contratos=vendas;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendas));changed++;}
+    const corr=[...getSheet2812(data,['corretores','Corretores']),...getSheet2812(data,['parceiros_comerciais','Parceiros Comerciais','parceiros'])].map(normCorretor).filter(c=>c.nome);
+    if(corr.length){STATE.corretores=dedupe([...corretoresPadrao(),...corr],'nome');changed++;}
+    const b=findBudgetSheet2812(data);
+    const orc=(b.rows||[]).map(normOrc2812).filter(r=>r.item&&!nrm2812(r.item).includes('total geral'));
+    if(orc.length){STATE.orcamentoRows=orc;STATE.gastos=orc;safeSet('calliandra_v9_local_gastos',JSON.stringify(orc));changed++;}
+    const mid=getSheet2812(data,['midia','mídia','Plano de Mídia','Plano de Midia']).map(normMidia).filter(m=>m.campanha||m.canal);
+    if(mid.length){STATE.midia=mid;changed++;}
+    if(typeof ensureMWParceiroV2810==='function')try{ensureMWParceiroV2810();}catch(e){}
+    if(typeof atualizaEdsonStateV2811==='function')try{atualizaEdsonStateV2811();}catch(e){}
+    if(typeof applyLoteStatusFromSalesV2810==='function')try{applyLoteStatusFromSalesV2810();}catch(e){}
+    let aud=null; if(typeof aplicarAuditoriaEstoqueV28==='function')try{aud=aplicarAuditoriaEstoqueV28();}catch(e){}
+    const o=window.orcResumo(); const m=mediaResumo2812();
+    STATE.lastSync={at:new Date().toISOString(),source:'google_sheets_api_v28_12',lotes:lotes.length,vendas:vendas.length,corretores:corr.length,orcamento:orc.length,orcamentoFonte:b.name||'não localizada',midia:mid.length,marketingPrevisto:m.previsto,marketingRealizado:m.realizado,comercializaveis:aud&&aud.comercializaveis?aud.comercializaveis:38};
+    CFG.disponiveis=38;
+    CFG.verbaMidia=m.previsto||CFG.verbaMidia;
+    return {changed,orcamento:orc.length,lotes:lotes.length,vendas:vendas.length,corretores:corr.length,midia:mid.length,orc:o,media:m};
+  }
+
+  syncData=async function(){
+    setConn(false,'Sincronizando Google Sheets...');
+    const response=await apiGetAll(60000);
+    const data=getDataObj2812(response);
+    const result=applySheets2812(data);
+    if(!result.changed) throw new Error('A API respondeu, mas não trouxe abas reconhecidas da planilha oficial.');
+    saveLocal(); applyRules();
+    setConn(true,'Google Sheets sincronizado');
+    return result;
+  };
+  window.syncData=syncData;
+  syncSilent=async function(){try{await syncData();go(currentPage());}catch(e){console.warn(e);setConn(false,'Base local carregada');}};
+  window.syncSilent=syncSilent;
+  syncManual=async function(){
+    try{const r=await syncData();toast('Planilha sincronizada: '+r.orcamento+' linhas de orçamento, '+r.vendas+' vendas e '+r.lotes+' lotes.');go(currentPage());}
+    catch(e){console.error(e);toast('Sincronização não concluída: '+(e&&e.message?e.message:e),'err');setConn(false,'Base local carregada');}
+  };
+  window.syncManual=syncManual;
+
+  const renderMidiaBase2812=typeof renderMidia==='function'?renderMidia:null;
+  renderMidia=function(){
+    const m=mediaResumo2812(), leads=sum(STATE.midia||[],'leads'), opPrev=sum(STATE.midia||[],'previsto'), opReal=sum(STATE.midia||[],'realizado');
+    const digitalRows=m.digital||[];
+    id('page-midia').innerHTML=`<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">Conciliação da verba de mídia com a aba Orçado x Realizado. Detalhamento operacional abaixo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage('midia')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div>
+    <div class="kpi-row">${kpi('Mídia digital orçada',BRL(m.previsto),'fonte: Orçado x Realizado','g',100)}${kpi('Marketing realizado',BRL(m.realizado),PCT2(m.exec)+' executado','o',m.exec)}${kpi('Saldo de mídia',BRL(m.saldo),'a executar','l')}${kpi('Mídia/marketing total',BRL(m.totalPrevisto),'linhas de mídia e comunicação')}</div>
+    <div class="card v288-budget-board"><div><div class="ch"><div><div class="ch-ttl">Orçado x realizado — mídia/marketing</div><div class="sub">O realizado lançado na planilha não é substituído pelo plano operacional.</div></div>${badge('oficial')}</div><div class="v288-budget-text"><div class="v288-mini"><small>Orçado</small><b>${BRL(m.previsto)}</b><span>mídia digital</span></div><div class="v288-mini"><small>Realizado</small><b>${BRL(m.realizado)}</b><span>marketing executado</span></div><div class="v288-mini"><small>Saldo</small><b>${BRL(m.saldo)}</b><span>disponível</span></div></div></div>${typeof pieV289==='function'?pieV289(m.realizado,m.saldo):''}</div>
+    <div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Linhas orçamentárias de mídia/marketing</div><div class="sub">Leitura direta da aba Orçado x Realizado.</div></div>${badge(digitalRows.length+' linhas')}</div><div class="tw"><table><thead><tr><th>Item</th><th>Categoria</th><th>Orçado</th><th>Realizado</th><th>Saldo</th><th>% Exec.</th><th>Status</th></tr></thead><tbody>${digitalRows.map(r=>`<tr><td>${esc(r.item)}</td><td>${esc(r.categoria)}</td><td>${BRL(r.previsto)}</td><td>${BRL(r.realizado)}</td><td>${BRL(r.saldo)}</td><td>${PCT2(r.percentual)}</td><td>${badge(r.status)}</td></tr>`).join('')||empty(7)}</tbody></table></div></div>
+    <div class="table-card v288-media-official" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Detalhamento operacional de mídia</div><div class="sub">Campanhas, canais, previsto operacional, realizado operacional, leads e CPL. Este quadro não altera o orçamento oficial.</div></div>${badge((STATE.midia||[]).length+' itens')}</div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado operacional</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>${(STATE.midia||[]).map(x=>`<tr><td>${esc(x.campanha)}</td><td>${esc(x.canal)}</td><td>${esc(x.objetivo)}</td><td>${esc(x.periodo)}</td><td>${BRL(x.previsto)}</td><td>${BRL(x.realizado)}</td><td>${num2812(x.leads)}</td><td>${num2812(x.leads)?BRL(num2812(x.realizado)/num2812(x.leads)):'-'}</td><td>${badge(x.status||'-')}</td><td><button class="icon edit" onclick="openMidia('${x.id}')">✎</button></td></tr>`).join('')||empty(10)}</tbody></table></div></div>`;
+  };
+  window.renderMidia=renderMidia;
+
+  const renderConfigBase2812=typeof renderConfig==='function'?renderConfig:null;
+  renderConfig=function(){
+    if(renderConfigBase2812)renderConfigBase2812();
+    const el=document.createElement('div'); el.className='card'; el.style.marginTop='16px';
+    const ls=STATE.lastSync||{}, o=window.orcResumo(), m=mediaResumo2812();
+    el.innerHTML=`<div class="ch"><div><div class="ch-ttl">Sincronização Google Sheets — produção</div><div class="sub">Versão ${PROD_VERSION}. Endpoint definitivo: <b>/api/sheets</b>.</div></div>${badge('produção')}</div><div class="cb"><div class="success"><b>Status operacional:</b> o sistema preserva a última base válida e só substitui orçamento/marketing quando a API retorna linhas reconhecidas.</div><div class="info" style="margin-top:10px"><b>Última sincronização:</b> ${esc(ls.at||'sem registro')} · Orçamento: ${num2812(ls.orcamento)} linhas · Lotes: ${num2812(ls.lotes)} · Vendas: ${num2812(ls.vendas)} · Comercializáveis oficiais: 38.</div><div class="info" style="margin-top:10px"><b>Orçado x realizado:</b> ${BRL(o.previsto)} orçados, ${BRL(o.realizado)} realizados, ${PCT2(o.exec)} executado.</div><div class="info" style="margin-top:10px"><b>Mídia/marketing:</b> ${BRL(m.previsto)} orçados, ${BRL(m.realizado)} realizados, saldo de ${BRL(m.saldo)}.</div></div>`;
+    id('page-config').appendChild(el);
+  };
+  window.renderConfig=renderConfig;
+
+  try{CFG.disponiveis=38; if(typeof atualizaEdsonStateV2811==='function')atualizaEdsonStateV2811(); saveLocal();}catch(e){}
+  window.CALLIANDRA_V2812_CHECKLIST={versao:PROD_VERSION,apiSheetsObrigatoria:true,syncGetPost:true,orcamentoNaoZeraMarketing:true,marketingRealizadoPreservado:true,comercializaveisOficiais:38,fluxoEdson:'sinal 165k junho + 5x 64k julho-novembro'};
+})();
+
+
+</script>
+</body></html>`);
   popup.document.close();
   setTimeout(()=>{popup.focus();popup.print();},650);
 }
@@ -2641,7 +3025,199 @@ function cashPanelV24(model,cfg){const total=vendasResumoV23(soldV23()),confirme
 function printDocumentV26(page,orientation){
  closeModal();if(page==='simulador')calcSim();const source=id('page-'+page);if(!source){toast('Tela não encontrada para impressão.','err');return;}const popup=window.open('','_blank','width=1280,height=920');if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape',clone=source.cloneNode(true);clone.querySelectorAll('.no-print,.sh-r,.icon').forEach(n=>n.remove());
  const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.sb,.top,.auth,.modal-back,.toasts{display:none!important}.print-doc{display:block!important;width:100%!important;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 9px!important;padding:0 0 8px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 10px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .card,.print-doc .table-card,.print-doc .cb,.print-doc .g2,.print-doc .g3,.print-doc .v24-section,.print-doc .cash-curve-section,.print-doc .scenario-section,.print-doc .v24-price-logic,.print-doc .v25-recovery,.print-doc .v26-flow-card{break-inside:auto!important;page-break-inside:auto!important;break-before:auto!important;page-break-before:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v26-rule,.print-doc .v26-flow-chart,.print-doc tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc table{min-width:0!important;width:100%!important}.print-doc thead{display:table-header-group!important}.print-doc .v26-flow-grid{display:block!important}.print-doc .v26-flow-card{margin-top:12px!important;box-shadow:none!important}.print-doc .v26-fin-form{display:none!important}`;
- popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${clone.outerHTML}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},700);
+ popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${clone.outerHTML}</div>
+<script id="v28-12-producao-final">
+/* === V28.12 PRODUÇÃO · sincronização final, orçamento/marketing preservados e fluxo Edson validado === */
+(function(){
+  const PROD_VERSION='V28.12 produção';
+  const API_DEFAULT='/api/sheets';
+  try{ localStorage.removeItem('calliandra_api_url_v2811'); }catch(e){}
+
+  function nrm2812(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+  function key2812(v){return nrm2812(v).replace(/[^a-z0-9]/g,'');}
+  function num2812(v){return (typeof num==='function')?num(v):(Number(v)||0);}
+  function pick2812(o,keys){
+    if(!o)return'';
+    for(const k of keys){ if(o[k]!==undefined && o[k]!==null && o[k]!=='') return o[k]; }
+    const normed={}; Object.keys(o||{}).forEach(k=>{normed[key2812(k)]=o[k];});
+    for(const k of keys){ const v=normed[key2812(k)]; if(v!==undefined && v!==null && v!=='') return v; }
+    return'';
+  }
+  function getDataObj2812(r){return (r&&r.data)||(r&&r.raw&&r.raw.data)||(r&&r.sheets)||(r&&r.result&&r.result.data)||{};}
+  function asRows2812(v){return Array.isArray(v)?v:(Array.isArray(v&&v.rows)?v.rows:(Array.isArray(v&&v.data)?v.data:[]));}
+  function getSheet2812(data,names){
+    const wanted=(Array.isArray(names)?names:[names]).map(key2812);
+    const entries=Object.keys(data||{});
+    for(const k of entries){ if(wanted.includes(key2812(k))) return asRows2812(data[k]); }
+    return [];
+  }
+  function findBudgetSheet2812(data){
+    const named=getSheet2812(data,['Orçado x Realizado','Orcado x Realizado','Orçado versus Realizado','Orcado versus Realizado','Orçamento','Orcamento','orcamento']);
+    if(named.length) return {name:'Orçado x Realizado',rows:named};
+    for(const name of Object.keys(data||{})){
+      const rows=asRows2812(data[name]);
+      if(!rows.length)continue;
+      const sample=Object.keys(rows[0]||{}).map(key2812).join('|');
+      if(sample.includes('itemdedespesa') && (sample.includes('totalorc')||sample.includes('totalorcado')) && sample.includes('realizado')) return {name,rows};
+    }
+    return {name:'',rows:[]};
+  }
+  const MESES2812=[
+    ['jan',['JAN','Jan','janeiro','Janeiro']],['fev',['FEV','Fev','fevereiro','Fevereiro']],['mar',['MAR','Mar','março','marco','Março','Marco']],
+    ['abr',['ABR','Abr','abril','Abril']],['mai',['MAIO','MAI','Mai','maio','Maio']],['jun',['JUN','Jun','junho','Junho']],
+    ['jul',['JUL','Jul','julho','Julho']],['ago',['AGO','Ago','agosto','Agosto']],['set',['SET','Set','setembro','Setembro']],
+    ['out',['OUT','Out','outubro','Outubro']],['nov',['NOV','Nov','novembro','Novembro']],['dez',['DEZ','Dez','dezembro','Dezembro']]
+  ];
+  function normOrc2812(r,i){
+    const item=String(pick2812(r,['Item de Despesa','Item despesa','item_despesa','item','despesa','Descrição','Descricao'])||'').trim();
+    const categoria=String(pick2812(r,['Categoria','categoria','Macro categoria','macro_categoria'])||'Sem categoria').trim()||'Sem categoria';
+    const previsto=num2812(pick2812(r,['TOTAL ORÇ','TOTAL ORÇ.','TOTAL ORC','TOTAL ORC.','TOTAL ORÇADO','TOTAL ORCADO','Total Orç.','Total Orç','Total Orçado','Total Orcado','total_orc','total_orcado','Orçado','Orcado','Previsto']));
+    const realizado=num2812(pick2812(r,['REALIZADO','Realizado','valor_realizado','executado','Pago','Valor pago','Realizado R$']));
+    const saldoRaw=pick2812(r,['SALDO','Saldo','saldo']);
+    const saldo=saldoRaw!==''?num2812(saldoRaw):(previsto-realizado);
+    const out={id:pick2812(r,['id','ID'])||('ORC-'+String(i+1).padStart(3,'0')),item,categoria,previsto,realizado,saldo,percentual:previsto?realizado/previsto*100:0,raw:r};
+    let mensal=0; MESES2812.forEach(([key,keys])=>{out[key]=num2812(pick2812(r,keys)); mensal+=out[key];});
+    out.mensal=mensal;
+    out.divergenciaMensal=mensal-previsto;
+    out.status=previsto&&realizado>previsto?'Estourado':(realizado>0?'Em execução':(previsto>0?'Não iniciado':'Sem orçamento'));
+    out.desempenho=realizado>0?'Desempenhado':'Não desempenhado';
+    return out;
+  }
+  function budgetRows2812(){
+    const rows=(STATE.orcamentoRows&&STATE.orcamentoRows.length?STATE.orcamentoRows:STATE.gastos)||[];
+    return rows.filter(r=>r&&r.item&&!nrm2812(r.item).includes('total geral'));
+  }
+  function categoriaMacro2812(rows){
+    const map={};
+    (rows||[]).forEach(r=>{
+      const k=r.categoria||'Sem categoria';
+      if(!map[k]) map[k]={categoria:k,previsto:0,realizado:0,saldo:0,qtd:0,desempenhados:0,naoDesempenhados:0,estourados:0};
+      const c=map[k]; c.previsto+=num2812(r.previsto); c.realizado+=num2812(r.realizado); c.saldo+=num2812(r.previsto)-num2812(r.realizado); c.qtd++;
+      if(num2812(r.realizado)>0)c.desempenhados++; else if(num2812(r.previsto)>0)c.naoDesempenhados++;
+      if(num2812(r.previsto)>0 && num2812(r.realizado)>num2812(r.previsto))c.estourados++;
+    });
+    return Object.values(map).map(c=>{c.exec=c.previsto?c.realizado/c.previsto*100:0;c.status=c.estourados?'Atenção':(c.realizado>0?'Em execução':'Não iniciado');return c;}).sort((a,b)=>b.previsto-a.previsto);
+  }
+  window.orcResumo=function(){
+    const rows=budgetRows2812();
+    const previsto=sum(rows,'previsto'),realizado=sum(rows,'realizado'),saldo=previsto-realizado;
+    const mensalTotal=MESES2812.reduce((s,m)=>s+sum(rows,m[0]),0);
+    const categorias=categoriaMacro2812(rows);
+    const meses=MESES2812.map(m=>({mes:m[1][0],key:m[0],previsto:sum(rows,m[0])}));
+    const realizados=rows.filter(r=>num2812(r.realizado)>0).sort((a,b)=>num2812(b.realizado)-num2812(a.realizado));
+    const estourados=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)>num2812(r.previsto));
+    const semExecucao=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)===0);
+    const realizadosSemOrcamento=rows.filter(r=>num2812(r.previsto)===0&&num2812(r.realizado)>0);
+    return {rows,previsto,realizado,saldo,exec:previsto?realizado/previsto*100:0,mensalTotal,categorias,meses,realizados,estourados,semExecucao,realizadosSemOrcamento,diferencaMensal:mensalTotal-previsto};
+  };
+  try{orcResumo=window.orcResumo;}catch(e){}
+
+  function mediaResumo2812(){
+    const rows=budgetRows2812();
+    const all=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('marketing')||t.includes('trafego')||t.includes('panflet')||t.includes('outdoor')||t.includes('comunicacao');});
+    const digital=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia digital')||t.includes('marketing digital')||t.includes('trafego')||t.includes('agencia digital')||t.includes('digital');});
+    const useDigital=digital.length?digital:all;
+    const previsto=sum(useDigital,'previsto'),realizado=sum(useDigital,'realizado');
+    return {digital:useDigital,all,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0,totalPrevisto:sum(all,'previsto'),totalRealizado:sum(all,'realizado')};
+  }
+  window.CALLIANDRA_MEDIA_RESUMO=mediaResumo2812;
+
+  function apiBase2812(){return API_DEFAULT;}
+  async function fetchJson2812(url,opts,timeout){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),timeout||60000);
+    try{
+      const res=await fetch(url,Object.assign({cache:'no-store',credentials:'same-origin',signal:ctrl.signal,headers:{'Pragma':'no-cache','Cache-Control':'no-cache'}},opts||{}));
+      const txt=await res.text();
+      if(!res.ok) throw new Error('API '+res.status+': '+txt.slice(0,180));
+      try{return JSON.parse(txt);}catch(e){throw new Error('API respondeu fora do padrão JSON: '+txt.slice(0,180));}
+    }finally{clearTimeout(t);}
+  }
+  apiGetAll=async function(timeout=60000){
+    const base=apiBase2812(); const sep=base.includes('?')?'&':'?';
+    try{return await fetchJson2812(base+sep+'action=getAll&nocache=1&_v=28_12&_t='+Date.now(),{method:'GET'},timeout);}
+    catch(first){
+      try{return await fetchJson2812(base,{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify({action:'getAll',nocache:Date.now(),version:'28.12'})},timeout);}
+      catch(second){throw new Error((second&&second.message)||(first&&first.message)||'API indisponível');}
+    }
+  };
+  window.apiGetAll=apiGetAll;
+  api=async function(payload,timeout=30000){
+    return fetchJson2812(apiBase2812(),{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify(payload||{})},timeout);
+  };
+  window.api=api;
+
+  function applySheets2812(data){
+    let changed=0;
+    const lotes=getSheet2812(data,['lotes','Lotes']);
+    if(lotes.length){STATE.lotes=dedupeLotes(lotes.map(normLote).filter(l=>l.lote&&l.area>0));changed++;}
+    const vendas=[...getSheet2812(data,['vendas','Vendas']),...getSheet2812(data,['contratos','Contratos'])].map(normContrato).filter(c=>c.lote||c.cliente);
+    if(vendas.length){STATE.contratos=vendas;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendas));changed++;}
+    const corr=[...getSheet2812(data,['corretores','Corretores']),...getSheet2812(data,['parceiros_comerciais','Parceiros Comerciais','parceiros'])].map(normCorretor).filter(c=>c.nome);
+    if(corr.length){STATE.corretores=dedupe([...corretoresPadrao(),...corr],'nome');changed++;}
+    const b=findBudgetSheet2812(data);
+    const orc=(b.rows||[]).map(normOrc2812).filter(r=>r.item&&!nrm2812(r.item).includes('total geral'));
+    if(orc.length){STATE.orcamentoRows=orc;STATE.gastos=orc;safeSet('calliandra_v9_local_gastos',JSON.stringify(orc));changed++;}
+    const mid=getSheet2812(data,['midia','mídia','Plano de Mídia','Plano de Midia']).map(normMidia).filter(m=>m.campanha||m.canal);
+    if(mid.length){STATE.midia=mid;changed++;}
+    if(typeof ensureMWParceiroV2810==='function')try{ensureMWParceiroV2810();}catch(e){}
+    if(typeof atualizaEdsonStateV2811==='function')try{atualizaEdsonStateV2811();}catch(e){}
+    if(typeof applyLoteStatusFromSalesV2810==='function')try{applyLoteStatusFromSalesV2810();}catch(e){}
+    let aud=null; if(typeof aplicarAuditoriaEstoqueV28==='function')try{aud=aplicarAuditoriaEstoqueV28();}catch(e){}
+    const o=window.orcResumo(); const m=mediaResumo2812();
+    STATE.lastSync={at:new Date().toISOString(),source:'google_sheets_api_v28_12',lotes:lotes.length,vendas:vendas.length,corretores:corr.length,orcamento:orc.length,orcamentoFonte:b.name||'não localizada',midia:mid.length,marketingPrevisto:m.previsto,marketingRealizado:m.realizado,comercializaveis:aud&&aud.comercializaveis?aud.comercializaveis:38};
+    CFG.disponiveis=38;
+    CFG.verbaMidia=m.previsto||CFG.verbaMidia;
+    return {changed,orcamento:orc.length,lotes:lotes.length,vendas:vendas.length,corretores:corr.length,midia:mid.length,orc:o,media:m};
+  }
+
+  syncData=async function(){
+    setConn(false,'Sincronizando Google Sheets...');
+    const response=await apiGetAll(60000);
+    const data=getDataObj2812(response);
+    const result=applySheets2812(data);
+    if(!result.changed) throw new Error('A API respondeu, mas não trouxe abas reconhecidas da planilha oficial.');
+    saveLocal(); applyRules();
+    setConn(true,'Google Sheets sincronizado');
+    return result;
+  };
+  window.syncData=syncData;
+  syncSilent=async function(){try{await syncData();go(currentPage());}catch(e){console.warn(e);setConn(false,'Base local carregada');}};
+  window.syncSilent=syncSilent;
+  syncManual=async function(){
+    try{const r=await syncData();toast('Planilha sincronizada: '+r.orcamento+' linhas de orçamento, '+r.vendas+' vendas e '+r.lotes+' lotes.');go(currentPage());}
+    catch(e){console.error(e);toast('Sincronização não concluída: '+(e&&e.message?e.message:e),'err');setConn(false,'Base local carregada');}
+  };
+  window.syncManual=syncManual;
+
+  const renderMidiaBase2812=typeof renderMidia==='function'?renderMidia:null;
+  renderMidia=function(){
+    const m=mediaResumo2812(), leads=sum(STATE.midia||[],'leads'), opPrev=sum(STATE.midia||[],'previsto'), opReal=sum(STATE.midia||[],'realizado');
+    const digitalRows=m.digital||[];
+    id('page-midia').innerHTML=`<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">Conciliação da verba de mídia com a aba Orçado x Realizado. Detalhamento operacional abaixo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage('midia')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div>
+    <div class="kpi-row">${kpi('Mídia digital orçada',BRL(m.previsto),'fonte: Orçado x Realizado','g',100)}${kpi('Marketing realizado',BRL(m.realizado),PCT2(m.exec)+' executado','o',m.exec)}${kpi('Saldo de mídia',BRL(m.saldo),'a executar','l')}${kpi('Mídia/marketing total',BRL(m.totalPrevisto),'linhas de mídia e comunicação')}</div>
+    <div class="card v288-budget-board"><div><div class="ch"><div><div class="ch-ttl">Orçado x realizado — mídia/marketing</div><div class="sub">O realizado lançado na planilha não é substituído pelo plano operacional.</div></div>${badge('oficial')}</div><div class="v288-budget-text"><div class="v288-mini"><small>Orçado</small><b>${BRL(m.previsto)}</b><span>mídia digital</span></div><div class="v288-mini"><small>Realizado</small><b>${BRL(m.realizado)}</b><span>marketing executado</span></div><div class="v288-mini"><small>Saldo</small><b>${BRL(m.saldo)}</b><span>disponível</span></div></div></div>${typeof pieV289==='function'?pieV289(m.realizado,m.saldo):''}</div>
+    <div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Linhas orçamentárias de mídia/marketing</div><div class="sub">Leitura direta da aba Orçado x Realizado.</div></div>${badge(digitalRows.length+' linhas')}</div><div class="tw"><table><thead><tr><th>Item</th><th>Categoria</th><th>Orçado</th><th>Realizado</th><th>Saldo</th><th>% Exec.</th><th>Status</th></tr></thead><tbody>${digitalRows.map(r=>`<tr><td>${esc(r.item)}</td><td>${esc(r.categoria)}</td><td>${BRL(r.previsto)}</td><td>${BRL(r.realizado)}</td><td>${BRL(r.saldo)}</td><td>${PCT2(r.percentual)}</td><td>${badge(r.status)}</td></tr>`).join('')||empty(7)}</tbody></table></div></div>
+    <div class="table-card v288-media-official" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Detalhamento operacional de mídia</div><div class="sub">Campanhas, canais, previsto operacional, realizado operacional, leads e CPL. Este quadro não altera o orçamento oficial.</div></div>${badge((STATE.midia||[]).length+' itens')}</div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado operacional</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>${(STATE.midia||[]).map(x=>`<tr><td>${esc(x.campanha)}</td><td>${esc(x.canal)}</td><td>${esc(x.objetivo)}</td><td>${esc(x.periodo)}</td><td>${BRL(x.previsto)}</td><td>${BRL(x.realizado)}</td><td>${num2812(x.leads)}</td><td>${num2812(x.leads)?BRL(num2812(x.realizado)/num2812(x.leads)):'-'}</td><td>${badge(x.status||'-')}</td><td><button class="icon edit" onclick="openMidia('${x.id}')">✎</button></td></tr>`).join('')||empty(10)}</tbody></table></div></div>`;
+  };
+  window.renderMidia=renderMidia;
+
+  const renderConfigBase2812=typeof renderConfig==='function'?renderConfig:null;
+  renderConfig=function(){
+    if(renderConfigBase2812)renderConfigBase2812();
+    const el=document.createElement('div'); el.className='card'; el.style.marginTop='16px';
+    const ls=STATE.lastSync||{}, o=window.orcResumo(), m=mediaResumo2812();
+    el.innerHTML=`<div class="ch"><div><div class="ch-ttl">Sincronização Google Sheets — produção</div><div class="sub">Versão ${PROD_VERSION}. Endpoint definitivo: <b>/api/sheets</b>.</div></div>${badge('produção')}</div><div class="cb"><div class="success"><b>Status operacional:</b> o sistema preserva a última base válida e só substitui orçamento/marketing quando a API retorna linhas reconhecidas.</div><div class="info" style="margin-top:10px"><b>Última sincronização:</b> ${esc(ls.at||'sem registro')} · Orçamento: ${num2812(ls.orcamento)} linhas · Lotes: ${num2812(ls.lotes)} · Vendas: ${num2812(ls.vendas)} · Comercializáveis oficiais: 38.</div><div class="info" style="margin-top:10px"><b>Orçado x realizado:</b> ${BRL(o.previsto)} orçados, ${BRL(o.realizado)} realizados, ${PCT2(o.exec)} executado.</div><div class="info" style="margin-top:10px"><b>Mídia/marketing:</b> ${BRL(m.previsto)} orçados, ${BRL(m.realizado)} realizados, saldo de ${BRL(m.saldo)}.</div></div>`;
+    id('page-config').appendChild(el);
+  };
+  window.renderConfig=renderConfig;
+
+  try{CFG.disponiveis=38; if(typeof atualizaEdsonStateV2811==='function')atualizaEdsonStateV2811(); saveLocal();}catch(e){}
+  window.CALLIANDRA_V2812_CHECKLIST={versao:PROD_VERSION,apiSheetsObrigatoria:true,syncGetPost:true,orcamentoNaoZeraMarketing:true,marketingRealizadoPreservado:true,comercializaveisOficiais:38,fluxoEdson:'sinal 165k junho + 5x 64k julho-novembro'};
+})();
+
+
+</script>
+</body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},700);
 }
 printDocumentV25=printDocumentV26;printDocumentV22=printDocumentV26;
 </script>
@@ -2853,7 +3429,199 @@ function printDocumentV27(page,orientation){
   if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}
   const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape';
   const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-head{display:flex!important;margin:0 0 12px!important;padding:0 0 8px!important;border-bottom:2px solid #173d37;break-after:avoid!important;page-break-after:avoid!important}.v27-paper{display:block!important;margin:0!important;padding:0!important}.v27-paper .paper-section{break-before:auto!important;page-break-before:auto!important}.v27-paper tr{break-inside:avoid!important;page-break-inside:avoid!important}.v27-paper thead{display:table-header-group!important}`;
-  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
+  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div>
+<script id="v28-12-producao-final">
+/* === V28.12 PRODUÇÃO · sincronização final, orçamento/marketing preservados e fluxo Edson validado === */
+(function(){
+  const PROD_VERSION='V28.12 produção';
+  const API_DEFAULT='/api/sheets';
+  try{ localStorage.removeItem('calliandra_api_url_v2811'); }catch(e){}
+
+  function nrm2812(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+  function key2812(v){return nrm2812(v).replace(/[^a-z0-9]/g,'');}
+  function num2812(v){return (typeof num==='function')?num(v):(Number(v)||0);}
+  function pick2812(o,keys){
+    if(!o)return'';
+    for(const k of keys){ if(o[k]!==undefined && o[k]!==null && o[k]!=='') return o[k]; }
+    const normed={}; Object.keys(o||{}).forEach(k=>{normed[key2812(k)]=o[k];});
+    for(const k of keys){ const v=normed[key2812(k)]; if(v!==undefined && v!==null && v!=='') return v; }
+    return'';
+  }
+  function getDataObj2812(r){return (r&&r.data)||(r&&r.raw&&r.raw.data)||(r&&r.sheets)||(r&&r.result&&r.result.data)||{};}
+  function asRows2812(v){return Array.isArray(v)?v:(Array.isArray(v&&v.rows)?v.rows:(Array.isArray(v&&v.data)?v.data:[]));}
+  function getSheet2812(data,names){
+    const wanted=(Array.isArray(names)?names:[names]).map(key2812);
+    const entries=Object.keys(data||{});
+    for(const k of entries){ if(wanted.includes(key2812(k))) return asRows2812(data[k]); }
+    return [];
+  }
+  function findBudgetSheet2812(data){
+    const named=getSheet2812(data,['Orçado x Realizado','Orcado x Realizado','Orçado versus Realizado','Orcado versus Realizado','Orçamento','Orcamento','orcamento']);
+    if(named.length) return {name:'Orçado x Realizado',rows:named};
+    for(const name of Object.keys(data||{})){
+      const rows=asRows2812(data[name]);
+      if(!rows.length)continue;
+      const sample=Object.keys(rows[0]||{}).map(key2812).join('|');
+      if(sample.includes('itemdedespesa') && (sample.includes('totalorc')||sample.includes('totalorcado')) && sample.includes('realizado')) return {name,rows};
+    }
+    return {name:'',rows:[]};
+  }
+  const MESES2812=[
+    ['jan',['JAN','Jan','janeiro','Janeiro']],['fev',['FEV','Fev','fevereiro','Fevereiro']],['mar',['MAR','Mar','março','marco','Março','Marco']],
+    ['abr',['ABR','Abr','abril','Abril']],['mai',['MAIO','MAI','Mai','maio','Maio']],['jun',['JUN','Jun','junho','Junho']],
+    ['jul',['JUL','Jul','julho','Julho']],['ago',['AGO','Ago','agosto','Agosto']],['set',['SET','Set','setembro','Setembro']],
+    ['out',['OUT','Out','outubro','Outubro']],['nov',['NOV','Nov','novembro','Novembro']],['dez',['DEZ','Dez','dezembro','Dezembro']]
+  ];
+  function normOrc2812(r,i){
+    const item=String(pick2812(r,['Item de Despesa','Item despesa','item_despesa','item','despesa','Descrição','Descricao'])||'').trim();
+    const categoria=String(pick2812(r,['Categoria','categoria','Macro categoria','macro_categoria'])||'Sem categoria').trim()||'Sem categoria';
+    const previsto=num2812(pick2812(r,['TOTAL ORÇ','TOTAL ORÇ.','TOTAL ORC','TOTAL ORC.','TOTAL ORÇADO','TOTAL ORCADO','Total Orç.','Total Orç','Total Orçado','Total Orcado','total_orc','total_orcado','Orçado','Orcado','Previsto']));
+    const realizado=num2812(pick2812(r,['REALIZADO','Realizado','valor_realizado','executado','Pago','Valor pago','Realizado R$']));
+    const saldoRaw=pick2812(r,['SALDO','Saldo','saldo']);
+    const saldo=saldoRaw!==''?num2812(saldoRaw):(previsto-realizado);
+    const out={id:pick2812(r,['id','ID'])||('ORC-'+String(i+1).padStart(3,'0')),item,categoria,previsto,realizado,saldo,percentual:previsto?realizado/previsto*100:0,raw:r};
+    let mensal=0; MESES2812.forEach(([key,keys])=>{out[key]=num2812(pick2812(r,keys)); mensal+=out[key];});
+    out.mensal=mensal;
+    out.divergenciaMensal=mensal-previsto;
+    out.status=previsto&&realizado>previsto?'Estourado':(realizado>0?'Em execução':(previsto>0?'Não iniciado':'Sem orçamento'));
+    out.desempenho=realizado>0?'Desempenhado':'Não desempenhado';
+    return out;
+  }
+  function budgetRows2812(){
+    const rows=(STATE.orcamentoRows&&STATE.orcamentoRows.length?STATE.orcamentoRows:STATE.gastos)||[];
+    return rows.filter(r=>r&&r.item&&!nrm2812(r.item).includes('total geral'));
+  }
+  function categoriaMacro2812(rows){
+    const map={};
+    (rows||[]).forEach(r=>{
+      const k=r.categoria||'Sem categoria';
+      if(!map[k]) map[k]={categoria:k,previsto:0,realizado:0,saldo:0,qtd:0,desempenhados:0,naoDesempenhados:0,estourados:0};
+      const c=map[k]; c.previsto+=num2812(r.previsto); c.realizado+=num2812(r.realizado); c.saldo+=num2812(r.previsto)-num2812(r.realizado); c.qtd++;
+      if(num2812(r.realizado)>0)c.desempenhados++; else if(num2812(r.previsto)>0)c.naoDesempenhados++;
+      if(num2812(r.previsto)>0 && num2812(r.realizado)>num2812(r.previsto))c.estourados++;
+    });
+    return Object.values(map).map(c=>{c.exec=c.previsto?c.realizado/c.previsto*100:0;c.status=c.estourados?'Atenção':(c.realizado>0?'Em execução':'Não iniciado');return c;}).sort((a,b)=>b.previsto-a.previsto);
+  }
+  window.orcResumo=function(){
+    const rows=budgetRows2812();
+    const previsto=sum(rows,'previsto'),realizado=sum(rows,'realizado'),saldo=previsto-realizado;
+    const mensalTotal=MESES2812.reduce((s,m)=>s+sum(rows,m[0]),0);
+    const categorias=categoriaMacro2812(rows);
+    const meses=MESES2812.map(m=>({mes:m[1][0],key:m[0],previsto:sum(rows,m[0])}));
+    const realizados=rows.filter(r=>num2812(r.realizado)>0).sort((a,b)=>num2812(b.realizado)-num2812(a.realizado));
+    const estourados=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)>num2812(r.previsto));
+    const semExecucao=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)===0);
+    const realizadosSemOrcamento=rows.filter(r=>num2812(r.previsto)===0&&num2812(r.realizado)>0);
+    return {rows,previsto,realizado,saldo,exec:previsto?realizado/previsto*100:0,mensalTotal,categorias,meses,realizados,estourados,semExecucao,realizadosSemOrcamento,diferencaMensal:mensalTotal-previsto};
+  };
+  try{orcResumo=window.orcResumo;}catch(e){}
+
+  function mediaResumo2812(){
+    const rows=budgetRows2812();
+    const all=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('marketing')||t.includes('trafego')||t.includes('panflet')||t.includes('outdoor')||t.includes('comunicacao');});
+    const digital=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia digital')||t.includes('marketing digital')||t.includes('trafego')||t.includes('agencia digital')||t.includes('digital');});
+    const useDigital=digital.length?digital:all;
+    const previsto=sum(useDigital,'previsto'),realizado=sum(useDigital,'realizado');
+    return {digital:useDigital,all,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0,totalPrevisto:sum(all,'previsto'),totalRealizado:sum(all,'realizado')};
+  }
+  window.CALLIANDRA_MEDIA_RESUMO=mediaResumo2812;
+
+  function apiBase2812(){return API_DEFAULT;}
+  async function fetchJson2812(url,opts,timeout){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),timeout||60000);
+    try{
+      const res=await fetch(url,Object.assign({cache:'no-store',credentials:'same-origin',signal:ctrl.signal,headers:{'Pragma':'no-cache','Cache-Control':'no-cache'}},opts||{}));
+      const txt=await res.text();
+      if(!res.ok) throw new Error('API '+res.status+': '+txt.slice(0,180));
+      try{return JSON.parse(txt);}catch(e){throw new Error('API respondeu fora do padrão JSON: '+txt.slice(0,180));}
+    }finally{clearTimeout(t);}
+  }
+  apiGetAll=async function(timeout=60000){
+    const base=apiBase2812(); const sep=base.includes('?')?'&':'?';
+    try{return await fetchJson2812(base+sep+'action=getAll&nocache=1&_v=28_12&_t='+Date.now(),{method:'GET'},timeout);}
+    catch(first){
+      try{return await fetchJson2812(base,{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify({action:'getAll',nocache:Date.now(),version:'28.12'})},timeout);}
+      catch(second){throw new Error((second&&second.message)||(first&&first.message)||'API indisponível');}
+    }
+  };
+  window.apiGetAll=apiGetAll;
+  api=async function(payload,timeout=30000){
+    return fetchJson2812(apiBase2812(),{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify(payload||{})},timeout);
+  };
+  window.api=api;
+
+  function applySheets2812(data){
+    let changed=0;
+    const lotes=getSheet2812(data,['lotes','Lotes']);
+    if(lotes.length){STATE.lotes=dedupeLotes(lotes.map(normLote).filter(l=>l.lote&&l.area>0));changed++;}
+    const vendas=[...getSheet2812(data,['vendas','Vendas']),...getSheet2812(data,['contratos','Contratos'])].map(normContrato).filter(c=>c.lote||c.cliente);
+    if(vendas.length){STATE.contratos=vendas;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendas));changed++;}
+    const corr=[...getSheet2812(data,['corretores','Corretores']),...getSheet2812(data,['parceiros_comerciais','Parceiros Comerciais','parceiros'])].map(normCorretor).filter(c=>c.nome);
+    if(corr.length){STATE.corretores=dedupe([...corretoresPadrao(),...corr],'nome');changed++;}
+    const b=findBudgetSheet2812(data);
+    const orc=(b.rows||[]).map(normOrc2812).filter(r=>r.item&&!nrm2812(r.item).includes('total geral'));
+    if(orc.length){STATE.orcamentoRows=orc;STATE.gastos=orc;safeSet('calliandra_v9_local_gastos',JSON.stringify(orc));changed++;}
+    const mid=getSheet2812(data,['midia','mídia','Plano de Mídia','Plano de Midia']).map(normMidia).filter(m=>m.campanha||m.canal);
+    if(mid.length){STATE.midia=mid;changed++;}
+    if(typeof ensureMWParceiroV2810==='function')try{ensureMWParceiroV2810();}catch(e){}
+    if(typeof atualizaEdsonStateV2811==='function')try{atualizaEdsonStateV2811();}catch(e){}
+    if(typeof applyLoteStatusFromSalesV2810==='function')try{applyLoteStatusFromSalesV2810();}catch(e){}
+    let aud=null; if(typeof aplicarAuditoriaEstoqueV28==='function')try{aud=aplicarAuditoriaEstoqueV28();}catch(e){}
+    const o=window.orcResumo(); const m=mediaResumo2812();
+    STATE.lastSync={at:new Date().toISOString(),source:'google_sheets_api_v28_12',lotes:lotes.length,vendas:vendas.length,corretores:corr.length,orcamento:orc.length,orcamentoFonte:b.name||'não localizada',midia:mid.length,marketingPrevisto:m.previsto,marketingRealizado:m.realizado,comercializaveis:aud&&aud.comercializaveis?aud.comercializaveis:38};
+    CFG.disponiveis=38;
+    CFG.verbaMidia=m.previsto||CFG.verbaMidia;
+    return {changed,orcamento:orc.length,lotes:lotes.length,vendas:vendas.length,corretores:corr.length,midia:mid.length,orc:o,media:m};
+  }
+
+  syncData=async function(){
+    setConn(false,'Sincronizando Google Sheets...');
+    const response=await apiGetAll(60000);
+    const data=getDataObj2812(response);
+    const result=applySheets2812(data);
+    if(!result.changed) throw new Error('A API respondeu, mas não trouxe abas reconhecidas da planilha oficial.');
+    saveLocal(); applyRules();
+    setConn(true,'Google Sheets sincronizado');
+    return result;
+  };
+  window.syncData=syncData;
+  syncSilent=async function(){try{await syncData();go(currentPage());}catch(e){console.warn(e);setConn(false,'Base local carregada');}};
+  window.syncSilent=syncSilent;
+  syncManual=async function(){
+    try{const r=await syncData();toast('Planilha sincronizada: '+r.orcamento+' linhas de orçamento, '+r.vendas+' vendas e '+r.lotes+' lotes.');go(currentPage());}
+    catch(e){console.error(e);toast('Sincronização não concluída: '+(e&&e.message?e.message:e),'err');setConn(false,'Base local carregada');}
+  };
+  window.syncManual=syncManual;
+
+  const renderMidiaBase2812=typeof renderMidia==='function'?renderMidia:null;
+  renderMidia=function(){
+    const m=mediaResumo2812(), leads=sum(STATE.midia||[],'leads'), opPrev=sum(STATE.midia||[],'previsto'), opReal=sum(STATE.midia||[],'realizado');
+    const digitalRows=m.digital||[];
+    id('page-midia').innerHTML=`<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">Conciliação da verba de mídia com a aba Orçado x Realizado. Detalhamento operacional abaixo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage('midia')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div>
+    <div class="kpi-row">${kpi('Mídia digital orçada',BRL(m.previsto),'fonte: Orçado x Realizado','g',100)}${kpi('Marketing realizado',BRL(m.realizado),PCT2(m.exec)+' executado','o',m.exec)}${kpi('Saldo de mídia',BRL(m.saldo),'a executar','l')}${kpi('Mídia/marketing total',BRL(m.totalPrevisto),'linhas de mídia e comunicação')}</div>
+    <div class="card v288-budget-board"><div><div class="ch"><div><div class="ch-ttl">Orçado x realizado — mídia/marketing</div><div class="sub">O realizado lançado na planilha não é substituído pelo plano operacional.</div></div>${badge('oficial')}</div><div class="v288-budget-text"><div class="v288-mini"><small>Orçado</small><b>${BRL(m.previsto)}</b><span>mídia digital</span></div><div class="v288-mini"><small>Realizado</small><b>${BRL(m.realizado)}</b><span>marketing executado</span></div><div class="v288-mini"><small>Saldo</small><b>${BRL(m.saldo)}</b><span>disponível</span></div></div></div>${typeof pieV289==='function'?pieV289(m.realizado,m.saldo):''}</div>
+    <div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Linhas orçamentárias de mídia/marketing</div><div class="sub">Leitura direta da aba Orçado x Realizado.</div></div>${badge(digitalRows.length+' linhas')}</div><div class="tw"><table><thead><tr><th>Item</th><th>Categoria</th><th>Orçado</th><th>Realizado</th><th>Saldo</th><th>% Exec.</th><th>Status</th></tr></thead><tbody>${digitalRows.map(r=>`<tr><td>${esc(r.item)}</td><td>${esc(r.categoria)}</td><td>${BRL(r.previsto)}</td><td>${BRL(r.realizado)}</td><td>${BRL(r.saldo)}</td><td>${PCT2(r.percentual)}</td><td>${badge(r.status)}</td></tr>`).join('')||empty(7)}</tbody></table></div></div>
+    <div class="table-card v288-media-official" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Detalhamento operacional de mídia</div><div class="sub">Campanhas, canais, previsto operacional, realizado operacional, leads e CPL. Este quadro não altera o orçamento oficial.</div></div>${badge((STATE.midia||[]).length+' itens')}</div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado operacional</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>${(STATE.midia||[]).map(x=>`<tr><td>${esc(x.campanha)}</td><td>${esc(x.canal)}</td><td>${esc(x.objetivo)}</td><td>${esc(x.periodo)}</td><td>${BRL(x.previsto)}</td><td>${BRL(x.realizado)}</td><td>${num2812(x.leads)}</td><td>${num2812(x.leads)?BRL(num2812(x.realizado)/num2812(x.leads)):'-'}</td><td>${badge(x.status||'-')}</td><td><button class="icon edit" onclick="openMidia('${x.id}')">✎</button></td></tr>`).join('')||empty(10)}</tbody></table></div></div>`;
+  };
+  window.renderMidia=renderMidia;
+
+  const renderConfigBase2812=typeof renderConfig==='function'?renderConfig:null;
+  renderConfig=function(){
+    if(renderConfigBase2812)renderConfigBase2812();
+    const el=document.createElement('div'); el.className='card'; el.style.marginTop='16px';
+    const ls=STATE.lastSync||{}, o=window.orcResumo(), m=mediaResumo2812();
+    el.innerHTML=`<div class="ch"><div><div class="ch-ttl">Sincronização Google Sheets — produção</div><div class="sub">Versão ${PROD_VERSION}. Endpoint definitivo: <b>/api/sheets</b>.</div></div>${badge('produção')}</div><div class="cb"><div class="success"><b>Status operacional:</b> o sistema preserva a última base válida e só substitui orçamento/marketing quando a API retorna linhas reconhecidas.</div><div class="info" style="margin-top:10px"><b>Última sincronização:</b> ${esc(ls.at||'sem registro')} · Orçamento: ${num2812(ls.orcamento)} linhas · Lotes: ${num2812(ls.lotes)} · Vendas: ${num2812(ls.vendas)} · Comercializáveis oficiais: 38.</div><div class="info" style="margin-top:10px"><b>Orçado x realizado:</b> ${BRL(o.previsto)} orçados, ${BRL(o.realizado)} realizados, ${PCT2(o.exec)} executado.</div><div class="info" style="margin-top:10px"><b>Mídia/marketing:</b> ${BRL(m.previsto)} orçados, ${BRL(m.realizado)} realizados, saldo de ${BRL(m.saldo)}.</div></div>`;
+    id('page-config').appendChild(el);
+  };
+  window.renderConfig=renderConfig;
+
+  try{CFG.disponiveis=38; if(typeof atualizaEdsonStateV2811==='function')atualizaEdsonStateV2811(); saveLocal();}catch(e){}
+  window.CALLIANDRA_V2812_CHECKLIST={versao:PROD_VERSION,apiSheetsObrigatoria:true,syncGetPost:true,orcamentoNaoZeraMarketing:true,marketingRealizadoPreservado:true,comercializaveisOficiais:38,fluxoEdson:'sinal 165k junho + 5x 64k julho-novembro'};
+})();
+
+
+</script>
+</body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
 }
 printDocumentV26=printDocumentV27;printDocumentV25=printDocumentV27;printDocumentV22=printDocumentV27;
 
@@ -4466,5 +5234,197 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
 })();
 </script>
 
+
+<script id="v28-12-producao-final">
+/* === V28.12 PRODUÇÃO · sincronização final, orçamento/marketing preservados e fluxo Edson validado === */
+(function(){
+  const PROD_VERSION='V28.12 produção';
+  const API_DEFAULT='/api/sheets';
+  try{ localStorage.removeItem('calliandra_api_url_v2811'); }catch(e){}
+
+  function nrm2812(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+  function key2812(v){return nrm2812(v).replace(/[^a-z0-9]/g,'');}
+  function num2812(v){return (typeof num==='function')?num(v):(Number(v)||0);}
+  function pick2812(o,keys){
+    if(!o)return'';
+    for(const k of keys){ if(o[k]!==undefined && o[k]!==null && o[k]!=='') return o[k]; }
+    const normed={}; Object.keys(o||{}).forEach(k=>{normed[key2812(k)]=o[k];});
+    for(const k of keys){ const v=normed[key2812(k)]; if(v!==undefined && v!==null && v!=='') return v; }
+    return'';
+  }
+  function getDataObj2812(r){return (r&&r.data)||(r&&r.raw&&r.raw.data)||(r&&r.sheets)||(r&&r.result&&r.result.data)||{};}
+  function asRows2812(v){return Array.isArray(v)?v:(Array.isArray(v&&v.rows)?v.rows:(Array.isArray(v&&v.data)?v.data:[]));}
+  function getSheet2812(data,names){
+    const wanted=(Array.isArray(names)?names:[names]).map(key2812);
+    const entries=Object.keys(data||{});
+    for(const k of entries){ if(wanted.includes(key2812(k))) return asRows2812(data[k]); }
+    return [];
+  }
+  function findBudgetSheet2812(data){
+    const named=getSheet2812(data,['Orçado x Realizado','Orcado x Realizado','Orçado versus Realizado','Orcado versus Realizado','Orçamento','Orcamento','orcamento']);
+    if(named.length) return {name:'Orçado x Realizado',rows:named};
+    for(const name of Object.keys(data||{})){
+      const rows=asRows2812(data[name]);
+      if(!rows.length)continue;
+      const sample=Object.keys(rows[0]||{}).map(key2812).join('|');
+      if(sample.includes('itemdedespesa') && (sample.includes('totalorc')||sample.includes('totalorcado')) && sample.includes('realizado')) return {name,rows};
+    }
+    return {name:'',rows:[]};
+  }
+  const MESES2812=[
+    ['jan',['JAN','Jan','janeiro','Janeiro']],['fev',['FEV','Fev','fevereiro','Fevereiro']],['mar',['MAR','Mar','março','marco','Março','Marco']],
+    ['abr',['ABR','Abr','abril','Abril']],['mai',['MAIO','MAI','Mai','maio','Maio']],['jun',['JUN','Jun','junho','Junho']],
+    ['jul',['JUL','Jul','julho','Julho']],['ago',['AGO','Ago','agosto','Agosto']],['set',['SET','Set','setembro','Setembro']],
+    ['out',['OUT','Out','outubro','Outubro']],['nov',['NOV','Nov','novembro','Novembro']],['dez',['DEZ','Dez','dezembro','Dezembro']]
+  ];
+  function normOrc2812(r,i){
+    const item=String(pick2812(r,['Item de Despesa','Item despesa','item_despesa','item','despesa','Descrição','Descricao'])||'').trim();
+    const categoria=String(pick2812(r,['Categoria','categoria','Macro categoria','macro_categoria'])||'Sem categoria').trim()||'Sem categoria';
+    const previsto=num2812(pick2812(r,['TOTAL ORÇ','TOTAL ORÇ.','TOTAL ORC','TOTAL ORC.','TOTAL ORÇADO','TOTAL ORCADO','Total Orç.','Total Orç','Total Orçado','Total Orcado','total_orc','total_orcado','Orçado','Orcado','Previsto']));
+    const realizado=num2812(pick2812(r,['REALIZADO','Realizado','valor_realizado','executado','Pago','Valor pago','Realizado R$']));
+    const saldoRaw=pick2812(r,['SALDO','Saldo','saldo']);
+    const saldo=saldoRaw!==''?num2812(saldoRaw):(previsto-realizado);
+    const out={id:pick2812(r,['id','ID'])||('ORC-'+String(i+1).padStart(3,'0')),item,categoria,previsto,realizado,saldo,percentual:previsto?realizado/previsto*100:0,raw:r};
+    let mensal=0; MESES2812.forEach(([key,keys])=>{out[key]=num2812(pick2812(r,keys)); mensal+=out[key];});
+    out.mensal=mensal;
+    out.divergenciaMensal=mensal-previsto;
+    out.status=previsto&&realizado>previsto?'Estourado':(realizado>0?'Em execução':(previsto>0?'Não iniciado':'Sem orçamento'));
+    out.desempenho=realizado>0?'Desempenhado':'Não desempenhado';
+    return out;
+  }
+  function budgetRows2812(){
+    const rows=(STATE.orcamentoRows&&STATE.orcamentoRows.length?STATE.orcamentoRows:STATE.gastos)||[];
+    return rows.filter(r=>r&&r.item&&!nrm2812(r.item).includes('total geral'));
+  }
+  function categoriaMacro2812(rows){
+    const map={};
+    (rows||[]).forEach(r=>{
+      const k=r.categoria||'Sem categoria';
+      if(!map[k]) map[k]={categoria:k,previsto:0,realizado:0,saldo:0,qtd:0,desempenhados:0,naoDesempenhados:0,estourados:0};
+      const c=map[k]; c.previsto+=num2812(r.previsto); c.realizado+=num2812(r.realizado); c.saldo+=num2812(r.previsto)-num2812(r.realizado); c.qtd++;
+      if(num2812(r.realizado)>0)c.desempenhados++; else if(num2812(r.previsto)>0)c.naoDesempenhados++;
+      if(num2812(r.previsto)>0 && num2812(r.realizado)>num2812(r.previsto))c.estourados++;
+    });
+    return Object.values(map).map(c=>{c.exec=c.previsto?c.realizado/c.previsto*100:0;c.status=c.estourados?'Atenção':(c.realizado>0?'Em execução':'Não iniciado');return c;}).sort((a,b)=>b.previsto-a.previsto);
+  }
+  window.orcResumo=function(){
+    const rows=budgetRows2812();
+    const previsto=sum(rows,'previsto'),realizado=sum(rows,'realizado'),saldo=previsto-realizado;
+    const mensalTotal=MESES2812.reduce((s,m)=>s+sum(rows,m[0]),0);
+    const categorias=categoriaMacro2812(rows);
+    const meses=MESES2812.map(m=>({mes:m[1][0],key:m[0],previsto:sum(rows,m[0])}));
+    const realizados=rows.filter(r=>num2812(r.realizado)>0).sort((a,b)=>num2812(b.realizado)-num2812(a.realizado));
+    const estourados=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)>num2812(r.previsto));
+    const semExecucao=rows.filter(r=>num2812(r.previsto)>0&&num2812(r.realizado)===0);
+    const realizadosSemOrcamento=rows.filter(r=>num2812(r.previsto)===0&&num2812(r.realizado)>0);
+    return {rows,previsto,realizado,saldo,exec:previsto?realizado/previsto*100:0,mensalTotal,categorias,meses,realizados,estourados,semExecucao,realizadosSemOrcamento,diferencaMensal:mensalTotal-previsto};
+  };
+  try{orcResumo=window.orcResumo;}catch(e){}
+
+  function mediaResumo2812(){
+    const rows=budgetRows2812();
+    const all=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('marketing')||t.includes('trafego')||t.includes('panflet')||t.includes('outdoor')||t.includes('comunicacao');});
+    const digital=rows.filter(r=>{const t=nrm2812((r.item||'')+' '+(r.categoria||''));return t.includes('midia digital')||t.includes('marketing digital')||t.includes('trafego')||t.includes('agencia digital')||t.includes('digital');});
+    const useDigital=digital.length?digital:all;
+    const previsto=sum(useDigital,'previsto'),realizado=sum(useDigital,'realizado');
+    return {digital:useDigital,all,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0,totalPrevisto:sum(all,'previsto'),totalRealizado:sum(all,'realizado')};
+  }
+  window.CALLIANDRA_MEDIA_RESUMO=mediaResumo2812;
+
+  function apiBase2812(){return API_DEFAULT;}
+  async function fetchJson2812(url,opts,timeout){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),timeout||60000);
+    try{
+      const res=await fetch(url,Object.assign({cache:'no-store',credentials:'same-origin',signal:ctrl.signal,headers:{'Pragma':'no-cache','Cache-Control':'no-cache'}},opts||{}));
+      const txt=await res.text();
+      if(!res.ok) throw new Error('API '+res.status+': '+txt.slice(0,180));
+      try{return JSON.parse(txt);}catch(e){throw new Error('API respondeu fora do padrão JSON: '+txt.slice(0,180));}
+    }finally{clearTimeout(t);}
+  }
+  apiGetAll=async function(timeout=60000){
+    const base=apiBase2812(); const sep=base.includes('?')?'&':'?';
+    try{return await fetchJson2812(base+sep+'action=getAll&nocache=1&_v=28_12&_t='+Date.now(),{method:'GET'},timeout);}
+    catch(first){
+      try{return await fetchJson2812(base,{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify({action:'getAll',nocache:Date.now(),version:'28.12'})},timeout);}
+      catch(second){throw new Error((second&&second.message)||(first&&first.message)||'API indisponível');}
+    }
+  };
+  window.apiGetAll=apiGetAll;
+  api=async function(payload,timeout=30000){
+    return fetchJson2812(apiBase2812(),{method:'POST',headers:{'Content-Type':'application/json','Pragma':'no-cache','Cache-Control':'no-cache'},body:JSON.stringify(payload||{})},timeout);
+  };
+  window.api=api;
+
+  function applySheets2812(data){
+    let changed=0;
+    const lotes=getSheet2812(data,['lotes','Lotes']);
+    if(lotes.length){STATE.lotes=dedupeLotes(lotes.map(normLote).filter(l=>l.lote&&l.area>0));changed++;}
+    const vendas=[...getSheet2812(data,['vendas','Vendas']),...getSheet2812(data,['contratos','Contratos'])].map(normContrato).filter(c=>c.lote||c.cliente);
+    if(vendas.length){STATE.contratos=vendas;safeSet('calliandra_v9_local_contratos',JSON.stringify(vendas));changed++;}
+    const corr=[...getSheet2812(data,['corretores','Corretores']),...getSheet2812(data,['parceiros_comerciais','Parceiros Comerciais','parceiros'])].map(normCorretor).filter(c=>c.nome);
+    if(corr.length){STATE.corretores=dedupe([...corretoresPadrao(),...corr],'nome');changed++;}
+    const b=findBudgetSheet2812(data);
+    const orc=(b.rows||[]).map(normOrc2812).filter(r=>r.item&&!nrm2812(r.item).includes('total geral'));
+    if(orc.length){STATE.orcamentoRows=orc;STATE.gastos=orc;safeSet('calliandra_v9_local_gastos',JSON.stringify(orc));changed++;}
+    const mid=getSheet2812(data,['midia','mídia','Plano de Mídia','Plano de Midia']).map(normMidia).filter(m=>m.campanha||m.canal);
+    if(mid.length){STATE.midia=mid;changed++;}
+    if(typeof ensureMWParceiroV2810==='function')try{ensureMWParceiroV2810();}catch(e){}
+    if(typeof atualizaEdsonStateV2811==='function')try{atualizaEdsonStateV2811();}catch(e){}
+    if(typeof applyLoteStatusFromSalesV2810==='function')try{applyLoteStatusFromSalesV2810();}catch(e){}
+    let aud=null; if(typeof aplicarAuditoriaEstoqueV28==='function')try{aud=aplicarAuditoriaEstoqueV28();}catch(e){}
+    const o=window.orcResumo(); const m=mediaResumo2812();
+    STATE.lastSync={at:new Date().toISOString(),source:'google_sheets_api_v28_12',lotes:lotes.length,vendas:vendas.length,corretores:corr.length,orcamento:orc.length,orcamentoFonte:b.name||'não localizada',midia:mid.length,marketingPrevisto:m.previsto,marketingRealizado:m.realizado,comercializaveis:aud&&aud.comercializaveis?aud.comercializaveis:38};
+    CFG.disponiveis=38;
+    CFG.verbaMidia=m.previsto||CFG.verbaMidia;
+    return {changed,orcamento:orc.length,lotes:lotes.length,vendas:vendas.length,corretores:corr.length,midia:mid.length,orc:o,media:m};
+  }
+
+  syncData=async function(){
+    setConn(false,'Sincronizando Google Sheets...');
+    const response=await apiGetAll(60000);
+    const data=getDataObj2812(response);
+    const result=applySheets2812(data);
+    if(!result.changed) throw new Error('A API respondeu, mas não trouxe abas reconhecidas da planilha oficial.');
+    saveLocal(); applyRules();
+    setConn(true,'Google Sheets sincronizado');
+    return result;
+  };
+  window.syncData=syncData;
+  syncSilent=async function(){try{await syncData();go(currentPage());}catch(e){console.warn(e);setConn(false,'Base local carregada');}};
+  window.syncSilent=syncSilent;
+  syncManual=async function(){
+    try{const r=await syncData();toast('Planilha sincronizada: '+r.orcamento+' linhas de orçamento, '+r.vendas+' vendas e '+r.lotes+' lotes.');go(currentPage());}
+    catch(e){console.error(e);toast('Sincronização não concluída: '+(e&&e.message?e.message:e),'err');setConn(false,'Base local carregada');}
+  };
+  window.syncManual=syncManual;
+
+  const renderMidiaBase2812=typeof renderMidia==='function'?renderMidia:null;
+  renderMidia=function(){
+    const m=mediaResumo2812(), leads=sum(STATE.midia||[],'leads'), opPrev=sum(STATE.midia||[],'previsto'), opReal=sum(STATE.midia||[],'realizado');
+    const digitalRows=m.digital||[];
+    id('page-midia').innerHTML=`<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">Conciliação da verba de mídia com a aba Orçado x Realizado. Detalhamento operacional abaixo.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage('midia')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div>
+    <div class="kpi-row">${kpi('Mídia digital orçada',BRL(m.previsto),'fonte: Orçado x Realizado','g',100)}${kpi('Marketing realizado',BRL(m.realizado),PCT2(m.exec)+' executado','o',m.exec)}${kpi('Saldo de mídia',BRL(m.saldo),'a executar','l')}${kpi('Mídia/marketing total',BRL(m.totalPrevisto),'linhas de mídia e comunicação')}</div>
+    <div class="card v288-budget-board"><div><div class="ch"><div><div class="ch-ttl">Orçado x realizado — mídia/marketing</div><div class="sub">O realizado lançado na planilha não é substituído pelo plano operacional.</div></div>${badge('oficial')}</div><div class="v288-budget-text"><div class="v288-mini"><small>Orçado</small><b>${BRL(m.previsto)}</b><span>mídia digital</span></div><div class="v288-mini"><small>Realizado</small><b>${BRL(m.realizado)}</b><span>marketing executado</span></div><div class="v288-mini"><small>Saldo</small><b>${BRL(m.saldo)}</b><span>disponível</span></div></div></div>${typeof pieV289==='function'?pieV289(m.realizado,m.saldo):''}</div>
+    <div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Linhas orçamentárias de mídia/marketing</div><div class="sub">Leitura direta da aba Orçado x Realizado.</div></div>${badge(digitalRows.length+' linhas')}</div><div class="tw"><table><thead><tr><th>Item</th><th>Categoria</th><th>Orçado</th><th>Realizado</th><th>Saldo</th><th>% Exec.</th><th>Status</th></tr></thead><tbody>${digitalRows.map(r=>`<tr><td>${esc(r.item)}</td><td>${esc(r.categoria)}</td><td>${BRL(r.previsto)}</td><td>${BRL(r.realizado)}</td><td>${BRL(r.saldo)}</td><td>${PCT2(r.percentual)}</td><td>${badge(r.status)}</td></tr>`).join('')||empty(7)}</tbody></table></div></div>
+    <div class="table-card v288-media-official" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Detalhamento operacional de mídia</div><div class="sub">Campanhas, canais, previsto operacional, realizado operacional, leads e CPL. Este quadro não altera o orçamento oficial.</div></div>${badge((STATE.midia||[]).length+' itens')}</div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado operacional</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>${(STATE.midia||[]).map(x=>`<tr><td>${esc(x.campanha)}</td><td>${esc(x.canal)}</td><td>${esc(x.objetivo)}</td><td>${esc(x.periodo)}</td><td>${BRL(x.previsto)}</td><td>${BRL(x.realizado)}</td><td>${num2812(x.leads)}</td><td>${num2812(x.leads)?BRL(num2812(x.realizado)/num2812(x.leads)):'-'}</td><td>${badge(x.status||'-')}</td><td><button class="icon edit" onclick="openMidia('${x.id}')">✎</button></td></tr>`).join('')||empty(10)}</tbody></table></div></div>`;
+  };
+  window.renderMidia=renderMidia;
+
+  const renderConfigBase2812=typeof renderConfig==='function'?renderConfig:null;
+  renderConfig=function(){
+    if(renderConfigBase2812)renderConfigBase2812();
+    const el=document.createElement('div'); el.className='card'; el.style.marginTop='16px';
+    const ls=STATE.lastSync||{}, o=window.orcResumo(), m=mediaResumo2812();
+    el.innerHTML=`<div class="ch"><div><div class="ch-ttl">Sincronização Google Sheets — produção</div><div class="sub">Versão ${PROD_VERSION}. Endpoint definitivo: <b>/api/sheets</b>.</div></div>${badge('produção')}</div><div class="cb"><div class="success"><b>Status operacional:</b> o sistema preserva a última base válida e só substitui orçamento/marketing quando a API retorna linhas reconhecidas.</div><div class="info" style="margin-top:10px"><b>Última sincronização:</b> ${esc(ls.at||'sem registro')} · Orçamento: ${num2812(ls.orcamento)} linhas · Lotes: ${num2812(ls.lotes)} · Vendas: ${num2812(ls.vendas)} · Comercializáveis oficiais: 38.</div><div class="info" style="margin-top:10px"><b>Orçado x realizado:</b> ${BRL(o.previsto)} orçados, ${BRL(o.realizado)} realizados, ${PCT2(o.exec)} executado.</div><div class="info" style="margin-top:10px"><b>Mídia/marketing:</b> ${BRL(m.previsto)} orçados, ${BRL(m.realizado)} realizados, saldo de ${BRL(m.saldo)}.</div></div>`;
+    id('page-config').appendChild(el);
+  };
+  window.renderConfig=renderConfig;
+
+  try{CFG.disponiveis=38; if(typeof atualizaEdsonStateV2811==='function')atualizaEdsonStateV2811(); saveLocal();}catch(e){}
+  window.CALLIANDRA_V2812_CHECKLIST={versao:PROD_VERSION,apiSheetsObrigatoria:true,syncGetPost:true,orcamentoNaoZeraMarketing:true,marketingRealizadoPreservado:true,comercializaveisOficiais:38,fluxoEdson:'sinal 165k junho + 5x 64k julho-novembro'};
+})();
+
+
+</script>
 </body>
 </html>
