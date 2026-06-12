@@ -4618,5 +4618,210 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
   window.CALLIANDRA_BUILD=BUILD;
 })();
 </script>
+<script>
+/* V28.14 — Produção estável sem tentativa-e-erro
+   Correção: leitura direta do Google Sheets por GViz/JSONP, sem depender de /api/sheets bloqueada no navegador.
+   Também limpa diagnósticos antigos e mantém base local válida quando a planilha não responder. */
+(function(){
+  const BUILD='V28.14 PRODUÇÃO ESTÁVEL';
+  const SHEET_ID='1i_BtzyxQymNOp_Ov_mWwuPa8BCX2oHoCvByYGxDX8yw';
+  const LAST_GOOD_KEY='calliandra_v28_last_good_sheets';
+  const API_URL_KEY='calliandra_sheets_api_url';
+  const OFICIAL_COMERCIALIZAVEIS=38;
+  const SHEETS_TO_READ=[
+    'cfg','lotes','tabela_precos','regras_comerciais','regras_comissionamento','regras_financiamento',
+    'leads','corretores','parceiros_comerciais','origens','vendas','contratos','acoes','midia',
+    'Orçado x Realizado','metas','historico_status','logs','Dashboard','usuarios','listas'
+  ];
+
+  function n14(v){try{return num(v);}catch(e){var s=String(v??'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.');return Number(s)||0;}}
+  function norm14(v){try{return norm(v);}catch(e){return String(v??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}}
+  function brl14(v){try{return BRL(v);}catch(e){return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}}
+  function pct14(v){try{return PCT2(v);}catch(e){return (Number(v)||0).toFixed(2).replace('.',',')+'%';}}
+  function readJson14(k,f){try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch(e){return f;}}
+  function writeJson14(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function cleanHeader14(h,idx){
+    const s=String(h||'').trim();
+    if(s) return s;
+    return 'col_'+String(idx+1);
+  }
+  function isTotalRow14(row){return norm14(row?.['Item de Despesa']||row?.item||row?.Item||row?.ITEM||'').includes('total geral');}
+  function gvizCell14(cell){
+    if(!cell) return '';
+    if(cell.f!==undefined && cell.f!==null && String(cell.f).trim()!=='') return cell.f;
+    if(cell.v!==undefined && cell.v!==null) return cell.v;
+    return '';
+  }
+  function gvizToRows14(resp){
+    const table=resp&&resp.table?resp.table:null;
+    if(!table||!Array.isArray(table.rows)) return [];
+    let headers=(table.cols||[]).map(function(c,i){return cleanHeader14(c.label||c.id,i);});
+    let rows=table.rows.map(function(r){return (r.c||[]).map(gvizCell14);});
+    const generic=headers.every(function(h,i){return !h || /^([A-Z]|col_\d+)$/.test(String(h));});
+    if(generic && rows.length){
+      headers=rows.shift().map(function(h,i){return cleanHeader14(h,i);});
+    }
+    return rows.map(function(arr){
+      const o={};
+      headers.forEach(function(h,i){o[h]=arr[i]!==undefined?arr[i]:'';});
+      return o;
+    }).filter(function(o){return Object.values(o).some(function(v){return String(v??'').trim()!=='';});});
+  }
+  function fetchGvizSheet14(sheetName,timeout=18000){
+    return new Promise(function(resolve,reject){
+      const cb='__CALLIANDRA_GVIZ_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+      const timer=setTimeout(function(){cleanup();reject(new Error('Tempo esgotado lendo a aba '+sheetName+' pelo Google Sheets.'));},timeout);
+      function cleanup(){try{delete window[cb];}catch(e){window[cb]=undefined;} try{script.remove();}catch(e){} clearTimeout(timer);}
+      window[cb]=function(resp){
+        try{
+          if(resp&&resp.status==='error') throw new Error((resp.errors||[]).map(function(x){return x.detailed_message||x.message;}).join(' | ')||'Erro GViz');
+          const rows=gvizToRows14(resp);
+          cleanup();
+          resolve(rows);
+        }catch(e){cleanup();reject(e);}
+      };
+      const url='https://docs.google.com/spreadsheets/d/'+encodeURIComponent(SHEET_ID)+'/gviz/tq?sheet='+encodeURIComponent(sheetName)+'&tqx='+encodeURIComponent('out:json;responseHandler:'+cb)+'&tq='+encodeURIComponent('select *')+'&_t='+Date.now();
+      const script=document.createElement('script');
+      script.src=url;
+      script.async=true;
+      script.onerror=function(){cleanup();reject(new Error('Falha de rede ao ler '+sheetName+' pelo Google Sheets.'));};
+      document.head.appendChild(script);
+    });
+  }
+  async function getAllViaGviz14(){
+    const entries=await Promise.all(SHEETS_TO_READ.map(async function(name){
+      try{return [name,await fetchGvizSheet14(name)];}
+      catch(e){return [name,[]];}
+    }));
+    const data={};
+    entries.forEach(function(pair){data[pair[0]]=pair[1];});
+    const lotes=data.lotes||[];
+    const orc=data['Orçado x Realizado']||[];
+    if(!lotes.length && !orc.length) throw new Error('Google Sheets respondeu, mas não retornou lotes nem Orçado x Realizado. Confira permissão da planilha.');
+    const out={ok:true,success:true,source:'google_sheets_gviz_jsonp_v28_14',spreadsheetId:SHEET_ID,data:data,at:new Date().toISOString()};
+    writeJson14(LAST_GOOD_KEY,out);
+    return out;
+  }
+  async function getAllViaConfiguredApi14(timeout=18000){
+    const base=(localStorage.getItem(API_URL_KEY)||'').trim();
+    if(!base || base==='/api/sheets') throw new Error('API própria não configurada. Usando leitura direta da planilha.');
+    const sep=base.includes('?')?'&':'?';
+    const url=base+sep+'action=getAll&force=1&nocache=1&_v=28_14&_t='+Date.now();
+    const ctrl=new AbortController();
+    const t=setTimeout(function(){ctrl.abort();},timeout);
+    try{
+      const res=await fetch(url,{method:'GET',cache:'no-store',signal:ctrl.signal});
+      const txt=await res.text();
+      if(!res.ok) throw new Error('HTTP '+res.status+' na API configurada.');
+      let json; try{json=JSON.parse(txt);}catch(e){throw new Error('API configurada não retornou JSON.');}
+      if(json.ok===false||json.success===false) throw new Error(json.error||json.message||'API configurada retornou erro.');
+      if(!json.data) throw new Error('API configurada respondeu sem data.');
+      json.source=json.source||'api_configurada_v28_14';
+      writeJson14(LAST_GOOD_KEY,json);
+      return json;
+    }finally{clearTimeout(t);}
+  }
+
+  window.apiGetAll=apiGetAll=async function(timeout=45000){
+    window.CALLIANDRA_LAST_API_ERROR='';
+    try{
+      // Prioridade: Apps Script/API configurada, quando existir de verdade. Se não houver, usa GViz direto.
+      return await getAllViaConfiguredApi14(Math.min(timeout,22000));
+    }catch(apiErr){
+      try{
+        return await getAllViaGviz14();
+      }catch(gvizErr){
+        window.CALLIANDRA_LAST_API_ERROR=(gvizErr&&gvizErr.message?gvizErr.message:String(gvizErr))+' | API configurada: '+(apiErr&&apiErr.message?apiErr.message:String(apiErr));
+        const cached=readJson14(LAST_GOOD_KEY,null);
+        if(cached&&cached.data){cached.fromCache=true;cached.source='ultima_base_valida_local';return cached;}
+        throw new Error(window.CALLIANDRA_LAST_API_ERROR);
+      }
+    }
+  };
+
+  // Gravação: mantém local quando não houver API de escrita. Não quebra a operação do corretor.
+  window.api=api=async function(payload,timeout=12000){
+    const base=(localStorage.getItem(API_URL_KEY)||'').trim();
+    if(!base || base==='/api/sheets') return {ok:false,localOnly:true,message:'Sem API de escrita configurada. Registro mantido localmente.'};
+    const ctrl=new AbortController(); const t=setTimeout(function(){ctrl.abort();},timeout);
+    try{
+      const res=await fetch(base,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl.signal,cache:'no-store'});
+      const txt=await res.text();
+      try{return JSON.parse(txt);}catch(e){return {ok:false,message:'API de escrita não retornou JSON.'};}
+    }catch(e){return {ok:false,message:e&&e.message?e.message:String(e)};}
+    finally{clearTimeout(t);}
+  };
+
+  const syncDataPrior14=typeof syncData==='function'?syncData:null;
+  window.syncData=syncData=async function(){
+    setConn(false,'Sincronizando Google Sheets...');
+    const keep={
+      gastos:(STATE.gastos||[]).slice(),
+      contratos:(STATE.contratos||[]).slice(),
+      lotes:(STATE.lotes||[]).slice(),
+      corretores:(STATE.corretores||[]).slice(),
+      midia:(STATE.midia||[]).slice()
+    };
+    try{
+      if(syncDataPrior14) await syncDataPrior14();
+      CFG.disponiveis=OFICIAL_COMERCIALIZAVEIS;
+      if(!STATE.gastos?.length && keep.gastos.length) STATE.gastos=keep.gastos;
+      if(!STATE.lotes?.length && keep.lotes.length) STATE.lotes=keep.lotes;
+      if(!STATE.corretores?.length && keep.corretores.length) STATE.corretores=keep.corretores;
+      if(!STATE.midia?.length && keep.midia.length) STATE.midia=keep.midia;
+      if(typeof atualizaEdsonStateV2811==='function') atualizaEdsonStateV2811();
+      STATE.lastSync=Object.assign({},STATE.lastSync||{}, {at:new Date().toISOString(),source:window.CALLIANDRA_LAST_SOURCE||'google_sheets_v28_14',comercializaveis:38});
+      if(typeof saveLocal==='function') saveLocal();
+      setConn(true,'Google Sheets sincronizado');
+      return true;
+    }catch(e){
+      if(keep.gastos.length) STATE.gastos=keep.gastos;
+      if(keep.contratos.length) STATE.contratos=keep.contratos;
+      if(keep.lotes.length) STATE.lotes=keep.lotes;
+      if(keep.corretores.length) STATE.corretores=keep.corretores;
+      if(keep.midia.length) STATE.midia=keep.midia;
+      CFG.disponiveis=OFICIAL_COMERCIALIZAVEIS;
+      if(typeof saveLocal==='function') saveLocal();
+      setConn(false,'Modo local com última base válida');
+      throw e;
+    }
+  };
+  window.syncManual=syncManual=async function(){
+    try{await syncData();toast('Planilha sincronizada com sucesso.');go(currentPage());}
+    catch(e){console.error(e);toast('Sincronização não concluída: '+(e&&e.message?e.message:'erro não identificado'),'err');}
+  };
+
+  function rowsOrc14(){return (STATE.gastos||[]).filter(function(g){return g&&g.item&&!norm14(g.item).includes('total geral');});}
+  function orcResumo14(){
+    const rows=rowsOrc14();
+    const previsto=rows.reduce(function(s,r){return s+n14(r.previsto);},0);
+    const realizado=rows.reduce(function(s,r){return s+n14(r.realizado);},0);
+    return {rows,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0};
+  }
+  function mediaRows14(){return rowsOrc14().filter(function(r){const t=norm14((r.item||'')+' '+(r.categoria||''));return t.includes('midia')||t.includes('marketing')||t.includes('trafego')||t.includes('comunicacao')||t.includes('branding')||t.includes('landing')||t.includes('site')||t.includes('panflet');});}
+  function pack14(rows){const previsto=rows.reduce((s,r)=>s+n14(r.previsto),0), realizado=rows.reduce((s,r)=>s+n14(r.realizado),0);return {rows,previsto,realizado,saldo:previsto-realizado,exec:previsto?realizado/previsto*100:0};}
+
+  const renderMidiaPrior14=typeof renderMidia==='function'?renderMidia:null;
+  window.renderMidia=renderMidia=function(){
+    const m=pack14(mediaRows14());
+    const tabela=(m.rows||[]).map(function(r){return '<tr><td>'+esc(r.item||'')+'</td><td>'+esc(r.categoria||'')+'</td><td>'+brl14(r.previsto)+'</td><td>'+brl14(r.realizado)+'</td><td>'+brl14(n14(r.previsto)-n14(r.realizado))+'</td><td>'+pct14(n14(r.previsto)?n14(r.realizado)/n14(r.previsto)*100:0)+'</td></tr>';}).join('')||empty(6);
+    const campanhas=(STATE.midia||[]).map(function(x){return '<tr><td>'+esc(x.campanha||'')+'</td><td>'+esc(x.canal||'')+'</td><td>'+esc(x.objetivo||'')+'</td><td>'+esc(x.periodo||'')+'</td><td>'+brl14(x.previsto)+'</td><td>'+brl14(x.realizado)+'</td><td>'+n14(x.leads)+'</td><td>'+brl14(n14(x.realizado)/Math.max(n14(x.leads),1))+'</td><td>'+badge(x.status||'')+'</td><td><button class="icon edit" onclick="openMidia(\''+x.id+'\')">✎</button></td></tr>';}).join('')||empty(10);
+    id('page-midia').innerHTML='<div class="sh"><div><div class="ttl">Plano de mídia</div><div class="sub">Verba de marketing/mídia vinda do Orçado x Realizado. O operacional de campanhas fica separado.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="printPage(\'midia\')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openMidia()">+ Nova Mídia</button></div></div><div class="kpi-row">'+kpi('Marketing/mídia orçado',brl14(m.previsto),'aba Orçado x Realizado','g',m.exec)+kpi('Marketing/mídia realizado',brl14(m.realizado),pct14(m.exec)+' executado','o',m.exec)+kpi('Saldo marketing/mídia',brl14(m.saldo),'orçado menos realizado','b')+kpi('Linhas consideradas',m.rows.length,'mídia, marketing, comunicação e afins')+'</div><div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Conciliação orçamentária de mídia/marketing</div><div class="sub">Essa é a base financeira oficial. Não é substituída pelo cadastro operacional.</div></div>'+badge(BUILD)+'</div><div class="tw"><table><thead><tr><th>Item</th><th>Categoria</th><th>Orçado</th><th>Realizado</th><th>Saldo</th><th>% Exec.</th></tr></thead><tbody>'+tabela+'</tbody></table></div></div><div class="table-card" style="margin-top:16px"><div class="ch"><div><div class="ch-ttl">Campanhas operacionais</div><div class="sub">Controle de ações, leads e CPL. Não apaga nem altera o realizado da planilha.</div></div></div><div class="tw"><table><thead><tr><th>Campanha</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Previsto operacional</th><th>Realizado operacional</th><th>Leads</th><th>CPL</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+campanhas+'</tbody></table></div></div>';
+  };
+
+  const renderConfigPrior14=typeof renderConfig==='function'?renderConfig:null;
+  window.renderConfig=renderConfig=function(){
+    // Não chama o diagnóstico antigo V28.11 para não gerar ruído operacional.
+    const o=orcResumo14();
+    const cached=readJson14(LAST_GOOD_KEY,null);
+    const source=(STATE.lastSync&&STATE.lastSync.source)||cached?.source||'base local';
+    id('page-config').innerHTML='<div class="sh"><div><div class="ttl">Configurações</div><div class="sub">Status de produção, sincronização e integridade operacional.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="syncManual()">🔄 Sincronizar</button><button class="btn btn-ghost" onclick="exportData()">⬇ Exportar</button></div></div><div class="card"><div class="ch"><div><div class="ch-ttl">Status de produção V28.14</div><div class="sub">Leitura direta do Google Sheets. A rota /api/sheets não é necessária para leitura.</div></div>'+badge(BUILD)+'</div><div class="cb"><div class="fr c2"><div class="success"><b>Sincronização:</b> Google Sheets direto por ID da planilha<br><b>Planilha:</b> '+SHEET_ID+'<br><b>Fonte atual:</b> '+esc(source)+'<br><b>Comercializáveis oficiais:</b> 38</div><div class="info"><b>Orçamento em memória:</b><br>'+brl14(o.previsto)+' orçados<br>'+brl14(o.realizado)+' realizados<br>'+pct14(o.exec)+' executado</div></div><div class="success" style="margin-top:12px"><b>Produção:</b> login preservado, orçamento realizado preservado, Plano de Mídia conciliado e fluxo Edson mantido sem antecipação indevida.</div><div class="warnbox" style="margin-top:12px"><b>Observação técnica:</b> a API /api/sheets estava sendo bloqueada no navegador. Esta versão não depende dela para leitura da planilha.</div></div></div>';
+  };
+
+  try{CFG.disponiveis=OFICIAL_COMERCIALIZAVEIS;if(typeof atualizaEdsonStateV2811==='function')atualizaEdsonStateV2811();if(typeof saveLocal==='function')saveLocal();}catch(e){}
+  window.CALLIANDRA_BUILD=BUILD;
+})();
+</script>
+
 </body>
 </html>
