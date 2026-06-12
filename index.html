@@ -4259,5 +4259,212 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
   });
 })();
 </script>
+
+
+<script>
+/* V28.11 — diagnóstico de sincronização + fluxo correto Edson/Baru 10.
+   Camada aditiva: não altera simulador nem reconstruções. Corrige somente API diagnostics e cronograma financeiro Baru 10. */
+(function(){
+  const V2811_API_URL_KEY='calliandra_sheets_api_url';
+  const EDSON_ID_V2811='VENDA-BARU-10-EDSON-MW-20260608';
+  const EDSON_COMISSAO_V2811=23475;
+  const EDSON_VALOR_FINAL_V2811=485000;
+  const EDSON_RECEBIMENTOS_V2811=[
+    {ym:'2026-06',label:'sinal recebido em 10/06',bruto:165000,comissao:EDSON_COMISSAO_V2811,status:'Recebido'},
+    {ym:'2026-07',label:'parcela 1/5 · 15/07',bruto:64000,comissao:0,status:'Previsto'},
+    {ym:'2026-08',label:'parcela 2/5 · 15/08',bruto:64000,comissao:0,status:'Previsto'},
+    {ym:'2026-09',label:'parcela 3/5 · 15/09',bruto:64000,comissao:0,status:'Previsto'},
+    {ym:'2026-10',label:'parcela 4/5 · 15/10',bruto:64000,comissao:0,status:'Previsto'},
+    {ym:'2026-11',label:'parcela 5/5 · 15/11',bruto:64000,comissao:0,status:'Previsto'}
+  ];
+  function norm2811(v){try{return norm(v);}catch(e){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}}
+  function isEdsonBaru10V2811(v){
+    if(!v)return false;
+    const q=norm2811((v.quadra||v.rua||'')+' '+(v.lote||''));
+    const t=norm2811([v.id,v.cliente,v.corretor,v.origem,v.formaPagamento].join(' '));
+    return (q.includes('baru') && String(v.lote||'').replace(/\.0$/,'').trim()==='10') && (t.includes('edson') || t.includes('mw imobiliaria') || String(v.id||'')===EDSON_ID_V2811);
+  }
+  function normalizaEdsonV2811(c){
+    return Object.assign({},c||{}, {
+      id: EDSON_ID_V2811,
+      data: (c&&c.data)||'2026-06-08',
+      cliente: 'Edson Luiz Gonçalves Monteiro',
+      quadra: 'Baru',
+      rua: 'Rua Baru',
+      lote: '10',
+      area: 372.001,
+      valorTabela: 497638.02,
+      valorFinal: EDSON_VALOR_FINAL_V2811,
+      desconto: 12638.02,
+      status: 'Contrato',
+      corretor: 'MW IMOBILIÁRIA LTDA',
+      origem: 'Contrato CVCRM · venda anexada em 08/06/2026',
+      formaPagamento: 'A prazo · sinal R$ 165.000,00 em 10/06/2026 + 5 parcelas de R$ 64.000,00 de julho a novembro/2026',
+      recebimentoMaio: 0,
+      recebimentoJunho: 165000,
+      recebimentoJulho: 64000,
+      recebimentoAgosto: 64000,
+      recebimentoSetembro: 64000,
+      recebimentoOutubro: 64000,
+      recebimentoNovembro: 64000,
+      comissaoPct: Math.round((EDSON_COMISSAO_V2811/EDSON_VALOR_FINAL_V2811*100)*100)/100,
+      comissaoValor: EDSON_COMISSAO_V2811,
+      valorLiquidoUP: EDSON_VALOR_FINAL_V2811-EDSON_COMISSAO_V2811,
+      fluxo: 'Sinal: R$ 165.000,00 em 10/06/2026. Saldo: 5 parcelas mensais de R$ 64.000,00, com vencimentos de julho a novembro/2026. Comissão integrada ao preço: R$ 23.475,00. Imobiliária: MW IMOBILIÁRIA LTDA.',
+      periodoMeta: true,
+      fluxoValidado: true
+    });
+  }
+  function atualizaEdsonStateV2811(){
+    STATE.contratos=Array.isArray(STATE.contratos)?STATE.contratos:[];
+    let achou=false;
+    STATE.contratos=STATE.contratos.map(function(c){
+      if(isEdsonBaru10V2811(c)){achou=true; return normalizaEdsonV2811(c);}
+      return c;
+    });
+    if(!achou)STATE.contratos.push(normalizaEdsonV2811({}));
+    try{safeSet('calliandra_v9_local_contratos',JSON.stringify(STATE.contratos));}catch(e){}
+  }
+
+  const vendasGerenciaisBaseV2811=typeof vendasGerenciais==='function'?vendasGerenciais:null;
+  vendasGerenciais=function(){
+    atualizaEdsonStateV2811();
+    let arr=vendasGerenciaisBaseV2811?vendasGerenciaisBaseV2811():(STATE.contratos||[]);
+    let found=false;
+    arr=(arr||[]).map(function(c){if(isEdsonBaru10V2811(c)){found=true;return normalizaEdsonV2811(c);}return c;});
+    if(!found)arr.push(normalizaEdsonV2811({}));
+    return arr;
+  };
+  window.vendasGerenciais=vendasGerenciais;
+
+  const comissaoValorVendaBaseV2811=typeof comissaoValorVenda==='function'?comissaoValorVenda:null;
+  comissaoValorVenda=function(c){
+    if(isEdsonBaru10V2811(c))return EDSON_COMISSAO_V2811;
+    return comissaoValorVendaBaseV2811?comissaoValorVendaBaseV2811(c):num(c&&c.comissaoValor);
+  };
+  const comissaoPctVendaBaseV2811=typeof comissaoPctVenda==='function'?comissaoPctVenda:null;
+  comissaoPctVenda=function(c){
+    if(isEdsonBaru10V2811(c))return Math.round((EDSON_COMISSAO_V2811/EDSON_VALOR_FINAL_V2811*100)*100)/100;
+    return comissaoPctVendaBaseV2811?comissaoPctVendaBaseV2811(c):0;
+  };
+  valorLiquidoUP=function(c){return num(c&&c.valorFinal)-comissaoValorVenda(c);};
+
+  function addEdsonFluxoV2811(map){
+    EDSON_RECEBIMENTOS_V2811.forEach(function(r){
+      addReceiptV26(map,r.ym,'Edson · Baru 10 · '+r.label,r.bruto,r.comissao,r.status);
+    });
+  }
+  const fluxoContratosBaseV2811=typeof fluxoContratosV26==='function'?fluxoContratosV26:null;
+  fluxoContratosV26=function(){
+    const map={};
+    const baseRows=fluxoContratosBaseV2811?fluxoContratosBaseV2811():[];
+    (baseRows||[]).forEach(function(row){
+      (row.detalhes||[]).forEach(function(d){
+        if(norm2811(d.descricao).includes('edson') || norm2811(d.descricao).includes('baru 10'))return;
+        addReceiptV26(map,row.ym,d.descricao,d.bruto,d.comissao,d.status);
+      });
+    });
+    addEdsonFluxoV2811(map);
+    let acum=0;
+    return Object.values(map).sort(function(a,b){return a.ym.localeCompare(b.ym);}).map(function(r){
+      r.liquido=num(r.bruto)-num(r.comissao);
+      acum+=r.liquido;
+      r.acum=acum;
+      return r;
+    });
+  };
+  fluxoAteV26=function(limite){return fluxoContratosV26().filter(function(r){return r.ym<=limite;}).reduce(function(s,r){return s+num(r.liquido);},0);};
+  const caixaVendaAteBaseV2811=typeof caixaVendaAteV26==='function'?caixaVendaAteV26:null;
+  caixaVendaAteV26=function(v,limite){
+    if(isEdsonBaru10V2811(v)){
+      return EDSON_RECEBIMENTOS_V2811.filter(function(r){return r.ym<=limite;}).reduce(function(s,r){return s+num(r.bruto)-num(r.comissao);},0);
+    }
+    return caixaVendaAteBaseV2811?caixaVendaAteBaseV2811(v,limite):null;
+  };
+  caixaLiquidoVendaAteV25=function(v,limite){const n=caixaVendaAteV26(v,limite);return n===null?0:n;};
+  caixaConsolidadoAteV25=function(limite){return fluxoAteV26(limite);};
+
+  const recebimentosPanelBaseV2811=typeof recebimentosPanelV26==='function'?recebimentosPanelV26:null;
+  recebimentosPanelV26=function(){
+    let html=recebimentosPanelBaseV2811?recebimentosPanelBaseV2811():'';
+    html=html.replace(/inclui Mendes \+ Eric 18\/06/g,'inclui Mendes + Eric + Edson');
+    html=html.replace(/<b>Eric\/Araçá 19:<\/b> R\$ 30\.000,00 estão previstos para 18\/06 e já compõem o caixa líquido acumulado até junho\./g,
+      '<b>Eric/Araçá 19:</b> R$ 30.000,00 estão previstos para 18/06 e já compõem o caixa líquido acumulado até junho. <b>Edson/Baru 10:</b> sinal bruto de R$ 165.000,00 em junho, com comissão provisionada de R$ 23.475,00, e cinco parcelas de R$ 64.000,00 de julho a novembro.');
+    return html;
+  };
+
+  function apiUrlV2811(){
+    const custom=(localStorage.getItem(V2811_API_URL_KEY)||'').trim();
+    return custom||API_URL;
+  }
+  apiGetAll=async function(timeout=45000){
+    const base=apiUrlV2811();
+    const sep=String(base||'').includes('?')?'&':'?';
+    const url=base+sep+'action=getAll&force=1&nocache=1&_v=28_11&_t='+Date.now();
+    const ctrl=new AbortController();
+    const t=setTimeout(function(){ctrl.abort();},timeout);
+    try{
+      const res=await fetch(url,{method:'GET',cache:'no-store',credentials:'same-origin',signal:ctrl.signal,headers:{'Pragma':'no-cache','Cache-Control':'no-cache'}});
+      const txt=await res.text();
+      if(!res.ok){throw new Error('HTTP '+res.status+' em '+url+' · '+txt.slice(0,160));}
+      let json;
+      try{json=JSON.parse(txt);}catch(e){throw new Error('Resposta não JSON da API em '+url+': '+txt.slice(0,180));}
+      if(json.ok===false||json.success===false){throw new Error(json.error||json.message||'API retornou erro sem mensagem.');}
+      window.CALLIANDRA_LAST_API_ERROR='';
+      return json;
+    }catch(e){
+      window.CALLIANDRA_LAST_API_ERROR=e&&e.message?e.message:String(e);
+      throw e;
+    }finally{clearTimeout(t);}
+  };
+  api=async function(payload,timeout=12000){
+    const base=apiUrlV2811();
+    const ctrl=new AbortController();
+    const t=setTimeout(function(){ctrl.abort();},timeout);
+    try{
+      const res=await fetch(base,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl.signal,cache:'no-store',credentials:'same-origin'});
+      const txt=await res.text();
+      if(!res.ok)throw new Error('HTTP '+res.status+' em '+base+' · '+txt.slice(0,160));
+      try{return JSON.parse(txt);}catch(e){throw new Error('Resposta não JSON da API.');}
+    }finally{clearTimeout(t);}
+  };
+  syncManual=async function(){
+    try{await syncData();toast('Planilha sincronizada. Fluxo Baru 10/Edson conciliado.');go(currentPage());}
+    catch(e){
+      console.warn(e);
+      const msg=e&&e.message?e.message:'erro não identificado';
+      toast('Não consegui sincronizar com a API: '+msg,'err');
+      setConn(false,'Modo local seguro');
+    }
+  };
+  window.syncManual=syncManual;
+
+  const renderConfigBaseV2811=typeof renderConfig==='function'?renderConfig:null;
+  renderConfig=function(){
+    if(renderConfigBaseV2811)renderConfigBaseV2811();
+    const el=document.createElement('div');
+    el.className='card';
+    el.style.marginTop='16px';
+    const savedApi=localStorage.getItem(V2811_API_URL_KEY)||API_URL;
+    const lastErr=window.CALLIANDRA_LAST_API_ERROR||'nenhum erro registrado nesta sessão';
+    const lastClass=window.CALLIANDRA_LAST_API_ERROR?'warnbox':'info';
+    el.innerHTML='<div class="ch"><div><div class="ch-ttl">Diagnóstico de sincronização V28.11</div><div class="sub">Use para verificar se o problema está na rota /api/sheets ou na permissão da planilha.</div></div>'+badge('API')+'</div><div class="cb"><div class="field"><label>URL da API Sheets usada pelo sistema</label><input id="v2811ApiUrl" value="'+esc(savedApi)+'" placeholder="/api/sheets ou URL do Apps Script"></div><div class="fr c2"><button class="btn btn-terra" onclick="localStorage.setItem(\''+V2811_API_URL_KEY+'\',val(\'v2811ApiUrl\'));toast(\'URL da API salva. Clique em Sincronizar.\');">Salvar URL da API</button><button class="btn btn-ghost" onclick="syncManual()">Testar sincronização</button></div><div class="'+lastClass+'" style="margin-top:12px"><b>Último erro da API:</b> '+esc(lastErr)+'</div><div class="success" style="margin-top:12px"><b>Fluxo Edson/Baru 10 corrigido:</b> R$ 165.000,00 em junho e 5 parcelas de R$ 64.000,00 de julho a novembro, sem antecipar parcelas para agosto.</div></div>';
+    id('page-config').appendChild(el);
+  };
+
+  atualizaEdsonStateV2811();
+  try{saveLocal();}catch(e){}
+  try{if(typeof currentPage==='function')go(currentPage());}catch(e){}
+  window.CALLIANDRA_V2811_CHECKLIST=Object.assign({},window.CALLIANDRA_V2810_CHECKLIST||{}, {
+    versao:'V28.11',
+    fluxoEdsonJunho165k:true,
+    fluxoEdsonParcelasJulNov:true,
+    diagnosticoApi:true,
+    apiUrlConfiguravel:true,
+    simuladorPreservado:true
+  });
+})();
+</script>
+
 </body>
 </html>
