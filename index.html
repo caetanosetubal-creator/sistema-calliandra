@@ -4823,167 +4823,128 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
 })();
 </script>
 
-<!-- V28.22 — correção final do simulador sem alterar sincronização, orçamento, vendas ou dashboard -->
-<style id="calliandra-v2822-simulador-css">
-  .sim-v2822-shell{margin:0 0 18px 0}
-  .sim-v2822-card{background:#fff;border:1px solid #e6dfd5;border-radius:22px;box-shadow:0 18px 38px rgba(16,54,46,.06);padding:22px 22px 20px;max-width:100%}
-  .sim-v2822-title{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px;border-bottom:1px solid #eee8df;padding-bottom:14px}
-  .sim-v2822-title h2{margin:0;color:#0f4439;font-size:20px;letter-spacing:-.01em}.sim-v2822-title p{margin:4px 0 0;color:#6f7b77;font-size:13px;line-height:1.35}
-  .sim-v2822-rate{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0f4439;background:#f4efe6;border:1px solid #e7dacb;border-radius:999px;padding:8px 12px;white-space:nowrap}
-  .sim-v2822-row{display:grid;gap:14px;align-items:start;margin-bottom:16px}.sim-v2822-row.top{grid-template-columns:minmax(210px,1.15fr) minmax(190px,1fr) minmax(310px,1.7fr)}
-  .sim-v2822-row.cond{grid-template-columns:150px 210px 116px 128px 136px;align-items:end}
-  .sim-v2822-field{min-width:0}.sim-v2822-field label,.sim-v2822-mode-label{display:block;margin:0 0 7px;color:#0f4439;font-size:11px;line-height:1.1;font-weight:900;text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
-  .sim-v2822-field input,.sim-v2822-field select{width:100%;height:44px;border:1px solid #dce4e0;border-radius:12px;background:#fff;color:#173f38;font-size:14px;font-weight:650;padding:0 12px;box-sizing:border-box;outline:none;transition:border-color .16s,box-shadow .16s}
-  .sim-v2822-field input:focus,.sim-v2822-field select:focus{border-color:#0f4439;box-shadow:0 0 0 3px rgba(15,68,57,.09)}
-  .sim-v2822-field.is-number input{text-align:right;font-weight:850;font-variant-numeric:tabular-nums}.sim-v2822-field small{display:block;margin-top:6px;color:#818a86;font-size:11px;line-height:1.25}
-  .sim-v2822-mode{min-width:0}.sim-v2822-switch{height:44px;border:1px solid #d9ddd8;border-radius:12px;background:#f7f3ec;padding:3px;display:grid;grid-template-columns:1fr 1fr;gap:3px;box-sizing:border-box}.sim-v2822-switch button{border:0;border-radius:10px;background:transparent;color:#284d45;font-size:13px;font-weight:900;cursor:pointer;padding:0 10px;white-space:nowrap}.sim-v2822-switch button.on{background:#0f4439;color:#fff;box-shadow:0 8px 18px rgba(15,68,57,.18)}
-  .sim-v2822-row.obs{grid-template-columns:1fr auto;align-items:end;margin:0}.sim-v2822-row.obs .sim-v2822-field input{height:44px}.sim-v2822-action{height:44px;border:0;border-radius:12px;background:#b24b4b;color:#fff;font-weight:900;padding:0 20px;white-space:nowrap;cursor:pointer;box-shadow:0 12px 22px rgba(178,75,75,.14)}.sim-v2822-action:hover{filter:brightness(.98)}
-  .sim-v2822-alert{margin-top:12px;border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.4}.sim-v2822-alert.warn{background:#fff7ed;border:1px solid #f1d2a6;color:#6f4a13}.sim-v2822-alert.ok{background:#eef8f2;border:1px solid #cfe9d8;color:#164b38}
-  .sim-v2822-result{margin-top:16px}.sim-v2822-result-card{background:#fff;border:1px solid #e8e1d7;border-radius:22px;padding:20px;box-shadow:0 14px 30px rgba(16,54,46,.05)}.sim-v2822-result-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid #eee8df;padding-bottom:14px;margin-bottom:14px}.sim-v2822-result-head h3{margin:0;color:#0f4439;font-size:20px}.sim-v2822-result-head p{margin:4px 0 0;color:#6c7975;font-size:12px}.sim-v2822-total{text-align:right;min-width:230px}.sim-v2822-total span{display:block;color:#79827f;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.sim-v2822-total b{display:block;margin-top:4px;color:#0f4439;font-size:27px;line-height:1.1}.sim-v2822-total small{display:block;margin-top:4px;color:#b24b4b;font-weight:800}
-  .sim-v2822-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.sim-v2822-metric{background:#fffdf8;border:1px solid #eee6dc;border-radius:14px;padding:12px;min-width:0}.sim-v2822-metric span{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#77827e;font-weight:900}.sim-v2822-metric b{display:block;margin-top:6px;color:#0f4439;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sim-v2822-metric small{display:block;margin-top:4px;color:#78837f;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sim-v2822-finance{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.sim-v2822-finance-card{background:#f7fbf8;border:1px solid #dcebe3;border-radius:15px;padding:14px}.sim-v2822-finance-card:nth-child(2){background:#fff8f2;border-color:#ead7ca}.sim-v2822-finance-card span{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#65746f;font-weight:900}.sim-v2822-finance-card b{display:block;margin-top:5px;color:#0f4439;font-size:22px}.sim-v2822-finance-card small{display:block;margin-top:4px;color:#6e7b77}
-  @media(max-width:1320px){.sim-v2822-row.top{grid-template-columns:1fr 1fr}.sim-v2822-row.top .sim-v2822-field:nth-child(3){grid-column:1/-1}.sim-v2822-row.cond{grid-template-columns:150px 1fr 110px 120px 120px}.sim-v2822-metrics{grid-template-columns:repeat(3,1fr)}}
-  @media(max-width:900px){.sim-v2822-row.top,.sim-v2822-row.cond,.sim-v2822-row.obs,.sim-v2822-finance,.sim-v2822-metrics{grid-template-columns:1fr}.sim-v2822-result-head{display:block}.sim-v2822-total{text-align:left;margin-top:12px;min-width:0}.sim-v2822-action{width:100%}}
-  @media print{.sim-v2822-shell{display:none!important}.sim-v2822-result-card{box-shadow:none;break-inside:avoid}.sim-v2822-metrics{grid-template-columns:repeat(2,1fr)}}
+<!-- V28.23: correção urgente do simulador comercial - cálculo por área x m² digitado -->
+<style>
+/* V28.23 — Simulador: formulário compacto, alinhado e operacional */
+.sim-v2823-wrap{display:grid;gap:18px}
+.sim-v2823-card{background:#fff;border:1px solid rgba(23,61,55,.12);border-radius:22px;box-shadow:0 16px 40px rgba(23,61,55,.07);overflow:hidden}
+.sim-v2823-head{padding:22px 24px 14px;border-bottom:1px solid rgba(23,61,55,.10);display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.sim-v2823-head b{font-size:20px;color:var(--verde);display:block;line-height:1.2}.sim-v2823-head span{font-size:14px;color:var(--muted)}
+.sim-v2823-badge{white-space:nowrap;background:#e9f6ee;color:#167047;border:1px solid #b9e3c9;border-radius:999px;padding:8px 12px;font-weight:900;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.sim-v2823-body{padding:22px 24px 24px;display:grid;gap:18px}.sim-v2823-row{display:grid;gap:14px;align-items:end}.sim-v2823-row.top{grid-template-columns:1.1fr 1fr 1.45fr}.sim-v2823-row.money{grid-template-columns:170px 210px 126px 126px 150px}.sim-v2823-row.obs{grid-template-columns:1fr}.sim-v2823-field{display:grid;gap:7px;min-width:0}.sim-v2823-field label{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--verde)}.sim-v2823-field input,.sim-v2823-field select{width:100%;height:46px;border:1px solid #dbe3df;border-radius:13px;background:#fff;padding:0 14px;font-size:15px;color:#102b27;outline:none;box-sizing:border-box}.sim-v2823-field input:focus,.sim-v2823-field select:focus{border-color:var(--verde);box-shadow:0 0 0 4px rgba(23,61,55,.08)}.sim-v2823-field input[disabled]{background:#f7f2ea;color:#7f7a70}.sim-v2823-field small{font-size:12px;color:#7b827d;min-height:16px}.sim-v2823-field.compact input{text-align:right;font-weight:800}.sim-v2823-pay{height:46px;border:1px solid #dbe3df;border-radius:13px;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;background:#fff}.sim-v2823-pay button{border:0;background:#fff;color:var(--verde);font-weight:900;font-size:14px;cursor:pointer}.sim-v2823-pay button.on{background:var(--verde);color:#fff}.sim-v2823-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:2px}.sim-v2823-actions .btn{min-width:190px}.sim-v2823-result{display:grid;gap:16px}.sim-v2823-summary{background:#fff;border:1px solid rgba(23,61,55,.12);border-radius:22px;box-shadow:0 12px 34px rgba(23,61,55,.06);padding:22px 24px}.sim-v2823-summary-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid rgba(23,61,55,.10);padding-bottom:16px;margin-bottom:16px}.sim-v2823-summary-head h3{margin:0;color:var(--verde);font-size:20px}.sim-v2823-summary-head p{margin:4px 0 0;color:var(--muted)}.sim-v2823-total{text-align:right}.sim-v2823-total span{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7b827d}.sim-v2823-total b{display:block;font-size:30px;color:var(--verde);line-height:1.1}.sim-v2823-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.sim-v2823-metric{border:1px solid #eadfcd;background:#fbf8f2;border-radius:15px;padding:13px 14px;min-height:78px}.sim-v2823-metric span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:#7b827d}.sim-v2823-metric b{display:block;margin-top:6px;font-size:18px;color:var(--verde);line-height:1.15}.sim-v2823-metric small{display:block;margin-top:4px;color:#7b827d}.sim-v2823-fin{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.sim-v2823-fin>div{border:1px solid #dbe3df;border-radius:15px;padding:14px;background:#fff}.sim-v2823-fin span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:#7b827d}.sim-v2823-fin b{display:block;font-size:22px;color:var(--verde);margin-top:4px}.sim-v2823-note{margin-top:14px}.sim-v2823-audit{background:#eef8f3;border:1px solid #b9e3c9;border-radius:15px;padding:12px 14px;color:#164b39;font-size:14px}.sim-v2823-error{background:#fff1ef;border:1px solid #e9b8b3;border-radius:15px;padding:12px 14px;color:#8d3834;font-size:14px}
+@media(max-width:1200px){.sim-v2823-row.top,.sim-v2823-row.money{grid-template-columns:1fr 1fr}.sim-v2823-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sim-v2823-fin{grid-template-columns:1fr}}
+@media(max-width:760px){.sim-v2823-row.top,.sim-v2823-row.money,.sim-v2823-metrics{grid-template-columns:1fr}.sim-v2823-head,.sim-v2823-summary-head{display:block}.sim-v2823-total{text-align:left;margin-top:12px}.sim-v2823-actions{justify-content:stretch}.sim-v2823-actions .btn{width:100%}}
+@media print{.sim-v2823-card.no-print{display:none!important}.sim-v2823-summary{box-shadow:none;border:1px solid #ddd}.sim-v2823-metrics{grid-template-columns:repeat(3,1fr)}}
 </style>
-<script id="calliandra-v2822-simulador-js">
+<script>
 (function(){
-  'use strict';
-  const BUILD='v28.22-producao-estavel-simulador-corrigido';
-  const SIM_KEY=(typeof V22_SIM_KEY!=='undefined')?V22_SIM_KEY:'calliandra_v22_simulador';
+  const BUILD='v28.23-correcao-urgente-simulador-area-m2';
+  const SIM_KEY='CALLIANDRA_SIM_V2823';
   const ANNUAL_RATE=0.12;
-  const MONTH_RATE=Math.pow(1+ANNUAL_RATE,1/12)-1;
-  function $(x){return document.getElementById(x)}
-  function html(x){return String(x??'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-  function read(key,def){try{return JSON.parse(localStorage.getItem(key)||'null')??def}catch(e){return def}}
-  function write(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
-  function parseDecimal(v){
+  const MONTHLY_RATE=Math.pow(1+ANNUAL_RATE,1/12)-1; // 0,948879% a.m.
+  function el(x){return document.getElementById(x)}
+  function safeEsc(x){return String(x==null?'':x).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+  function parseBR(v){
     if(typeof v==='number')return isFinite(v)?v:0;
-    let s=String(v??'').trim(); if(!s)return 0;
+    let s=String(v==null?'':v).trim();
+    if(!s)return 0;
     s=s.replace(/R\$|%|\s/g,'');
-    if(s.includes(',') && s.includes('.')) s=s.replace(/\./g,'').replace(',', '.');
-    else s=s.replace(',', '.');
-    const n=parseFloat(s); return isFinite(n)?n:0;
+    if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');
+    else if(s.includes(','))s=s.replace(',','.');
+    s=s.replace(/[^0-9.\-]/g,'');
+    const n=parseFloat(s);return isFinite(n)?n:0;
   }
-  function parseIntSafe(v,def){const n=parseInt(String(v??'').replace(/\D+/g,''),10);return isFinite(n)?n:def}
-  function brl(v){try{if(typeof BRL==='function')return BRL(v)}catch(e){} return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-  function areaFmt(v){try{if(typeof AREA==='function')return AREA(v)}catch(e){} return (Number(v||0)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m²';}
-  function lotName(l){try{if(typeof loteNome==='function')return loteNome(l)}catch(e){} return [l?.rua,l?.quadra,l?.lote].filter(Boolean).join(' · ')||l?.id||'Lote';}
-  function badgeSafe(v){try{if(typeof badge==='function')return badge(v)}catch(e){} return html(v||'');}
-  function lots(){try{if(typeof simulaveis==='function')return simulaveis()||[]}catch(e){} return (window.STATE&&Array.isArray(STATE.lotes))?STATE.lotes:[]}
-  function byId(id){const ls=lots();return (window.STATE&&STATE.lotes||ls).find(function(l){return String(l.id)===String(id)})||ls[0]||null}
-  function baseM2(l){const a=parseDecimal(l&&l.area), vt=parseDecimal(l&&l.valorTabela); if(a&&vt)return vt/a; return parseDecimal(l&&l.precoM2);}
-  function round2(n){return Math.round((Number(n)||0)*100)/100}
-  function pctText(n){return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}
-  function rawField(n){return String(n??'').replace('.',',')}
-  function getState(selected){
-    const saved=read(SIM_KEY,{}), user=(typeof USER!=='undefined'?read(USER,{}):{}), ls=lots();
-    let lote=selected || saved.lote || ls[0]?.id || '';
-    if(ls.length && !ls.some(function(l){return String(l.id)===String(lote)})) lote=ls[0].id;
-    const l=byId(lote);
-    let preco=saved.precoM2Manual;
-    if(preco===undefined||preco===null||String(preco).trim()==='') preco=l?String(round2(baseM2(l))):'';
-    const cond=saved.cond==='avista'?'avista':'entradaLivre';
+  function brl(v){if(typeof BRL==='function')return BRL(v);return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+  function areaFmt(v){if(typeof AREA==='function')return AREA(v);return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m²'}
+  function round2(v){return Math.round((Number(v)||0)*100)/100}
+  function pctText(v,d=5){return (Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%'}
+  function loteLabel(l){try{return loteNome(l)}catch(e){return (l&&l.endereco)||((l&&l.rua)||'Lote')+' '+((l&&l.lote)||'')}}
+  function getLots(){try{return (typeof simulaveis==='function'?simulaveis():(STATE.lotes||[])).filter(Boolean)}catch(e){return []}}
+  function baseM2(l){const area=parseBR(l&&l.area);const vt=parseBR(l&&l.valorTabela);const pm=parseBR(l&&l.precoM2);return area>0&&vt>0?vt/area:pm}
+  function readState(){
+    let old={};try{old=JSON.parse(localStorage.getItem(SIM_KEY)||localStorage.getItem(typeof V22_SIM_KEY!=='undefined'?V22_SIM_KEY:'')||'{}')||{}}catch(e){}
+    let user={};try{user=typeof readJSON==='function'?readJSON(USER,{})||{}:{}}catch(e){}
     return {
-      cliente:saved.cliente||'',
-      responsavel:saved.responsavel||(user&&user.nome)||'Administrador',
-      lote:lote,
-      cond:cond,
-      entradaPct:saved.entradaPct!==undefined?String(saved.entradaPct):(cond==='avista'?'100':'30'),
-      parcelas:saved.parcelas!==undefined?String(saved.parcelas):'36',
-      desconto:saved.desconto!==undefined?String(saved.desconto):'0',
-      precoM2Manual:String(preco),
-      observacao:saved.observacao||''
+      cliente:old.cliente||'',responsavel:old.responsavel||old.responsavelPreenchimento||user.nome||'Administrador',
+      lote:old.lote||'',cond:old.cond==='avista'?'avista':'entrada',precoM2Manual:String(old.precoM2Manual||old.precoM2||''),
+      entradaPct:String(old.entradaPct||old.entrada||old.entradaLivre||'30'),parcelas:String(old.parcelas||'36'),
+      desconto:String(old.desconto||old.descontoPct||'0'),observacao:old.observacao||old.obs||''
     };
   }
+  function writeState(s){try{localStorage.setItem(SIM_KEY,JSON.stringify(s));if(typeof V22_SIM_KEY!=='undefined')localStorage.setItem(V22_SIM_KEY,JSON.stringify(s));}catch(e){}return s}
   function capture(){
-    const s=getState();
-    if($('simCliente'))s.cliente=$('simCliente').value;
-    if($('simResp'))s.responsavel=$('simResp').value;
-    if($('simLote'))s.lote=$('simLote').value;
-    if($('simPrecoM2'))s.precoM2Manual=$('simPrecoM2').value;
-    if($('simEntrada'))s.entradaPct=$('simEntrada').value;
-    if($('simParcelas'))s.parcelas=$('simParcelas').value;
-    if($('simDesc'))s.desconto=$('simDesc').value;
-    if($('simObs'))s.observacao=$('simObs').value;
-    write(SIM_KEY,s); return s;
+    const s=readState();
+    if(el('simCliente'))s.cliente=el('simCliente').value;
+    if(el('simResp'))s.responsavel=el('simResp').value;
+    if(el('simLote'))s.lote=el('simLote').value;
+    if(el('simPrecoM2'))s.precoM2Manual=el('simPrecoM2').value;
+    if(el('simEntrada'))s.entradaPct=el('simEntrada').value;
+    if(el('simParcelas'))s.parcelas=el('simParcelas').value;
+    if(el('simDesc'))s.desconto=el('simDesc').value;
+    if(el('simObs'))s.observacao=el('simObs').value;
+    return writeState(s);
   }
-  function saveField(field,value){const s=getState();s[field]=value;write(SIM_KEY,s); if(field==='lote'){const l=byId(value);if(l){s.precoM2Manual=String(round2(baseM2(l)));write(SIM_KEY,s); renderSimulador(value);return;}} calcSim();}
-  function setMode(cond){const s=capture();s.cond=cond==='avista'?'avista':'entradaLivre';if(s.cond==='avista'){s.entradaPct='100';s.parcelas='0';}else{if(parseDecimal(s.entradaPct)>=100)s.entradaPct='30'; if(parseIntSafe(s.parcelas,0)<1)s.parcelas='36';}write(SIM_KEY,s);renderSimulador(s.lote);}
-  function cleanPercentInput(v,min,max){let n=parseDecimal(v); if(n<min)n=min; if(n>max)n=max; return n;}
-  function cleanParcelas(v){let n=parseIntSafe(v,36); if(n<1)n=1; if(n>120)n=120; return n;}
-  function option(l,s){return '<option value="'+html(l.id)+'" '+(String(l.id)===String(s.lote)?'selected':'')+'>'+html(lotName(l))+' · '+html(areaFmt(l.area))+' · '+html(brl(l.valorTabela||0))+' · '+html(l.status||'')+'</option>'}
-  function metric(label,value,help){return '<div class="sim-v2822-metric"><span>'+html(label)+'</span><b>'+value+'</b>'+(help?'<small>'+html(help)+'</small>':'')+'</div>'}
-  function price(pv,n,i){if(!pv||!n)return 0; if(!i)return pv/n; return pv*(i*Math.pow(1+i,n))/(Math.pow(1+i,n)-1)}
-  function sac(pv,n,i){const amort=pv/n;let saldo=pv,total=0,first=0,last=0;for(let k=1;k<=n;k++){const parcela=amort+(saldo*i);if(k===1)first=parcela;if(k===n)last=parcela;total+=parcela;saldo-=amort;}return {primeira:first,ultima:last,total:total}}
-  function tabela(pv,n){if(!pv||!n)return'';const p=price(pv,n,MONTH_RATE);const amort=pv/n;let saldoSac=pv,rows='';for(let k=1;k<=n;k++){const sacPar=amort+(saldoSac*MONTH_RATE);saldoSac-=amort;rows+='<tr><td>'+k+'</td><td>'+brl(p)+'</td><td>'+brl(sacPar)+'</td></tr>';}return '<div class="tw sim-payment-table-v22"><table><thead><tr><th>Parcela</th><th>Sistema Price</th><th>Sistema SAC</th></tr></thead><tbody>'+rows+'</tbody></table></div>'}
-
-  window.renderSimulador = renderSimulador = function(selected){
-    const ls=lots(); const s=getState(selected); const cash=s.cond==='avista';
-    const pactions=(typeof printActionsV19==='function')?printActionsV19('simulador'):'<button class="btn btn-ghost" onclick="printPage(\'simulador\')">🖨 Imprimir / PDF</button>';
-    const page=$('page-simulador'); if(!page)return;
-    page.innerHTML = '<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Preço do m², entrada e desconto editáveis. Entrada mínima: 10%.</div></div><div class="sh-r">'+pactions+'</div></div>'+
-      '<div class="sim-v2822-shell no-print"><section class="sim-v2822-card">'+
-      '<div class="sim-v2822-title"><div><h2>Dados da simulação</h2><p>Preencha os dados da proposta. O cálculo é atualizado automaticamente.</p></div><div class="sim-v2822-rate">12% a.a. · 0,948879% a.m.</div></div>'+
-      '<div class="sim-v2822-row top">'+
-        '<div class="sim-v2822-field"><label>Nome do cliente</label><input id="simCliente" value="'+html(s.cliente)+'" oninput="setSimFieldV22(\'cliente\',this.value)"></div>'+
-        '<div class="sim-v2822-field"><label>Responsável</label><input id="simResp" value="'+html(s.responsavel)+'" oninput="setSimFieldV22(\'responsavel\',this.value)"></div>'+
-        '<div class="sim-v2822-field"><label>Lote</label><select id="simLote" onchange="setSimFieldV22(\'lote\',this.value)">'+ls.map(function(l){return option(l,s)}).join('')+'</select></div>'+
-      '</div>'+
-      '<div class="sim-v2822-row cond">'+
-        '<div class="sim-v2822-field is-number"><label>Valor do m²</label><input id="simPrecoM2" inputmode="decimal" value="'+html(s.precoM2Manual)+'" oninput="setSimFieldV22(\'precoM2Manual\',this.value)"></div>'+
-        '<div class="sim-v2822-mode"><span class="sim-v2822-mode-label">Forma de pagamento</span><div class="sim-v2822-switch"><button type="button" class="'+(cash?'on':'')+'" onclick="chooseCondV22(\'avista\')">À vista</button><button type="button" class="'+(!cash?'on':'')+'" onclick="chooseCondV22(\'entradaLivre\')">Com entrada</button></div></div>'+
-        '<div class="sim-v2822-field is-number"><label>Entrada (%)</label><input id="simEntrada" inputmode="decimal" value="'+html(cash?'100':s.entradaPct)+'" '+(cash?'disabled':'')+' oninput="setSimFieldV22(\'entradaPct\',this.value)" onblur="normalizeEntradaV2822()"></div>'+
-        '<div class="sim-v2822-field is-number"><label>Nº parcelas</label><input id="simParcelas" inputmode="numeric" value="'+html(cash?'0':s.parcelas)+'" '+(cash?'disabled':'')+' oninput="setSimFieldV22(\'parcelas\',this.value)" onblur="normalizeParcelasV2822()"></div>'+
-        '<div class="sim-v2822-field is-number"><label>Desconto (%)</label><input id="simDesc" inputmode="decimal" value="'+html(s.desconto)+'" oninput="setSimFieldV22(\'desconto\',this.value)" onblur="normalizeDescontoV2822()"></div>'+
-      '</div>'+
-      '<div class="sim-v2822-row obs"><div class="sim-v2822-field"><label>Observação da proposta</label><input id="simObs" value="'+html(s.observacao)+'" oninput="setSimFieldV22(\'observacao\',this.value)"></div><button type="button" class="sim-v2822-action" onclick="calcSim()">Atualizar simulação</button></div>'+
-      '<div id="simValidation" class="sim-v2822-alert ok">Taxa financeira: 12% ao ano, equivalente a 0,948879% ao mês.</div>'+ 
-      '</section></div><div id="simResult" class="sim-v2822-result"></div>';
-    calcSim();
-  };
-  window.calcSim = calcSim = function(){
-    const s=capture(); const l=byId(s.lote); const result=$('simResult'); if(!result)return;
-    if(!l){result.innerHTML='<div class="warnbox">Nenhum lote simulável encontrado. Sincronize ou confira a planilha.</div>';return;}
-    const cash=s.cond==='avista';
-    const entradaPct=cash?100:cleanPercentInput(s.entradaPct,10,100);
-    const parcelas=cash?0:cleanParcelas(s.parcelas);
-    const area=parseDecimal(l.area);
-    const precoM2=parseDecimal(s.precoM2Manual)||baseM2(l);
+  function clamp(n,min,max){n=Number(n)||0;return Math.max(min,Math.min(max,n))}
+  function setField(k,v,run){const s=readState();s[k]=v;writeState(s);if(run)calcSim();}
+  function setPay(cond){const s=capture();s.cond=cond;if(cond==='avista'){s.entradaPct='100';s.parcelas='0'}else{if(parseBR(s.entradaPct)>=100)s.entradaPct='30';if(parseBR(s.entradaPct)<10)s.entradaPct='30';if(parseBR(s.parcelas)<=0)s.parcelas='36'}writeState(s);renderSimulador(s.lote)}
+  function setLote(value){const lots=getLots();const l=lots.find(x=>String(x.id)===String(value));const s=capture();s.lote=value;s.precoM2Manual=l?String(round2(baseM2(l))).replace('.',','):s.precoM2Manual;writeState(s);renderSimulador(value)}
+  function normalizeInputs(){
+    const s=capture();
+    if(s.cond==='avista'){s.entradaPct='100';s.parcelas='0'}
+    else{s.entradaPct=String(round2(clamp(parseBR(s.entradaPct),10,100))).replace('.',',');s.parcelas=String(Math.max(0,Math.min(120,Math.round(parseBR(s.parcelas)||0))))}
+    s.desconto=String(round2(clamp(parseBR(s.desconto),0,100))).replace('.',',');
+    if(parseBR(s.precoM2Manual)>0)s.precoM2Manual=String(round2(parseBR(s.precoM2Manual))).replace('.',',');
+    writeState(s);renderSimulador(s.lote);
+  }
+  function calcPriceLocal(pv,n,i){if(!n||!pv)return 0;if(!i)return pv/n;return pv*(i/(1-Math.pow(1+i,-n)))}
+  function sacLocal(pv,n){if(!n||!pv)return {primeira:0,ultima:0,total:0};const amort=pv/n;let total=0,first=0,last=0;for(let k=1;k<=n;k++){const juros=(pv-amort*(k-1))*MONTHLY_RATE;const parc=amort+juros;if(k===1)first=parc;if(k===n)last=parc;total+=parc}return {primeira:first,ultima:last,total:total}}
+  function metric(label,value,help){return `<div class="sim-v2823-metric"><span>${safeEsc(label)}</span><b>${value}</b>${help?`<small>${safeEsc(help)}</small>`:''}</div>`}
+  function renderResult(data){
+    const {l,valorTabela,descPct,economia,valorNegociado,precoM2,entradaPct,entrada,parcelas,saldo,hasFinance,price,sac,ipca,s}=data;
+    const precoM2Neg=valorNegociado/parseBR(l.area);
+    const cond=hasFinance?`${parcelas} parcelas`:'À vista';
+    const totalPrice=hasFinance?entrada+price*parcelas:valorNegociado;
+    const totalSac=hasFinance?entrada+sac.total:valorNegociado;
+    const note=ipca?'Parcelamento acima de 36 meses: juros de 12% a.a. aplicados; IPCA apenas indicado, sem projeção automática.':hasFinance?'Parcelamento até 36 meses: juros de 12% a.a., sem correção monetária.':'Pagamento integral à vista, sem saldo financiado.';
+    return `<div class="sim-v2823-summary"><div class="sim-v2823-summary-head"><div><h3>${safeEsc(loteLabel(l))}</h3><p>${areaFmt(parseBR(l.area))} · ${safeEsc(l.rua||l.quadra||'')} · ${safeEsc(l.status||'')}</p></div><div class="sim-v2823-total"><span>Valor negociado</span><b>${brl(valorNegociado)}</b><small>${descPct.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:5})}% de desconto</small></div></div><div class="sim-v2823-metrics">${metric('Valor de tabela',brl(valorTabela),'área × m² digitado')}${metric('Preço m² usado',brl(precoM2))}${metric('Economia',brl(economia))}${metric('Entrada',brl(entrada),entradaPct.toLocaleString('pt-BR',{maximumFractionDigits:5})+'%')}${metric('Saldo financiado',hasFinance?brl(saldo):'Não se aplica')}${metric('Nº parcelas',hasFinance?String(parcelas):'À vista')}${metric('Preço m² negociado',brl(precoM2Neg))}${metric('Taxa mensal',pctText(MONTHLY_RATE*100,6),'equivalente a 12% a.a.')}${metric('Responsável',safeEsc(s.responsavel||'-'))}${metric('Cliente',safeEsc(s.cliente||'-'))}</div>${hasFinance?`<div class="sim-v2823-fin"><div><span>PRICE</span><b>${brl(price)}</b><small>parcela fixa · total ${brl(totalPrice)}</small></div><div><span>SAC</span><b>${brl(sac.primeira)}</b><small>1ª parcela · última ${brl(sac.ultima)} · total ${brl(totalSac)}</small></div></div>`:`<div class="sim-v2823-fin"><div><span>Pagamento integral</span><b>${brl(valorNegociado)}</b><small>sem financiamento</small></div><div><span>Prazo</span><b>${cond}</b><small>sem parcelas</small></div></div>`}<div class="sim-v2823-note sim-v2823-audit"><b>Auditoria:</b> ${safeEsc(note)} Fórmula base da simulação: <b>área do lote × valor do m² digitado</b>, depois desconto manual.</div>${s.observacao?`<div class="info sim-v2823-note"><b>Observação:</b> ${safeEsc(s.observacao)}</div>`:''}</div>${hasFinance?`<div class="table-card sim-compare" style="margin-top:16px"><div class="ch"><div class="ch-ttl">Parcelamento comparativo · Price x SAC</div><span>${parcelas} parcelas</span></div><div class="tw"><table><thead><tr><th>Parcela</th><th>Price</th><th>SAC</th></tr></thead><tbody>${Array.from({length:parcelas}).map((_,idx)=>{const n=idx+1;const amort=saldo/parcelas;const sacPar=amort+((saldo-amort*idx)*MONTHLY_RATE);return `<tr><td>${n}</td><td>${brl(price)}</td><td>${brl(sacPar)}</td></tr>`}).join('')}</tbody></table></div></div>`:''}`;
+  }
+  window.setSimFieldV2823=function(k,v){setField(k,v,true)};
+  window.setSimPayV2823=function(c){setPay(c)};
+  window.setSimLoteV2823=function(v){setLote(v)};
+  window.normalizeSimV2823=normalizeInputs;
+  window.calcSim=function(){
+    const s=capture(), lots=getLots(), l=(STATE.lotes||[]).find(x=>String(x.id)===String(s.lote))||lots[0];
+    if(!l){if(el('simResult'))el('simResult').innerHTML='<div class="sim-v2823-error">Nenhum lote simulável encontrado. Sincronize ou confira a planilha.</div>';return null}
+    const area=parseBR(l.area);const precoBase=baseM2(l);const precoM2=parseBR(s.precoM2Manual)||precoBase;
     const valorTabela=round2(area*precoM2);
-    const descPct=Math.max(0,parseDecimal(s.desconto));
-    const economia=round2(valorTabela*(descPct/100));
+    const descPct=clamp(parseBR(s.desconto),0,100);
+    const economia=round2(valorTabela*descPct/100);
     const valorNegociado=round2(valorTabela-economia);
-    const entrada=round2(valorNegociado*(entradaPct/100));
+    const avista=s.cond==='avista';
+    const entradaPct=avista?100:clamp(parseBR(s.entradaPct),10,100);
+    const parcelas=avista?0:Math.max(0,Math.min(120,Math.round(parseBR(s.parcelas)||0)));
+    const entrada=round2(valorNegociado*entradaPct/100);
     const saldo=round2(Math.max(valorNegociado-entrada,0));
-    const hasFinance=!cash && saldo>0 && parcelas>0;
-    const pmt=hasFinance?price(saldo,parcelas,MONTH_RATE):0;
-    const sacInfo=hasFinance?sac(saldo,parcelas,MONTH_RATE):null;
-    const ipca=hasFinance&&parcelas>36;
-    const validation=$('simValidation');
-    if(validation){
-      validation.className='sim-v2822-alert '+((!cash&&(entradaPct<10||entradaPct>100))?'warn':'ok');
-      validation.innerHTML=(ipca?'<b>Atenção:</b> acima de 36 parcelas há IPCA não projetado. ':'')+'Juros auditados: 12% a.a. = 0,948879% a.m. Fórmulas Price/SAC aplicadas sobre o saldo financiado.';
-    }
-    result.innerHTML='<div class="sim-v2822-result-card">'+
-      '<div class="sim-v2822-result-head"><div><h3>'+html(lotName(l))+'</h3><p>'+html(areaFmt(area))+' · '+html(l.rua||l.quadra||'-')+' · '+badgeSafe(l.status||'')+' · '+(cash?'À vista':'Com entrada de '+pctText(entradaPct))+'</p></div><div class="sim-v2822-total"><span>Valor negociado</span><b>'+brl(valorNegociado)+'</b><small>'+pctText(descPct)+' de desconto</small></div></div>'+
-      '<div class="sim-v2822-metrics">'+
-        metric('Valor de tabela',brl(valorTabela),'m² informado: '+brl(precoM2))+
-        metric('Economia',brl(economia),'desconto manual')+
-        metric('Entrada',brl(entrada),pctText(entradaPct))+
-        metric('Saldo financiado',hasFinance?brl(saldo):'Não se aplica')+
-        metric('Prazo',hasFinance?parcelas+' meses':'À vista')+
-      '</div>'+
-      (hasFinance?'<div class="sim-v2822-finance"><div class="sim-v2822-finance-card"><span>Price</span><b>'+brl(pmt)+'</b><small>parcela mensal · total '+brl(entrada+(pmt*parcelas))+'</small></div><div class="sim-v2822-finance-card"><span>SAC</span><b>'+brl(sacInfo.primeira)+'</b><small>1ª parcela · última '+brl(sacInfo.ultima)+' · total '+brl(entrada+sacInfo.total)+'</small></div></div>':'<div class="sim-v2822-finance"><div class="sim-v2822-finance-card"><span>Pagamento integral</span><b>'+brl(valorNegociado)+'</b><small>sem saldo financiado</small></div></div>')+
-      (s.observacao?'<div class="info sim-note-v22" style="margin-top:14px"><b>Observação:</b> '+html(s.observacao)+'</div>':'')+
-      '</div>'+(hasFinance?'<div class="table-card sim-compare v21-print-flow sim-installments-v22" style="margin-top:18px"><div class="ch"><div class="ch-ttl">Parcelamento comparativo · Price x SAC</div><span>'+parcelas+' parcelas</span></div>'+tabela(saldo,parcelas)+'</div>':'');
+    const hasFinance=!avista&&saldo>0&&parcelas>0;
+    const price=hasFinance?round2(calcPriceLocal(saldo,parcelas,MONTHLY_RATE)):0;
+    const sac=hasFinance?sacLocal(saldo,parcelas):null;
+    const data={l,valorTabela,descPct,economia,valorNegociado,precoM2,entradaPct,entrada,parcelas,saldo,hasFinance,price,sac,ipca:hasFinance&&parcelas>36,s};
+    if(el('simResult'))el('simResult').innerHTML=renderResult(data);
+    return data;
   };
-  window.chooseCondV22 = chooseCondV22 = setMode;
-  window.setSimFieldV22 = setSimFieldV22 = saveField;
-  window.normalizeEntradaV2822=function(){const el=$('simEntrada');if(!el)return;el.value=rawField(cleanPercentInput(el.value,10,100));saveField('entradaPct',el.value)};
-  window.normalizeParcelasV2822=function(){const el=$('simParcelas');if(!el)return;el.value=String(cleanParcelas(el.value));saveField('parcelas',el.value)};
-  window.normalizeDescontoV2822=function(){const el=$('simDesc');if(!el)return;let n=Math.max(0,parseDecimal(el.value));el.value=rawField(n);saveField('desconto',el.value)};
-  window.CALLIANDRA_SIMULADOR_BUILD=BUILD;
+  window.renderSimulador=function(selected=''){
+    const lots=getLots();let s=readState();if(selected)s.lote=selected;if(!lots.some(l=>String(l.id)===String(s.lote)))s.lote=lots[0]?.id||'';
+    const l=lots.find(x=>String(x.id)===String(s.lote));if(l && !parseBR(s.precoM2Manual))s.precoM2Manual=String(round2(baseM2(l))).replace('.',',');
+    if(s.cond==='avista'){s.entradaPct='100';s.parcelas='0'}
+    writeState(s);
+    const page=el('page-simulador');if(!page)return;
+    const printBtn=(typeof printActionsV19==='function')?printActionsV19('simulador'):`<button class="btn btn-ghost" onclick="printPage('simulador')">🖨 Imprimir / PDF</button>`;
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Preço do m², entrada e desconto digitáveis. Entrada mínima: 10%.</div></div><div class="sh-r">${printBtn}</div></div><div class="sim-v2823-wrap"><section class="sim-v2823-card no-print"><div class="sim-v2823-head"><div><b>Dados da simulação</b><span>Preencha a proposta. O cálculo usa sempre área do lote × valor do m² digitado.</span></div><div class="sim-v2823-badge">12% a.a. · ${pctText(MONTHLY_RATE*100,6)} a.m.</div></div><div class="sim-v2823-body"><div class="sim-v2823-row top"><div class="sim-v2823-field"><label>Nome do cliente</label><input id="simCliente" value="${safeEsc(s.cliente)}" oninput="setSimFieldV2823('cliente',this.value)"></div><div class="sim-v2823-field"><label>Responsável</label><input id="simResp" value="${safeEsc(s.responsavel)}" oninput="setSimFieldV2823('responsavel',this.value)"></div><div class="sim-v2823-field"><label>Lote</label><select id="simLote" onchange="setSimLoteV2823(this.value)">${lots.map(x=>`<option value="${safeEsc(x.id)}" ${String(x.id)===String(s.lote)?'selected':''}>${safeEsc(loteLabel(x))} · ${areaFmt(parseBR(x.area))} · ${brl(parseBR(x.valorTabela))} · ${safeEsc(x.status||'')}</option>`).join('')}</select></div></div><div class="sim-v2823-row money"><div class="sim-v2823-field compact"><label>Valor do m²</label><input id="simPrecoM2" type="text" inputmode="decimal" value="${safeEsc(s.precoM2Manual)}" oninput="setSimFieldV2823('precoM2Manual',this.value)" onblur="normalizeSimV2823()"></div><div class="sim-v2823-field"><label>Forma de pagamento</label><div class="sim-v2823-pay"><button type="button" class="${s.cond==='avista'?'on':''}" onclick="setSimPayV2823('avista')">À vista</button><button type="button" class="${s.cond!=='avista'?'on':''}" onclick="setSimPayV2823('entrada')">Com entrada</button></div></div><div class="sim-v2823-field compact"><label>Entrada (%)</label><input id="simEntrada" type="text" inputmode="decimal" value="${safeEsc(s.entradaPct)}" ${s.cond==='avista'?'disabled':''} oninput="setSimFieldV2823('entradaPct',this.value)" onblur="normalizeSimV2823()"><small>10 a 100</small></div><div class="sim-v2823-field compact"><label>Nº parcelas</label><input id="simParcelas" type="text" inputmode="numeric" value="${safeEsc(s.parcelas)}" ${s.cond==='avista'?'disabled':''} oninput="setSimFieldV2823('parcelas',this.value)" onblur="normalizeSimV2823()"><small>até 120</small></div><div class="sim-v2823-field compact"><label>Desconto (%)</label><input id="simDesc" type="text" inputmode="decimal" value="${safeEsc(s.desconto)}" oninput="setSimFieldV2823('desconto',this.value)" onblur="normalizeSimV2823()"></div></div><div class="sim-v2823-row obs"><div class="sim-v2823-field"><label>Observação da proposta</label><input id="simObs" value="${safeEsc(s.observacao)}" placeholder="Condição, validade ou observação comercial" oninput="setSimFieldV2823('observacao',this.value)"></div></div><div class="sim-v2823-actions"><button type="button" class="btn btn-terra" onclick="calcSim()">Atualizar simulação</button></div></div></section><div id="simResult" class="sim-v2823-result"></div></div>`;
+    window.calcSim();
+  };
+  try{renderSimulador=window.renderSimulador;calcSim=window.calcSim;}catch(e){}
+  try{if(typeof currentPage==='function' && currentPage()==='simulador')window.renderSimulador();}catch(e){}
+  window.CALLIANDRA_SIM_BUILD=BUILD;
 })();
 </script>
 
