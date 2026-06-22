@@ -5987,5 +5987,150 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
   window.CALLIANDRA_SAFE_HOTFIX_BUILD=BUILD;
 })();
 </script>
+
+<script>
+/* V28.41 — Auditoria real de Dashboard/Vendas/Relatórios/Projeções
+   Critério operacional consolidado pelo gestor:
+   KR abril-junho = 13 unidades (3 anteriores + Narlo/José + Lúcia + 8 vendas/pedidos do lançamento).
+   Esta camada não altera planilha nem Apps Script; apenas corrige leitura gerencial e evita repetição entre páginas. */
+(function(){
+  'use strict';
+  const BUILD='V28.41';
+  const META_UNIDADES=23;
+  const META_VGV=4000000;
+  const PREVISAO_CARLOS_MENDES=852000;
+  const CANON_KR = [{"id": "kr-baru-27-eliana-20260501", "quadra": "Baru", "rua": "Rua Baru", "lote": "27", "cliente": "Eliana", "data": "2026-05-01", "status": "Vendido", "valorFinal": 480000.0, "valorTabela": 523828.08, "recebimentoMaio": 480000.0, "recebimentoJunho": 0, "recebimentoJulho": 0, "recebimentoAgosto": 0, "comissaoPct": 5.5, "comissaoValor": 26400.0, "corretor": "GM Imóveis", "inKR": true, "obs": "Venda anterior ao lançamento; entra no KR abril-junho."}, {"id": "kr-araca-19-eric-20260501", "quadra": "Araçá", "rua": "Rua Araçá", "lote": "19", "cliente": "Eric", "data": "2026-05-01", "status": "Vendido", "valorFinal": 380000.0, "valorTabela": 414669.07, "recebimentoMaio": 50000.0, "recebimentoJunho": 30000.0, "recebimentoJulho": 30000.0, "recebimentoAgosto": 270000.0, "comissaoPct": 5.5, "comissaoValor": 20900.0, "corretor": "Humanize", "inKR": true, "obs": "R$ 50 mil em maio, R$ 30 mil em junho, R$ 30 mil em julho e saldo posterior."}, {"id": "kr-baru-10-edson-20260612", "quadra": "Baru", "rua": "Rua Baru", "lote": "10", "cliente": "Edson Luiz Gonçalves Monteiro", "data": "2026-06-12", "status": "Contrato", "valorFinal": 485000.0, "valorTabela": 497638.02, "recebimentoMaio": 0, "recebimentoJunho": 165000.0, "recebimentoJulho": 64000.0, "recebimentoAgosto": 256000.0, "comissaoPct": 4.84, "comissaoValor": 23475.0, "corretor": "MW IMOBILIÁRIA LTDA", "inKR": true, "obs": "Sinal em junho; cinco parcelas de R$ 64 mil de julho a novembro."}, {"id": "kr-araticum-20-narlo-20260620", "quadra": "Araticum", "rua": "Rua Araticum", "lote": "20", "cliente": "Narlo José Matos Rezende", "data": "2026-06-20", "status": "Vendido", "valorFinal": 373162.34, "valorTabela": 420891.43, "recebimentoMaio": 0, "recebimentoJunho": 373162.34, "recebimentoJulho": 0, "recebimentoAgosto": 0, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "José/Narlo. À vista conforme ficha; comissão a validar."}, {"id": "kr-baru-38-lucia-20260620", "quadra": "Baru", "rua": "Rua Baru", "lote": "38", "cliente": "Lúcia Vilaça Vieira", "data": "2026-06-20", "status": "Vendido", "valorFinal": 471396.24, "valorTabela": 531689.87, "recebimentoMaio": 0, "recebimentoJunho": 450000.0, "recebimentoJulho": 7132.08, "recebimentoAgosto": 14264.16, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "Lúcia. Fluxo conforme ficha; comissão a validar."}, {"id": "kr-araca-13-danielle-20260620", "quadra": "Araçá", "rua": "Rua Araçá", "lote": "13", "cliente": "Danielle Cristinel Gustmao de Souza", "data": "2026-06-20", "status": "Vendido", "valorFinal": 547760.27, "valorTabela": 547760.31, "recebimentoMaio": 0, "recebimentoJunho": 27388.35, "recebimentoJulho": 27778.8, "recebimentoAgosto": 493374.0, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "Lançamento. Comissão/parceiro a validar."}, {"id": "kr-araticum-8-carlos-20260620", "quadra": "Araticum", "rua": "Rua Araticum", "lote": "8", "cliente": "Carlos Henrique Miranda Lopes", "data": "2026-06-20", "status": "Vendido", "valorFinal": 547760.46, "valorTabela": 547760.31, "recebimentoMaio": 0, "recebimentoJunho": 27388.02, "recebimentoJulho": 27778.45, "recebimentoAgosto": 824594.05, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "Lançamento. Comissão/parceiro a validar."}, {"id": "kr-baru-7-rafael-20260620", "quadra": "Baru", "rua": "Rua Baru", "lote": "7", "cliente": "Rafael Bismarke Lima e Silva", "data": "2026-06-20", "status": "Vendido", "valorFinal": 547760.31, "valorTabela": 547760.31, "recebimentoMaio": 0, "recebimentoJunho": 22313.1, "recebimentoJulho": 18828.94, "recebimentoAgosto": 824643.11, "comissaoPct": 4.5, "comissaoValor": 24649.21, "corretor": "MW IMOBILIÁRIA LTDA", "inKR": true, "obs": "Lançamento; comissão MW 4,5%."}, {"id": "kr-baru-24-karyta-20260620", "quadra": "Baru", "rua": "Rua Baru", "lote": "24", "cliente": "Karyta Moura Alabarce Bove", "data": "2026-06-20", "status": "Vendido", "valorFinal": 514131.92, "valorTabela": 514131.92, "recebimentoMaio": 0, "recebimentoJunho": 19553.85, "recebimentoJulho": 19553.85, "recebimentoAgosto": 808497.3, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "Lançamento. Comissão/parceiro a validar."}, {"id": "kr-baru-32-elen-20260620", "quadra": "Baru", "rua": "Rua Baru", "lote": "32", "cliente": "ELEN LUCI LOBÃO RAMOS DA SILVA", "data": "2026-06-20", "status": "Vendido", "valorFinal": 547760.31, "valorTabela": 547760.31, "recebimentoMaio": 0, "recebimentoJunho": 20000.0, "recebimentoJulho": 12788.98, "recebimentoAgosto": 797033.68, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "Lançamento. Comissão/parceiro a validar."}, {"id": "kr-baru-44-tarciana-20260620", "quadra": "Baru", "rua": "Rua Baru", "lote": "44", "cliente": "Tarciana Paula Gomes Medeiros", "data": "2026-06-20", "status": "Vendido", "valorFinal": 684820.44, "valorTabela": 684820.44, "recebimentoMaio": 0, "recebimentoJunho": 34241.08, "recebimentoJulho": 34729.21, "recebimentoAgosto": 1030922.41, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "obs": "Lançamento. Comissão/parceiro a validar."}, {"id": "kr-araticum-26-pendente-20260620", "quadra": "Araticum", "rua": "Rua Araticum", "lote": "26", "cliente": "VALIDAR CLIENTE - ARATICUM 26", "data": "2026-06-20", "status": "Vendido - sinal pendente", "valorFinal": 573662.22, "valorTabela": 573662.22, "recebimentoMaio": 0, "recebimentoJunho": 0, "recebimentoJulho": 0, "recebimentoAgosto": 0, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "pendenciaSinal": true, "obs": "Vendido gerencialmente; sinal ainda não confirmado. 50% + 120."}, {"id": "kr-araca-43-pendente-20260620", "quadra": "Araçá", "rua": "Rua Araçá", "lote": "43", "cliente": "VALIDAR CLIENTE - ARAÇÁ 43", "data": "2026-06-20", "status": "Vendido - sinal pendente", "valorFinal": 755915.08, "valorTabela": 755915.08, "recebimentoMaio": 0, "recebimentoJunho": 0, "recebimentoJulho": 0, "recebimentoAgosto": 0, "comissaoPct": 0, "comissaoValor": 0, "corretor": "Validar", "inKR": true, "pendenciaSinal": true, "obs": "Vendido gerencialmente; sinal ainda não confirmado. 50% + 120."}];
+  const CANON_GLOBAL = [{"id": "global-baru-12-fabio-20260619", "quadra": "Baru", "rua": "Rua Baru", "lote": "12", "cliente": "Fabio Ronan Miranda Alves", "data": "2026-06-19", "status": "Vendido", "valorFinal": 521056.42, "valorTabela": 531688.44, "recebimentoMaio": 0, "recebimentoJunho": 79474.14, "recebimentoJulho": 69474.14, "recebimentoAgosto": 592312.94, "comissaoPct": 5.5, "comissaoValor": 28658.1, "corretor": "Validar", "inKR": false, "obs": "Venda de 19/06. Mantida no acumulado; fora do KR 13/23 desta validação gerencial."}];
+  function el(id){return document.getElementById(id)}
+  function txt(v){return String(v==null?'':v)}
+  function norm(v){return txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/rua\s+/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  function num(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null||v==='')return 0;let s=String(v).replace(/R\$/g,'').replace(/\s/g,'');if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');else if(s.includes(','))s=s.replace(',','.');let n=Number(s);return isFinite(n)?n:0}
+  function brl(v){return num(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+  function brlShort(v){let n=Math.abs(num(v)); if(n>=1000000)return 'R$ '+(num(v)/1000000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' mi'; return brl(v)}
+  function esc(v){return txt(v).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
+  function loteKey(s){return norm((s.quadra||s.rua||'')+' '+(s.lote||''))}
+  function loteNome(s){return (s.quadra||s.rua||'Lote')+' '+(s.lote||'')}
+  function monthKey(date){let s=txt(date); if(/^\d{4}-\d{2}/.test(s))return s.slice(0,7); let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m)return m[3]+'-'+m[2].padStart(2,'0'); return '2026-06'}
+  function monthLabel(ym){const [y,m]=ym.split('-'); const names=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return names[Number(m)-1]+'/'+String(y).slice(2)}
+  function saleFromAny(c){
+    if(!c)return null;
+    const quadra = c.quadra || c.rua || '';
+    const lote = txt(c.lote||'').replace(/\.0$/,'').trim();
+    if(!lote && !c.cliente)return null;
+    return {
+      id:c.id||c.id_venda||c.idVenda||'', data:c.data||c.data_venda||c.dataCadastro||c.data_cadastro||'',
+      quadra: (typeof quadraNome==='function'?quadraNome(quadra):quadra)||quadra, rua:c.rua||quadra, lote,
+      cliente:c.cliente||c.nome_cliente||c.nome||'', status:c.status||c.status_venda||'Vendido',
+      valorTabela:num(c.valorTabela||c.valor_tabela||c.valor_lote||c.preco_tabela), valorFinal:num(c.valorFinal||c.valor_final||c.valor_negociado||c.valor_venda||c.valor||c.valor_contratado),
+      recebimentoMaio:num(c.recebimentoMaio||c.recebimento_maio||c.maio), recebimentoJunho:num(c.recebimentoJunho||c.recebimento_junho||c.junho),
+      recebimentoJulho:num(c.recebimentoJulho||c.recebimento_julho||c.julho), recebimentoAgosto:num(c.recebimentoAgosto||c.recebimento_agosto||c.agosto),
+      comissaoPct:num(c.comissaoPct||c.comissao_percentual||c.percentual_comissao), comissaoValor:num(c.comissaoValor||c.comissao_valor||c.valor_comissao),
+      corretor:c.corretor||c.imobiliaria||c.imobiliária||c.parceiro||c.parceiro_comercial||'', origem:c.origem||c.origem_lead||'', formaPagamento:c.formaPagamento||c.forma_pagamento||c.pagamento||'',
+      obs:c.obs||c.observacao||c.observação||c.fluxo||c.fluxo_resumo||'', pendenciaSinal: /pendente|validar/.test(norm(c.status+' '+c.cliente+' '+c.obs+' '+c.observacao))
+    };
+  }
+  function isSold(s){const n=norm(s.status);return !/excluido|cancelado|permuta/.test(n) && /vend|contrato|reserva/.test(n)}
+  function dedupeByLot(arr){const map=new Map(); (arr||[]).forEach(raw=>{const s=saleFromAny(raw); if(!s||!isSold(s))return; const k=loteKey(s); if(!k)return; if(!map.has(k)) map.set(k,s);}); return Array.from(map.values());}
+  function allSales(){
+    const base=[];
+    try{ if(Array.isArray(window.VENDAS_FIXAS)) base.push(...window.VENDAS_FIXAS); }catch(e){}
+    try{ if(window.STATE&&Array.isArray(STATE.contratos)) base.push(...STATE.contratos); }catch(e){}
+    const merged=dedupeByLot(base);
+    const map=new Map(merged.map(s=>[loteKey(s),s]));
+    CANON_GLOBAL.forEach(s=>map.set(loteKey(s),saleFromAny(s)));
+    CANON_KR.forEach(s=>map.set(loteKey(s),saleFromAny(s)));
+    return Array.from(map.values()).filter(Boolean);
+  }
+  function krSales(){return CANON_KR.map(saleFromAny).filter(Boolean)}
+  function commission(s){return num(s.comissaoValor)||(num(s.comissaoPct)>0?num(s.valorFinal)*num(s.comissaoPct)/100:0)}
+  function flowJun(s){return num(s.recebimentoMaio)+num(s.recebimentoJunho)}
+  function flowFuture(s){return num(s.recebimentoJulho)+num(s.recebimentoAgosto)}
+  function sum(arr,fn){return (arr||[]).reduce((a,x)=>a+fn(x),0)}
+  function model(){
+    const kr=krSales(), all=allSales();
+    const vgv=sum(kr,s=>num(s.valorFinal));
+    const com=sum(kr,commission);
+    const ateJun=sum(kr,flowJun);
+    const jul=sum(kr,s=>num(s.recebimentoJulho));
+    const ago=sum(kr,s=>num(s.recebimentoAgosto));
+    const pend=kr.filter(s=>s.pendenciaSinal||/pendente|validar cliente/.test(norm(s.status+' '+s.cliente+' '+s.obs)));
+    const comPend=kr.filter(s=>commission(s)===0 && !s.pendenciaSinal && !/direta|nao se aplica|não se aplica/.test(norm(s.corretor)));
+    return {kr,all,units:kr.length,metaUnits:META_UNIDADES,vgv,comissao:com,pos:vgv-com,ateJun,jul,ago,futuro:jul+ago,pendencias:pend,comissoesPendentes:comPend,percentUnits:Math.round(kr.length/META_UNIDADES*100),percentVgv:Math.round(vgv/META_VGV*100),faltam:Math.max(META_UNIDADES-kr.length,0)};
+  }
+  function kpi(label,value,sub,type=''){
+    return `<div class="v2841-kpi ${type}"><small>${esc(label)}</small><strong>${esc(value)}</strong><span>${esc(sub||'')}</span></div>`
+  }
+  function progress(label,a,b){const p=b?Math.min(100,Math.round(num(a)/num(b)*100)):0;return `<div class="v2841-prog"><div><b>${esc(label)}</b><em>${p}%</em></div><span><i style="width:${p}%"></i></span><small>${brl(a)} de ${brl(b)}</small></div>`}
+  function table(rows,cols){return `<div class="v2841-table"><table><thead><tr>${cols.map(c=>`<th>${esc(c[0])}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${typeof c[1]==='function'?c[1](r):esc(r[c[1]]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+  function style(){
+    if(document.getElementById('v2841-style'))return;
+    const css=`
+    .v2841-note{background:#fff7e7;border:1px solid #f0d4a4;color:#70490f;border-radius:14px;padding:12px 16px;margin:14px 0;font-size:14px}.v2841-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:15px 0 20px}.v2841-kpi{background:#fff;border:1px solid var(--borda,#ddd);border-radius:18px;padding:18px 20px;min-height:116px;border-top:4px solid #173d37;box-shadow:0 10px 25px rgba(0,0,0,.04);overflow:hidden}.v2841-kpi.red{border-top-color:#ac4a4a}.v2841-kpi.orange{border-top-color:#e8924c}.v2841-kpi small{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:900;color:#777;margin-bottom:8px}.v2841-kpi strong{display:block;color:#073b35;font-size:clamp(24px,2vw,36px);line-height:1.05;white-space:normal;word-break:normal}.v2841-kpi span{display:block;margin-top:8px;color:#7a7772;font-size:13px}.v2841-grid2{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.v2841-card{background:#fff;border:1px solid var(--borda,#ddd);border-radius:20px;padding:20px;margin-bottom:18px;box-shadow:0 8px 22px rgba(0,0,0,.035)}.v2841-card h3{margin:0 0 10px;color:#073b35;text-transform:uppercase;letter-spacing:.08em;font-size:14px}.v2841-prog{margin:14px 0}.v2841-prog div{display:flex;justify-content:space-between;color:#073b35;font-weight:900}.v2841-prog em{font-style:normal}.v2841-prog span{display:block;height:9px;background:#eee5d7;border-radius:999px;overflow:hidden;margin-top:7px}.v2841-prog i{display:block;height:100%;background:#ac4a4a;border-radius:999px}.v2841-prog small{display:block;margin-top:6px;color:#7a7772}.v2841-table{overflow:auto;border-radius:16px;border:1px solid #e2dbcf}.v2841-table table{width:100%;border-collapse:separate;border-spacing:0;min-width:920px}.v2841-table th{background:#123f38;color:white;text-align:left;padding:12px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}.v2841-table td{padding:12px 14px;border-bottom:1px solid #eee;vertical-align:top}.v2841-table tr:last-child td{border-bottom:0}.v2841-pill{display:inline-flex;padding:4px 9px;border-radius:999px;background:#f3dada;color:#a33b3b;font-weight:900;font-size:12px}.v2841-ok{background:#e8f6ef;color:#0c6a3e}.v2841-warn{background:#fff3dc;color:#8a5700}.v2841-list{display:grid;gap:8px;margin-top:10px}.v2841-list div{background:#fbf7ef;border:1px solid #eee1cc;border-radius:12px;padding:10px 12px}.v2841-chart{background:#fff;border:1px solid #e2dbcf;border-radius:18px;padding:14px;overflow:auto}.v2841-chart svg{display:block;width:100%;min-width:980px;height:auto}.v2841-legend{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:12px;font-weight:900;color:#173d37}.v2841-legend i{display:inline-block;width:24px;height:3px;margin-right:6px;vertical-align:middle}.v2841-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.v2841-mini{background:#fbf7ef;border:1px solid #eadfce;border-radius:14px;padding:12px}.v2841-mini b{display:block;color:#073b35;font-size:20px}.v2841-mini span{color:#777;font-size:12px}.v2841-section-title{font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#073b35;margin:20px 0 10px}@media(max-width:1100px){.v2841-kpis{grid-template-columns:repeat(2,1fr)}.v2841-grid2{grid-template-columns:1fr}.v2841-mini-grid{grid-template-columns:1fr}}`;
+    const s=document.createElement('style');s.id='v2841-style';s.textContent=css;document.head.appendChild(s);
+  }
+  function renderDashboardFinal(){style(); const m=model(); const page=el('page-dashboard'); if(!page)return;
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">Visão geral confiável do KR abril-junho, sem repetir relatório operacional.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="v2841-note"><b>${BUILD} · critério validado:</b> KR abril-junho com <b>13/23 unidades</b>. VGV e caixa abaixo consideram as 13 vendas indicadas; Araticum 26 e Araçá 43 entram como vendidos, mas sem caixa até sinal confirmado. Carlos/Mendes R$ 852.000,00 fica separado como previsão, não caixa realizado.</div>
+    <div class="v2841-kpis">
+      ${kpi('Vendas no KR',`${m.units}/${m.metaUnits}`,`${m.percentUnits}% da meta de unidades`)}
+      ${kpi('VGV no KR',brl(m.vgv),`${m.percentVgv}% de ${brl(META_VGV)}`)}
+      ${kpi('Bruto recebido até jun',brl(m.ateJun),'entradas cadastradas até junho','orange')}
+      ${kpi('A receber futuro',brl(m.futuro),'julho + agosto/posterior')}
+      ${kpi('VGV pós-comissão',brl(m.pos),'comissões cadastradas/provisionadas')}
+      ${kpi('Faltam unidades',String(m.faltam),'para 23 unidades','red')}
+      ${kpi('Pendência de sinal',String(m.pendencias.length),'Araticum 26 e Araçá 43','red')}
+      ${kpi('Previsão Carlos/Mendes',brl(PREVISAO_CARLOS_MENDES),'a confirmar até 30/06','orange')}
+    </div>
+    <div class="v2841-grid2">
+      <div class="v2841-card"><h3>Meta abril-junho</h3>${progress('Meta financeira / VGV',m.vgv,META_VGV)}${progress('Meta de unidades',m.units,META_UNIDADES)}<div class="v2841-note"><b>Leitura para reunião:</b> a meta financeira foi superada em VGV; a meta de unidades está em 13/23, faltando 10 unidades.</div></div>
+      <div class="v2841-card"><h3>Caixa e pendências</h3><div class="v2841-mini-grid"><div class="v2841-mini"><b>${brl(m.ateJun)}</b><span>bruto até junho</span></div><div class="v2841-mini"><b>${brl(m.jul)}</b><span>previsão julho</span></div><div class="v2841-mini"><b>${brl(m.ago)}</b><span>ago/posterior</span></div></div><div class="v2841-list"><div><b>Pendências:</b> ${m.pendencias.map(loteNome).join(', ')||'sem pendência crítica'}</div><div><b>Comissões a validar:</b> ${m.comissoesPendentes.length} venda(s) com parceiro/comissão sem confirmação.</div></div></div>
+    </div>`;
+    updateSideFinal();
+  }
+  function renderVendasFinal(){style(); const m=model(); const page=el('page-contratos'); if(!page)return; const rows=m.kr.slice().sort((a,b)=>monthKey(a.data).localeCompare(monthKey(b.data))||loteNome(a).localeCompare(loteNome(b),'pt-BR',{numeric:true}));
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Vendas</div><div class="sub">Tela operacional: vendas globais e conferência do KR. Dashboard é resumo; projeções ficam em Cenários.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('contratos')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+      <div class="v2841-kpis">${kpi('Vendas KR',`${m.units}/${META_UNIDADES}`,'abril, maio e junho')}${kpi('VGV KR',brl(m.vgv),'13 vendas consideradas')}${kpi('Bruto até junho',brl(m.ateJun),'recebimentos cadastrados')}${kpi('Futuro a receber',brl(m.futuro),'julho + agosto/posterior')}</div>
+      <div class="v2841-card"><h3>Fluxo mensal executivo</h3><div class="v2841-mini-grid"><div class="v2841-mini"><b>${brl(sum(rows,s=>num(s.recebimentoMaio)))}</b><span>Maio</span></div><div class="v2841-mini"><b>${brl(sum(rows,s=>num(s.recebimentoJunho)))}</b><span>Junho</span></div><div class="v2841-mini"><b>${brl(m.jul)}</b><span>Julho</span></div></div><div style="margin-top:12px" class="v2841-mini"><b>${brl(m.ago)}</b><span>Agosto ou posterior / carteira</span></div></div>
+      <div class="v2841-card"><h3>Vendas consideradas no KR</h3>${table(rows,[['Lote',r=>`<b>${esc(loteNome(r))}</b><br><small>${esc(r.obs||'')}</small>`],['Cliente',r=>esc(r.cliente)],['Data',r=>esc((r.data||'').replace(/(\d{4})-(\d{2})-(\d{2})/,'$3/$2/$1'))],['VGV',r=>`<b>${brl(r.valorFinal)}</b>`],['Comissão',r=>commission(r)?brl(commission(r)):'<span class="v2841-pill v2841-warn">validar</span>'],['Até jun',r=>brl(flowJun(r))],['Julho',r=>brl(r.recebimentoJulho)],['Ago+',r=>brl(r.recebimentoAgosto)],['Status',r=>`<span class="v2841-pill ${r.pendenciaSinal?'v2841-warn':'v2841-ok'}">${esc(r.status)}</span>`]])}</div>`;
+  }
+  function renderRelatoriosFinal(){style(); const m=model(); const page=el('page-relatorios'); if(!page)return; const byRua={}; m.kr.forEach(s=>{const k=s.quadra||s.rua||'Sem rua'; byRua[k]=(byRua[k]||0)+1}); const byCor={}; m.kr.forEach(s=>{const k=s.corretor||'Validar'; byCor[k]=(byCor[k]||0)+num(s.valorFinal)}); const dupes=[]; const seen={}; allSales().forEach(s=>{const k=loteKey(s); seen[k]=(seen[k]||0)+1}); Object.keys(seen).forEach(k=>{if(seen[k]>1)dupes.push(k)});
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Auditoria gerencial</div><div class="sub">Esta página não repete o Dashboard: aponta riscos, pendências e conciliações para a reunião.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('relatorios')">🖨 Imprimir / PDF</button></div></div>
+    <div class="v2841-kpis">${kpi('Unidades KR auditadas',`${m.units}/${META_UNIDADES}`,'critério validado')}${kpi('VGV KR auditado',brl(m.vgv),'base de decisão')}${kpi('Pendências de sinal',String(m.pendencias.length),m.pendencias.map(loteNome).join(', '),'red')}${kpi('Comissões a validar',String(m.comissoesPendentes.length),'não afeta VGV bruto','orange')}</div>
+    <div class="v2841-grid2"><div class="v2841-card"><h3>Pontos de atenção</h3><div class="v2841-list"><div><b>1. Caixa:</b> Araticum 26 e Araçá 43 ficam vendidos no VGV, mas sem entrada reconhecida até confirmação do sinal.</div><div><b>2. Carlos/Mendes:</b> ${brl(PREVISAO_CARLOS_MENDES)} é previsão gerencial até 30/06; não tratar como recebido.</div><div><b>3. Comissão:</b> ${m.comissoesPendentes.length} venda(s) precisam confirmar parceiro/comissão antes do líquido final.</div><div><b>4. Duplicidades:</b> ${dupes.length?dupes.join(', '):'nenhuma duplicidade crítica encontrada na leitura final por lote.'}</div></div></div><div class="v2841-card"><h3>Distribuição</h3><div class="v2841-list"><div><b>Por rua:</b> ${Object.entries(byRua).map(([k,v])=>esc(k)+': '+v).join(' · ')}</div><div><b>Por parceiro/VGV:</b> ${Object.entries(byCor).map(([k,v])=>esc(k)+': '+brl(v)).join(' · ')}</div></div></div></div>`;
+  }
+  function projectionRows(){
+    const obra=(Array.isArray(window.OBRA_DESEMBOLSO_V19)&&window.OBRA_DESEMBOLSO_V19.length)?window.OBRA_DESEMBOLSO_V19:[
+      {ym:'2026-04',mes:'Abr/26',acum:553353.18},{ym:'2026-05',mes:'Mai/26',acum:1526852.59},{ym:'2026-06',mes:'Jun/26',acum:2529507.82},{ym:'2026-07',mes:'Jul/26',acum:3649046.95},{ym:'2026-08',mes:'Ago/26',acum:4754309.18},{ym:'2026-12',mes:'Dez/26',acum:10084133.41},{ym:'2027-12',mes:'Dez/27',acum:13309372.44}];
+    const months=['2026-03',...obra.map(o=>o.ym)].filter((v,i,a)=>a.indexOf(v)===i);
+    const m=model(); const sales=m.kr;
+    const byMonth={}; months.forEach(x=>byMonth[x]={ym:x,mes:monthLabel(x),vgv:0,cash:0,com:0,obra:(obra.find(o=>o.ym===x)||{}).acum||0});
+    sales.forEach(s=>{const ym=monthKey(s.data); if(!byMonth[ym])byMonth[ym]={ym,mes:monthLabel(ym),vgv:0,cash:0,com:0,obra:0}; byMonth[ym].vgv+=num(s.valorFinal)-commission(s); byMonth[ym].com+=commission(s); byMonth['2026-05']&&(byMonth['2026-05'].cash+=num(s.recebimentoMaio)); byMonth['2026-06']&&(byMonth['2026-06'].cash+=num(s.recebimentoJunho)); byMonth['2026-07']&&(byMonth['2026-07'].cash+=num(s.recebimentoJulho)); byMonth['2026-08']&&(byMonth['2026-08'].cash+=num(s.recebimentoAgosto));});
+    let v=0,c=0,obraLast=0; return Object.keys(byMonth).sort().map(ym=>{const r=byMonth[ym]; v+=r.vgv; c+=r.cash-r.com; if(r.obra)obraLast=r.obra; return {ym,mes:r.mes,vgvAcum:v,caixaAcum:c,obraAcum:obraLast,prevCarlos:ym>='2026-06'?PREVISAO_CARLOS_MENDES:0};});
+  }
+  function chart(rows){
+    const W=1100,H=360,p={l:72,r:20,t:26,b:58}; const max=Math.max(1,...rows.flatMap(r=>[r.vgvAcum,r.caixaAcum,r.obraAcum,r.caixaAcum+r.prevCarlos]));
+    const X=i=>p.l+(W-p.l-p.r)*(rows.length<=1?0:i/(rows.length-1)); const Y=v=>H-p.b-(H-p.t-p.b)*(v/max);
+    const line=k=>rows.map((r,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(r[k]).toFixed(1)).join(' ');
+    const ticks=[.25,.5,.75,1].map(t=>`<line x1="${p.l}" y1="${Y(max*t)}" x2="${W-p.r}" y2="${Y(max*t)}" stroke="#eee5d7"/><text x="10" y="${Y(max*t)+4}" font-size="11" fill="#7d756d">${brlShort(max*t)}</text>`).join('');
+    const labels=rows.map((r,i)=>`<text x="${X(i)-16}" y="${H-18}" font-size="10" fill="#7d756d">${r.mes}</text>`).join('');
+    return `<div class="v2841-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="VGV pós-comissão, caixa líquido, desembolso da obra e previsão Carlos/Mendes">${ticks}<path d="${line('vgvAcum')}" fill="none" stroke="#e8924c" stroke-width="4"/><path d="${line('caixaAcum')}" fill="none" stroke="#173d37" stroke-width="4"/><path d="${line('obraAcum')}" fill="none" stroke="#ac4a4a" stroke-width="4"/><path d="${rows.map((r,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(r.caixaAcum+r.prevCarlos).toFixed(1)).join(' ')}" fill="none" stroke="#2368b4" stroke-width="3" stroke-dasharray="7 6"/>${labels}</svg><div class="v2841-legend"><span><i style="background:#e8924c"></i>VGV pós-comissão acumulado</span><span><i style="background:#173d37"></i>Caixa líquido acumulado</span><span><i style="background:#ac4a4a"></i>Desembolso acumulado da obra</span><span><i style="background:#2368b4"></i>Caixa + previsão Carlos/Mendes</span></div></div>`;
+  }
+  function renderCenariosFinal(){style(); const m=model(); const rows=projectionRows(); const final=rows[rows.length-1]||{}; const page=el('page-cenarios'); if(!page)return;
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Cenários e Projeções</div><div class="sub">Visão de futuro: vendas realizadas, carteira a receber, previsão Carlos/Mendes e desembolso da obra.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('cenarios')">🖨 Imprimir / PDF</button></div></div>
+    <div class="v2841-kpis">${kpi('VGV KR pós-comissão',brl(m.pos),'base econômica')}${kpi('Caixa líquido final projetado',brl(final.caixaAcum||0),'sem Carlos/Mendes')}${kpi('Caixa + Carlos/Mendes',brl((final.caixaAcum||0)+PREVISAO_CARLOS_MENDES),'previsão a confirmar','orange')}${kpi('Obra acumulada final',brl(final.obraAcum||0),'cronograma incorporado','red')}</div>
+    <div class="v2841-card"><h3>Curva de decisão: caixa x obra</h3>${chart(rows)}<div class="v2841-note"><b>Como ler:</b> VGV mostra valor econômico contratado; caixa mostra recebimentos cadastrados; obra mostra desembolso planejado. A linha azul é simulação com Carlos/Mendes, sem reconhecer como caixa confirmado.</div></div>
+    <div class="v2841-card"><h3>Tabela mensal resumida</h3>${table(rows,[['Mês',r=>esc(r.mes)],['VGV pós-comissão acumulado',r=>brl(r.vgvAcum)],['Caixa líquido acumulado',r=>brl(r.caixaAcum)],['Caixa + Carlos/Mendes',r=>brl(r.caixaAcum+r.prevCarlos)],['Desembolso obra acumulado',r=>brl(r.obraAcum)],['Cobertura sem Carlos',r=>`<b>${brl(r.caixaAcum-r.obraAcum)}</b>`]])}</div>`;
+  }
+  function updateSideFinal(){try{const m=model(); const sr=el('sideReal'), sp=el('sidePct'); if(sr)sr.textContent=brl(m.vgv); if(sp)sp.textContent=m.percentVgv+'% da meta';}catch(e){}}
+  function install(){
+    window.CALLIANDRA_GERENCIAL_V2841={build:BUILD,model};
+    window.renderDashboard=renderDashboardFinal; window.renderVendas=renderVendasFinal; window.renderRelatorios=renderRelatoriosFinal; window.renderCenarios=renderCenariosFinal; window.updateSide=updateSideFinal;
+    try{renderDashboard=window.renderDashboard;renderVendas=window.renderVendas;renderRelatorios=window.renderRelatorios;renderCenarios=window.renderCenarios;updateSide=window.updateSide;}catch(e){}
+  }
+  install();
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){install(); try{ if((document.querySelector('.sb-item.on')||{}).dataset?.page==='dashboard')renderDashboardFinal(); updateSideFinal(); }catch(e){}},500)});
+})();
+</script>
+
 </body>
 </html>
