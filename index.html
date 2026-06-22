@@ -5298,5 +5298,225 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
 window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
 </script>
 
+<script>
+/* V28.30 — correção final controlada do modal Nova Venda.
+   Escopo único: campo Corretor/Imobiliária, comissão e gravação de nova venda.
+   Não altera dashboard, simulador, orçamento, mapa, relatórios, Apps Script, login ou sincronização. */
+(function(){
+  'use strict';
+  const BUILD='v28.30-modal-nova-venda-parceiros-limpo';
+
+  function $(key){return document.getElementById(key)}
+  function txt(v){return String(v==null?'':v)}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+  function norm30(v){
+    try{ if(typeof norm==='function') return norm(v); }catch(e){}
+    return txt(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  }
+  function num30(v){
+    try{ if(typeof n==='function') return n(v); }catch(e){}
+    const s=txt(v).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',', '.');
+    return Number(s)||0;
+  }
+  function money30(v){
+    try{ if(typeof money==='function') return money(v); }catch(e){}
+    return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  }
+  function area30(v){
+    const n=Number(v)||0;
+    const hasMil=n && Math.abs(n*100-Math.round(n*100))>0.0001;
+    return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:hasMil?3:2})+' m²';
+  }
+  function readVal(id){const el=$(id);return el?el.value:''}
+  function writeVal(id,value){const el=$(id);if(el)el.value=value}
+  function lotLabel30(l,p){
+    const nome=(typeof lotName==='function')?lotName(l):((l&&l.rua?('Rua '+l.rua):'Lote')+' · Lote '+(l&&l.lote||''));
+    const st=l&&l.status?(' · '+l.status):'';
+    return nome+' · '+area30((p&&p.area)||(l&&l.area)||0)+' · '+money30((p&&p.valorTabela)||(l&&l.valorTabela)||0)+st;
+  }
+  function price30(l){
+    try{ if(typeof window.calliandraPrecoVendaV2828==='function') return window.calliandraPrecoVendaV2828(l); }catch(e){}
+    const area=num30(l&&l.area);
+    const tabela=num30(l&&l.valorTabela);
+    const pm=area?tabela/area:0;
+    return {area:area,precoM2:pm,valorTabela:tabela,fonte:'Base de lotes'};
+  }
+  function currentLot30(){
+    const sel=$('ctLote');
+    const loteId=sel?sel.value:'';
+    const all=(STATE&&Array.isArray(STATE.lotes)?STATE.lotes:[]);
+    return all.find(l=>txt(l.id)===txt(loteId)) || (typeof simulaveis==='function'?simulaveis():[])[0] || null;
+  }
+
+  const PARTNERS=[
+    {nome:'House',categoria:'Prata',comissao:4.5,aliases:['house','houseup','house up']},
+    {nome:'Humanize',categoria:'Prata',comissao:4.5,aliases:['humanize','humanis','humanize negocios imobiliarios']},
+    {nome:'GM Imóveis',categoria:'Prata',comissao:4.5,aliases:['gm','gm imoveis','gm imóveis']},
+    {nome:'Beira-Mar',categoria:'Ouro',comissao:5.0,aliases:['beira-mar','beiramar','beira mar']},
+    {nome:'Torres Imob',categoria:'Prata',comissao:4.5,aliases:['torres','torres imob','torres imobiliaria','torres imobiliária']},
+    {nome:'MW IMOBILIÁRIA LTDA',categoria:'Prata',comissao:4.5,aliases:['mw','mw imobiliaria','mw imobiliária','mw imobiliaria ltda','mw imobiliária ltda']},
+    {nome:'Venda direta / UP',categoria:'Direta',comissao:0,aliases:['venda direta','up','direta','sem corretagem']},
+    {nome:'Não se aplica',categoria:'',comissao:0,aliases:['nao se aplica','não se aplica','permuta']}
+  ];
+  function canonicalPartner(name){
+    const k=norm30(name);
+    if(!k) return null;
+    for(const p of PARTNERS){
+      if(norm30(p.nome)===k || (p.aliases||[]).some(a=>norm30(a)===k)) return p;
+      if(k.includes('house')) return PARTNERS[0];
+      if(k.includes('human')) return PARTNERS[1];
+      if(k==='gm'||k.includes('gm im')) return PARTNERS[2];
+      if(k.includes('beira')) return PARTNERS[3];
+      if(k.includes('torres')) return PARTNERS[4];
+      if(k.includes('mw imobili')) return PARTNERS[5];
+    }
+    return null;
+  }
+  function partnerOptions30(selected){
+    const canon=canonicalPartner(selected);
+    const selectedName=canon?canon.nome:txt(selected||'');
+    const opts=['<option value="">Selecione</option>'];
+    PARTNERS.forEach(p=>{
+      const sub=p.categoria?(p.categoria+' · '+String(p.comissao).replace('.',',')+'%'):(String(p.comissao).replace('.',',')+'%');
+      opts.push('<option value="'+esc(p.nome)+'" '+(selectedName===p.nome?'selected':'')+'>'+esc(p.nome+' — '+sub)+'</option>');
+    });
+    opts.push('<option value="__outro__" '+(!canon && selectedName?'selected':'')+'>Outro parceiro / digitar manualmente</option>');
+    return opts.join('');
+  }
+  function getPartner30(){
+    const sel=readVal('ctCorretorSelect');
+    if(sel==='__outro__') return readVal('ctCorretorOutro').trim();
+    return sel.trim();
+  }
+  function setPartnerUi30(){
+    const sel=readVal('ctCorretorSelect');
+    const other=$('ctCorretorOutro');
+    if(other){ other.style.display=sel==='__outro__'?'block':'none'; }
+    const p=canonicalPartner(getPartner30());
+    const info=$('ctParceiroInfo');
+    if(info){
+      info.textContent=p?('Categoria: '+(p.categoria||'—')+' · Comissão padrão: '+String(p.comissao).replace('.',',')+'%'):(sel==='__outro__'?'Parceiro digitado manualmente. Informe a comissão conforme regra aprovada.':'Selecione o parceiro.');
+    }
+  }
+  window.calliandraParceiroSelecionadoV2830=getPartner30;
+  window.handleParceiroVendaV2830=function(){
+    setPartnerUi30();
+    const p=canonicalPartner(getPartner30());
+    if(p && $('ctComissaoPct')) $('ctComissaoPct').value=String(p.comissao).replace('.',',');
+    if(typeof window.calcComissaoCampo==='function') window.calcComissaoCampo();
+  };
+  function pctFromEdit30(edit){
+    if(!edit) return 0;
+    const vt=num30(edit.valorTabela), vf=num30(edit.valorFinal);
+    return vt?Math.max((vt-vf)/vt*100,0):0;
+  }
+  function selectOpts30(list,value){
+    return list.map(x=>'<option value="'+esc(x)+'" '+(txt(x)===txt(value)?'selected':'')+'>'+esc(x)+'</option>').join('');
+  }
+
+  window.openContrato=function(cid=''){
+    try{ editId=cid; }catch(e){ window.editId=cid; }
+    const vendas=(typeof vendasGerenciais==='function'?vendasGerenciais():[]);
+    const edit=vendas.find(c=>c.id===cid)||(STATE&&Array.isArray(STATE.contratos)?STATE.contratos:[]).find(c=>c.id===cid)||null;
+    const lots=edit?(STATE&&Array.isArray(STATE.lotes)?STATE.lotes:[]):((typeof simulaveis==='function'?simulaveis():[])||[]);
+    const selectedLot=edit?(STATE.lotes||[]).find(l=>{
+      const sameRua=(typeof same==='function')?same(l.quadra||l.rua,edit.quadra||edit.rua):norm30(l.quadra||l.rua)===norm30(edit.quadra||edit.rua);
+      return sameRua && txt(l.lote)===txt(edit.lote);
+    }):lots[0];
+    const rows=lots.map(l=>{const p=price30(l);return '<option value="'+esc(l.id)+'" '+(selectedLot&&txt(selectedLot.id)===txt(l.id)?'selected':'')+'>'+esc(lotLabel30(l,p))+'</option>';}).join('');
+    const initialPartner=edit&&edit.corretor?edit.corretor:'';
+    const canon=canonicalPartner(initialPartner);
+    const customInitial=canon?'':initialPartner;
+    const title=edit?'Editar venda':'Nova venda';
+    openModal(title,
+      '<div class="fr c3">'+
+        '<div class="field"><label>Data</label><input id="ctData" type="date" value="'+esc((edit&&edit.data)||today())+'"></div>'+
+        '<div class="field"><label>Cliente</label><input id="ctCliente" value="'+esc((edit&&edit.cliente)||'')+'"></div>'+
+        '<div class="field"><label>Status</label><select id="ctStatus">'+selectOpts30(['Proposta','Reserva','Contrato','Vendido','Pago','Permutado','Cancelado','Excluído'],(edit&&edit.status)||'Proposta')+'</select></div>'+
+      '</div>'+
+      '<div class="fr c2">'+
+        '<div class="field"><label>Lote</label><select id="ctLote" onchange="fillContratoLote();calcComissaoCampo()">'+rows+'</select><small id="ctFonteTabela" style="color:var(--muted)"></small></div>'+
+        '<div class="field"><label>Corretor / Imobiliária</label><select id="ctCorretorSelect" onchange="handleParceiroVendaV2830()">'+partnerOptions30(initialPartner)+'</select><input id="ctCorretorOutro" value="'+esc(customInitial)+'" oninput="setTimeout(function(){calcComissaoCampo()},0)" placeholder="Digite o parceiro" style="display:none;margin-top:8px"><small id="ctParceiroInfo" style="color:var(--muted)"></small></div>'+
+      '</div>'+
+      '<div class="fr c4">'+
+        '<div class="field"><label>Área</label><input id="ctArea" disabled></div>'+
+        '<div class="field"><label>Valor tabela</label><input id="ctTabela" disabled></div>'+
+        '<div class="field"><label>Desconto (%)</label><input id="ctDesc" inputmode="decimal" value="'+esc(edit?pctFromEdit30(edit):0)+'" oninput="calcContratoValor();calcComissaoCampo()"></div>'+
+        '<div class="field"><label>Valor negociado</label><input id="ctFinal" inputmode="decimal" value="'+esc((edit&&edit.valorFinal)||0)+'" oninput="calcComissaoCampo()"></div>'+
+      '</div>'+
+      '<div class="fr c4">'+
+        '<div class="field"><label>Comissão (%)</label><input id="ctComissaoPct" inputmode="decimal" value="'+esc(edit?(edit.comissaoPct||''):'')+'" oninput="calcComissaoCampo()"></div>'+
+        '<div class="field"><label>Comissão R$</label><input id="ctComissaoValor" disabled></div>'+
+        '<div class="field"><label>Líquido UP</label><input id="ctLiquido" disabled></div>'+
+        '<div class="field"><label>Origem do lead</label><input id="ctOrigem" value="'+esc((edit&&edit.origem)||'')+'"></div>'+
+      '</div>'+
+      '<div class="fr c4">'+
+        '<div class="field"><label>Receb. Maio</label><input id="ctMaio" inputmode="decimal" value="'+esc((edit&&edit.recebimentoMaio)||0)+'"></div>'+
+        '<div class="field"><label>Receb. Junho</label><input id="ctJunho" inputmode="decimal" value="'+esc((edit&&edit.recebimentoJunho)||0)+'"></div>'+
+        '<div class="field"><label>Receb. Julho</label><input id="ctJulho" inputmode="decimal" value="'+esc((edit&&edit.recebimentoJulho)||0)+'"></div>'+
+        '<div class="field"><label>Agosto ou posterior</label><input id="ctAgosto" inputmode="decimal" value="'+esc((edit&&edit.recebimentoAgosto)||0)+'"></div>'+
+      '</div>'+
+      '<div class="field"><label>Forma de pagamento</label><input id="ctForma" value="'+esc((edit&&edit.formaPagamento)||'')+'"></div>'+
+      '<div class="field"><label>Fluxo / observação</label><textarea id="ctFluxo">'+esc((edit&&(edit.fluxo||edit.obs))||'')+'</textarea></div>',
+      '<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-terra" onclick="saveContrato()">Salvar venda</button>'
+    );
+    setPartnerUi30();
+    handleParceiroVendaV2830();
+    fillContratoLote(edit);
+    calcComissaoCampo();
+  };
+
+  window.fillContratoLote=function(edit=null){
+    const l=currentLot30(); if(!l) return;
+    const px=price30(l);
+    const p=edit?{area:num30(edit.area)||px.area,valorTabela:num30(edit.valorTabela)||px.valorTabela,precoM2:px.precoM2,fonte:'Venda existente'}:px;
+    writeVal('ctArea',area30(p.area));
+    writeVal('ctTabela',money30(p.valorTabela));
+    if($('ctFonteTabela')) $('ctFonteTabela').textContent=(p.fonte||'Tabela de Lançamento V3')+(p.precoM2?' · m²: '+money30(p.precoM2):'');
+    if(!edit) writeVal('ctFinal',(Number(p.valorTabela)||0).toFixed(2));
+    if(typeof window.calcComissaoCampo==='function') window.calcComissaoCampo();
+  };
+  window.calcContratoValor=function(){
+    const base=num30(readVal('ctTabela'));
+    const desc=num30(readVal('ctDesc'));
+    writeVal('ctFinal',(base*(1-desc/100)).toFixed(2));
+  };
+  window.calcComissaoCampo=function(){
+    const vf=num30(readVal('ctFinal'));
+    const pct=num30(readVal('ctComissaoPct'));
+    const com=vf*pct/100;
+    writeVal('ctComissaoValor',money30(com));
+    writeVal('ctLiquido',money30(vf-com));
+  };
+  window.saveContrato=function(){
+    const l=currentLot30(); if(!l){ if(typeof toast==='function') toast('Selecione um lote válido.','err'); return; }
+    const p=price30(l);
+    const partner=getPartner30();
+    const c={
+      id:(typeof editId!=='undefined'&&editId)?editId:(typeof uid==='function'?uid():'VENDA-'+Date.now()),
+      data:readVal('ctData'),cliente:readVal('ctCliente'),status:readVal('ctStatus'),
+      quadra:l.quadra||l.rua||'',rua:l.rua||l.quadra||'',lote:l.lote,area:p.area,valorTabela:p.valorTabela,valorFinal:num30(readVal('ctFinal')),
+      corretor:partner,origem:readVal('ctOrigem'),formaPagamento:readVal('ctForma'),
+      recebimentoMaio:num30(readVal('ctMaio')),recebimentoJunho:num30(readVal('ctJunho')),recebimentoJulho:num30(readVal('ctJulho')),recebimentoAgosto:num30(readVal('ctAgosto')),
+      fluxo:readVal('ctFluxo'),comissaoPct:num30(readVal('ctComissaoPct'))
+    };
+    c.desconto=Math.max((c.valorTabela||0)-(c.valorFinal||0),0);
+    c.comissaoValor=c.valorFinal*c.comissaoPct/100;
+    c.valorLiquidoUP=c.valorFinal-c.comissaoValor;
+    STATE.contratos=Array.isArray(STATE.contratos)?STATE.contratos:[];
+    const exists=STATE.contratos.some(x=>txt(x.id)===txt(c.id));
+    STATE.contratos=exists?STATE.contratos.map(x=>txt(x.id)===txt(c.id)?c:x):[c,...STATE.contratos];
+    try{ if(typeof safeSet==='function') safeSet('calliandra_v9_local_contratos',JSON.stringify(STATE.contratos)); }catch(e){}
+    try{ if(typeof saveLocal==='function') saveLocal(); }catch(e){}
+    try{ if(typeof persistVenda==='function') persistVenda(c); else if(typeof toast==='function') toast('Venda salva localmente. Apps Script não disponível.','err'); }catch(e){ if(typeof toast==='function') toast('Venda salva localmente. Falha ao acionar gravação na planilha.','err'); }
+    try{ closeModal(); }catch(e){}
+    if(typeof toast==='function') toast('Venda registrada no sistema. Aguardando confirmação da planilha.');
+    try{ if(typeof renderVendas==='function') renderVendas(); }catch(e){}
+    try{ if(typeof updateSide==='function') updateSide(); }catch(e){}
+  };
+
+  window.CALLIANDRA_SALE_MODAL_BUILD=BUILD;
+})();
+</script>
 </body>
 </html>
