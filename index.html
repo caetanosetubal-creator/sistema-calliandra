@@ -5137,6 +5137,120 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
 </script>
 
 
+
+<script>
+/* V28.28 — correção controlada: Nova Venda passa a usar a Tabela de Lançamento V3.
+   Escopo: somente modal/cadastro de nova venda. Não altera vendas históricas, orçamento, mapa,
+   corretores, login, Apps Script, sincronização nem status da planilha. */
+(function(){
+  const BUILD='v28.28-nova-venda-tabela-lancamento-v3';
+  const PRICE_TABLE=[{"rua":"Araticum","lote":"2","garantia":false,"area":367.539,"tipo":"Esquina","fator":1.06,"precoM2":1560.82,"valorTabela":573662.22,"entrada50":286831.11,"parcela120Entrada50":4014.12,"entrada30":172098.67,"parcela120Entrada30":5619.77,"entrada15":86049.33,"parcela120Entrada15":6824.0},{"rua":"Araticum","lote":"4","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"6","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"8","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"10","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"12","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"14","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"16","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araticum","lote":"26","garantia":false,"area":367.539,"tipo":"Esquina","fator":1.06,"precoM2":1560.82,"valorTabela":573662.22,"entrada50":286831.11,"parcela120Entrada50":4014.12,"entrada30":172098.67,"parcela120Entrada30":5619.77,"entrada15":86049.33,"parcela120Entrada15":6824.0},{"rua":"Baru","lote":"2","garantia":false,"area":367.539,"tipo":"Esquina","fator":1.06,"precoM2":1560.82,"valorTabela":573662.22,"entrada50":286831.11,"parcela120Entrada50":4014.12,"entrada30":172098.67,"parcela120Entrada30":5619.77,"entrada15":86049.33,"parcela120Entrada15":6824.0},{"rua":"Baru","lote":"4","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"5","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"6","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"7","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"9","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"11","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"12","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"13","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"15","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"18","garantia":true,"area":368.88,"tipo":"Área Lazer","fator":0.95,"precoM2":1398.85,"valorTabela":516007.79,"entrada50":258003.9,"parcela120Entrada50":3610.69,"entrada30":154802.34,"parcela120Entrada30":5054.97,"entrada15":77401.17,"parcela120Entrada15":6138.18},{"rua":"Baru","lote":"21","garantia":true,"area":397.58,"tipo":"Área Lazer II","fator":0.9,"precoM2":1325.22,"valorTabela":526880.97,"entrada50":263440.49,"parcela120Entrada50":3686.78,"entrada30":158064.29,"parcela120Entrada30":5161.49,"entrada15":79032.15,"parcela120Entrada15":6267.52},{"rua":"Baru","lote":"24","garantia":false,"area":367.539,"tipo":"Área Lazer","fator":0.95,"precoM2":1398.85,"valorTabela":514131.93,"entrada50":257065.97,"parcela120Entrada50":3597.57,"entrada30":154239.58,"parcela120Entrada30":5036.59,"entrada15":77119.79,"parcela120Entrada15":6115.86},{"rua":"Baru","lote":"25","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"26","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"28","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"30","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"31","garantia":false,"area":744.002,"tipo":"Acima de 500m²","fator":0.85,"precoM2":1251.6,"valorTabela":931192.9,"entrada50":465596.45,"parcela120Entrada50":6515.89,"entrada30":279357.87,"parcela120Entrada30":9122.25,"entrada15":139678.94,"parcela120Entrada15":11077.01},{"rua":"Baru","lote":"32","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"34","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"36","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Baru","lote":"44","garantia":true,"area":547.156,"tipo":"Acima de 500m²","fator":0.85,"precoM2":1251.6,"valorTabela":684820.45,"entrada50":342410.23,"parcela120Entrada50":4791.93,"entrada30":205446.14,"parcela120Entrada30":6708.71,"entrada15":102723.07,"parcela120Entrada15":8146.29},{"rua":"Araçá","lote":"13","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araçá","lote":"29","garantia":false,"area":372.001,"tipo":"Padrão","fator":1.0,"precoM2":1472.47,"valorTabela":547760.31,"entrada50":273880.16,"parcela120Entrada50":3832.88,"entrada30":164328.09,"parcela120Entrada30":5366.03,"entrada15":82164.05,"parcela120Entrada15":6515.89},{"rua":"Araçá","lote":"41","garantia":false,"area":744.002,"tipo":"Acima de 500m²","fator":0.85,"precoM2":1251.6,"valorTabela":931192.9,"entrada50":465596.45,"parcela120Entrada50":6515.89,"entrada30":279357.87,"parcela120Entrada30":9122.25,"entrada15":139678.94,"parcela120Entrada15":11077.01},{"rua":"Araçá","lote":"43","garantia":true,"area":603.959,"tipo":"Acima de 500m²","fator":0.85,"precoM2":1251.6,"valorTabela":755915.08,"entrada50":377957.54,"parcela120Entrada50":5289.41,"entrada30":226774.52,"parcela120Entrada30":7405.17,"entrada15":113387.26,"parcela120Entrada15":8992.0}];
+  function $(id){return document.getElementById(id)}
+  function n(v){
+    if(typeof v==='number')return isFinite(v)?v:0;
+    let s=String(v==null?'':v).trim().replace(/R\$|%|\s/g,'');
+    if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');
+    else if(s.includes(','))s=s.replace(',','.');
+    s=s.replace(/[^0-9.\-]/g,'');
+    const x=parseFloat(s);return isFinite(x)?x:0;
+  }
+  function money(v){return typeof BRL==='function'?BRL(v):Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+  function area(v){return typeof AREA==='function'?AREA(v):Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m²'}
+  function esc2(v){return String(v==null?'':v).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+  function norm(v){return String(v==null?'':v).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/rua\s+/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  function cleanLot(v){return String(v==null?'':v).replace(/\*/g,'').replace(/\.0$/,'').trim()}
+  function key(rua,lote){return norm(rua)+'|'+cleanLot(lote)}
+  function lotName(l){try{return loteNome(l)}catch(e){return ((l&&l.rua)||(l&&l.quadra)||'Rua')+' · Lote '+((l&&l.lote)||'')}}
+  function launchInfo(l){
+    if(!l)return null;
+    const k=key((l.quadra||l.rua||''),l.lote);
+    return PRICE_TABLE.find(r=>key(r.rua,r.lote)===k)||null;
+  }
+  function priceInfo(l){
+    const launch=launchInfo(l);
+    if(launch){return {area:n(launch.area),precoM2:n(launch.precoM2),valorTabela:n(launch.valorTabela),tipo:launch.tipo||'',fonte:'Tabela de Lançamento V3'};}
+    const a=n(l&&l.area), pm=n(l&&l.precoM2), vt=n(l&&l.valorTabela)||a*pm;
+    return {area:a,precoM2:pm,valorTabela:vt,tipo:(l&&l.tipo)||'',fonte:'Base original'};
+  }
+  function currentSaleLot(){
+    const sel=$('ctLote');
+    const id=sel?sel.value:'';
+    return (STATE&&STATE.lotes?STATE.lotes:[]).find(x=>String(x.id)===String(id)) || (typeof simulaveis==='function'?simulaveis():[])[0];
+  }
+  function pctDescFrom(edit){
+    if(!edit)return 0;
+    const vt=n(edit.valorTabela), vf=n(edit.valorFinal);
+    return vt?Math.max((vt-vf)/vt*100,0):0;
+  }
+  window.calliandraPrecoVendaV2828=function(l){return priceInfo(l)};
+
+  window.openContrato=function(cid=''){
+    editId=cid;
+    const edit=(typeof vendasGerenciais==='function'?vendasGerenciais():[]).find(c=>c.id===cid)||(STATE.contratos||[]).find(c=>c.id===cid);
+    const lots=edit?(STATE.lotes||[]):(typeof simulaveis==='function'?simulaveis():[]);
+    const lot=edit?(STATE.lotes||[]).find(l=>same(l.quadra,edit.quadra)&&String(l.lote)===String(edit.lote)):lots[0];
+    const rows=lots.map(l=>{const p=priceInfo(l);return `<option value="${esc2(l.id)}" ${lot&&lot.id===l.id?'selected':''}>${esc2(lotName(l))} · ${area(p.area)} · ${money(p.valorTabela)} · ${esc2(l.status||'')}</option>`;}).join('');
+    openModal(edit?'Editar venda':'Nova venda',
+      `<div class="fr c3"><div class="field"><label>Data</label><input id="ctData" type="date" value="${esc2(edit?.data||today())}"></div><div class="field"><label>Cliente</label><input id="ctCliente" value="${esc2(edit?.cliente||'')}"></div><div class="field"><label>Status</label><select id="ctStatus">${opts(['Proposta','Reserva','Contrato','Vendido','Pago','Permutado','Cancelado','Excluído'],edit?.status||'Proposta')}</select></div></div>`+
+      `<div class="fr c2"><div class="field"><label>Lote</label><select id="ctLote" onchange="fillContratoLote();calcComissaoCampo()">${rows}</select><small id="ctFonteTabela" style="color:var(--muted)"></small></div><div class="field"><label>Corretor / imobiliária</label><select id="ctCorretor" onchange="calcComissaoCampo()">${opts((STATE.corretores||[]).map(c=>c.nome),edit?.corretor||'')}</select></div></div>`+
+      `<div class="fr c4"><div class="field"><label>Área</label><input id="ctArea" disabled></div><div class="field"><label>Valor tabela</label><input id="ctTabela" disabled></div><div class="field"><label>Desconto (%)</label><input id="ctDesc" type="number" step="0.01" value="${edit?pctDescFrom(edit):0}" oninput="calcContratoValor();calcComissaoCampo()"></div><div class="field"><label>Valor negociado</label><input id="ctFinal" type="number" value="${edit?.valorFinal||0}" oninput="calcComissaoCampo()"></div></div>`+
+      `<div class="fr c4"><div class="field"><label>Comissão (%)</label><input id="ctComissaoPct" type="number" step="0.01" value="${edit?comissaoPctVenda(edit):''}" oninput="calcComissaoCampo()"></div><div class="field"><label>Comissão R$</label><input id="ctComissaoValor" disabled></div><div class="field"><label>Líquido UP</label><input id="ctLiquido" disabled></div><div class="field"><label>Origem do lead</label><input id="ctOrigem" value="${esc2(edit?.origem||'')}"></div></div>`+
+      `<div class="fr c4"><div class="field"><label>Receb. Maio</label><input id="ctMaio" type="number" value="${edit?.recebimentoMaio||0}"></div><div class="field"><label>Receb. Junho</label><input id="ctJunho" type="number" value="${edit?.recebimentoJunho||0}"></div><div class="field"><label>Receb. Julho</label><input id="ctJulho" type="number" value="${edit?.recebimentoJulho||0}"></div><div class="field"><label>Agosto ou posterior</label><input id="ctAgosto" type="number" value="${edit?.recebimentoAgosto||0}"></div></div>`+
+      `<div class="field"><label>Forma de pagamento</label><input id="ctForma" value="${esc2(edit?.formaPagamento||'')}" oninput="calcComissaoCampo()"></div><div class="field"><label>Fluxo / observação</label><textarea id="ctFluxo">${esc2(edit?.fluxo||edit?.obs||'')}</textarea></div>`,
+      `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-terra" onclick="saveContrato()">Salvar venda</button>`
+    );
+    fillContratoLote(edit||null);
+    calcComissaoCampo();
+  };
+
+  window.fillContratoLote=function(edit=null){
+    const l=currentSaleLot(); if(!l)return;
+    const p=edit?{area:n(edit.area)||priceInfo(l).area,valorTabela:n(edit.valorTabela)||priceInfo(l).valorTabela,precoM2:priceInfo(l).precoM2,fonte:'Venda existente'}:priceInfo(l);
+    if($('ctArea'))$('ctArea').value=area(p.area);
+    if($('ctTabela'))$('ctTabela').value=money(p.valorTabela);
+    if($('ctFonteTabela'))$('ctFonteTabela').textContent=(p.fonte||'')+(p.precoM2?' · m²: '+money(p.precoM2):'');
+    if(!edit && $('ctFinal'))$('ctFinal').value=Number(p.valorTabela||0).toFixed(2);
+  };
+  window.calcContratoValor=function(){
+    const base=n($('ctTabela')?$('ctTabela').value:0);
+    const desc=n($('ctDesc')?$('ctDesc').value:0);
+    if($('ctFinal'))$('ctFinal').value=(base*(1-desc/100)).toFixed(2);
+  };
+  const previousCalcComissao=window.calcComissaoCampo;
+  window.calcComissaoCampo=function(){
+    const l=currentSaleLot();
+    const tmp={quadra:l?.quadra||'',lote:l?.lote||'',status:$('ctStatus')?$('ctStatus').value:'',formaPagamento:$('ctForma')?$('ctForma').value:'',valorFinal:n($('ctFinal')?$('ctFinal').value:0),comissaoPct:$('ctComissaoPct')?$('ctComissaoPct').value:''};
+    if($('ctComissaoPct')&&!$('ctComissaoPct').value&&typeof comissaoPctVenda==='function')$('ctComissaoPct').value=comissaoPctVenda(tmp);
+    const pct=n($('ctComissaoPct')?$('ctComissaoPct').value:0), vf=n($('ctFinal')?$('ctFinal').value:0), cv=vf*pct/100;
+    if($('ctComissaoValor'))$('ctComissaoValor').value=money(cv);
+    if($('ctLiquido'))$('ctLiquido').value=money(vf-cv);
+  };
+  window.saveContrato=function(){
+    const l=currentSaleLot(); if(!l)return toast('Selecione um lote válido.','err');
+    const p=priceInfo(l);
+    const c={
+      id:editId||uid(),data:val('ctData'),cliente:val('ctCliente'),status:val('ctStatus'),
+      quadra:l.quadra,rua:l.rua,lote:l.lote,area:p.area,valorTabela:p.valorTabela,valorFinal:n(val('ctFinal')),
+      corretor:val('ctCorretor'),origem:val('ctOrigem'),formaPagamento:val('ctForma'),
+      recebimentoMaio:n(val('ctMaio')),recebimentoJunho:n(val('ctJunho')),recebimentoJulho:n(val('ctJulho')),recebimentoAgosto:n(val('ctAgosto')),
+      fluxo:val('ctFluxo'),comissaoPct:n(val('ctComissaoPct'))
+    };
+    c.desconto=Math.max((c.valorTabela||0)-(c.valorFinal||0),0);
+    c.comissaoValor=typeof comissaoValorVenda==='function'?comissaoValorVenda(c):(c.valorFinal*c.comissaoPct/100);
+    c.valorLiquidoUP=typeof valorLiquidoUP==='function'?valorLiquidoUP(c):(c.valorFinal-c.comissaoValor);
+    const exists=(STATE.contratos||[]).some(x=>x.id===c.id);
+    STATE.contratos=exists?STATE.contratos.map(x=>x.id===c.id?c:x):[c,...(STATE.contratos||[])];
+    safeSet('calliandra_v9_local_contratos',JSON.stringify(STATE.contratos));
+    if(typeof saveLocal==='function')saveLocal();
+    if(typeof persistVenda==='function')persistVenda(c);
+    closeModal();toast('Venda salva.');
+    if(typeof renderVendas==='function')renderVendas();
+    if(typeof updateSide==='function')updateSide();
+  };
+  window.CALLIANDRA_SALE_PRICE_BUILD=BUILD;
+})();
+</script>
+
 <script>
 window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
 </script>
