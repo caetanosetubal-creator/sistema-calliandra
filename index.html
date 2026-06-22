@@ -5758,5 +5758,175 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
 })();
 </script>
 
+
+<script>
+/* V28.33 — gravação rápida e estável no Apps Script.
+   Escopo: somente a ponte de gravação/pendências. Não altera telas, cálculo, lotes, preços ou vendas históricas.
+   Correções: teste usa ping leve; reenvio envia payload compacto; remove fluxo_json pesado da URL JSONP. */
+(function(){
+  'use strict';
+  const BUILD='v28.33-gravacao-rapida-apps-script';
+  const APPS_URL_KEY='calliandra_apps_script_url';
+  const LEGACY_URL_KEY='calliandra_sheets_api_url';
+  const PENDING_KEY='calliandra_pending_vendas_sheets';
+  function $(id){return document.getElementById(id);}
+  function toastSafe(msg,type){try{ if(typeof toast==='function') toast(msg,type||''); else console.log(msg); }catch(e){console.log(msg);} }
+  function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback;}catch(e){return fallback;}}
+  function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}}
+  function getAppsUrl(){
+    const a=(localStorage.getItem(APPS_URL_KEY)||'').trim();
+    const b=(localStorage.getItem(LEGACY_URL_KEY)||'').trim();
+    if(a) return a;
+    if(b && /^https:\/\/script\.google\.com\//i.test(b)) return b;
+    return '';
+  }
+  function saveAppsUrl(url){
+    const clean=String(url||'').trim();
+    if(clean){localStorage.setItem(APPS_URL_KEY,clean);localStorage.setItem(LEGACY_URL_KEY,clean);} return clean;
+  }
+  function parseNumber(v){
+    if(typeof v==='number') return isFinite(v)?v:0;
+    const raw=String(v==null?'':v).trim(); if(!raw) return 0;
+    const c=raw.replace(/[^0-9,.-]/g,'');
+    if(c.includes(',')&&c.includes('.')) return Number(c.replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'))||0;
+    if(c.includes(',')) return Number(c.replace(',','.'))||0;
+    return Number(c)||0;
+  }
+  function compactVendaValues(values){
+    const v=values||{};
+    const out={
+      id:v.id||v.id_venda||v.id_contrato||'',
+      id_venda:v.id_venda||v.id||'',
+      data:v.data||'',
+      cliente:v.cliente||'',
+      status:v.status||'',
+      quadra:v.quadra||'',
+      rua:v.rua||'',
+      lote:v.lote||'',
+      area_m2:v.area_m2||v.area||'',
+      valor_tabela:v.valor_tabela||v.valorTabela||'',
+      valor_final:v.valor_final||v.valorFinal||'',
+      desconto:v.desconto||'',
+      comissao_percentual:v.comissao_percentual||v.comissaoPct||'',
+      comissao_valor:v.comissao_valor||v.comissaoValor||'',
+      valor_liquido_up:v.valor_liquido_up||v.valorLiquidoUP||'',
+      corretor:v.corretor||v.imobiliaria||'',
+      imobiliaria:v.imobiliaria||v.corretor||'',
+      origem:v.origem||'',
+      forma_pagamento:v.forma_pagamento||v.formaPagamento||'',
+      recebimento_maio:0,
+      recebimento_junho:v.recebimento_junho||v.recebimentoJunho||0,
+      recebimento_julho:v.recebimento_julho||v.recebimentoJulho||0,
+      recebimento_agosto:v.recebimento_agosto||v.recebimentoAgosto||0,
+      entrada_valor:v.entrada_valor||v.entradaValor||'',
+      entrada_percentual:v.entrada_percentual||v.entradaPct||'',
+      entrada_data:v.entrada_data||v.entradaData||'',
+      saldo_parcelado:v.saldo_parcelado||v.saldoParcelado||'',
+      financiamento_parcelas:v.financiamento_parcelas||v.financiamentoParcelas||'',
+      primeira_parcela:v.primeira_parcela||v.primeiraParcela||'',
+      valor_parcela:v.valor_parcela||v.valorParcela||'',
+      fluxo:v.fluxo||v.observacao||'',
+      fluxo_resumo:v.fluxo_resumo||'',
+      atualizado_em:new Date().toISOString()
+    };
+    if(!out.fluxo_resumo){
+      const ent=parseNumber(out.entrada_valor), parc=parseNumber(out.valor_parcela), n=parseNumber(out.financiamento_parcelas);
+      if(ent||parc||n) out.fluxo_resumo='Entrada '+ent.toFixed(2)+' em '+(out.entrada_data||'-')+'; saldo em '+n+'x de '+parc.toFixed(2)+'; 1ª parcela '+(out.primeira_parcela||'-')+'.';
+    }
+    return out;
+  }
+  function vendaToCompact(c){
+    let v={}; try{ if(typeof window.vendaToSheet==='function') v=window.vendaToSheet(c)||{}; }catch(e){ v={}; }
+    // vendaToSheet pode carregar fluxo_json enorme. Compactamos para a escrita via JSONP.
+    const merged=Object.assign({},c||{},v||{});
+    return compactVendaValues(merged);
+  }
+  function jsonp(payload,timeoutMs){
+    const url=getAppsUrl();
+    if(!url) return Promise.reject(new Error('URL do Apps Script não configurada.'));
+    return new Promise(function(resolve,reject){
+      const cb='calliandra_v2833_cb_'+Date.now()+'_'+Math.floor(Math.random()*999999);
+      const sep=url.indexOf('?')>=0?'&':'?';
+      const script=document.createElement('script'); let finished=false;
+      const timer=setTimeout(function(){cleanup();reject(new Error('Tempo esgotado ao chamar Apps Script.'));},timeoutMs||25000);
+      function cleanup(){if(finished) return; finished=true; clearTimeout(timer); try{delete window[cb];}catch(e){window[cb]=undefined;} if(script&&script.parentNode) script.parentNode.removeChild(script);}
+      window[cb]=function(res){cleanup();resolve(res||{});};
+      script.onerror=function(){cleanup();reject(new Error('Falha ao carregar Apps Script. Verifique implantação e acesso.'));};
+      const q=encodeURIComponent(JSON.stringify(payload||{}));
+      script.src=url+sep+'callback='+encodeURIComponent(cb)+'&q='+q+'&_v=2833&_t='+Date.now();
+      document.head.appendChild(script);
+    });
+  }
+  function queue(values,reason){
+    const pending=readJson(PENDING_KEY,[]);
+    const compact=compactVendaValues(values||{});
+    const id=String(compact.id||compact.id_venda||'');
+    const idx=pending.findIndex(function(x){const vx=(x&&x.values)||{};return String(vx.id||vx.id_venda||'')===id && id;});
+    const item={sheet:'vendas',values:compact,reason:String(reason||''),createdAt:new Date().toISOString(),build:BUILD};
+    if(idx>=0) pending[idx]=item; else pending.push(item);
+    writeJson(PENDING_KEY,pending); updatePendingBadge();
+  }
+  async function upsert(values){
+    const compact=compactVendaValues(values||{});
+    const id=String(compact.id||compact.id_venda||'').trim();
+    const res=await jsonp({action:'upsertVendaCompact',sheet:'vendas',values:compact,id:id},25000);
+    if(!res || res.ok===false || res.success===false) throw new Error((res&&res.error)||'Apps Script não confirmou gravação.');
+    return res;
+  }
+  window.persistVenda=function(c){
+    const compact=vendaToCompact(c||{});
+    if(!getAppsUrl()){
+      queue(compact,'URL do Apps Script ausente');
+      toastSafe('Venda salva localmente. Configure a URL do Apps Script para gravar na planilha.','err');
+      return;
+    }
+    upsert(compact).then(function(){
+      toastSafe('Venda confirmada na planilha.');
+      try{ if(typeof syncManual==='function') setTimeout(syncManual,900); }catch(e){}
+    }).catch(function(err){
+      queue(compact,err&&err.message?err.message:err);
+      toastSafe('Venda salva localmente. A planilha não confirmou a atualização.','err');
+      console.warn('[Calliandra V28.33] gravação pendente',err);
+    });
+  };
+  window.calliandraTestAppsV2826=function(){
+    jsonp({action:'ping'},15000).then(function(res){
+      if(res&&res.ok!==false&&res.success!==false) toastSafe('Apps Script OK. Planilha acessível: '+(res.spreadsheetName||'Calliandra')+'.');
+      else toastSafe('Apps Script respondeu com erro: '+((res&&res.error)||'sem detalhe'),'err');
+    }).catch(function(e){toastSafe('Falha no Apps Script: '+(e&&e.message?e.message:e),'err');});
+  };
+  window.calliandraFlushPendenciasV2826=async function(){
+    const pending=readJson(PENDING_KEY,[]);
+    if(!pending.length){toastSafe('Não há vendas pendentes.'); updatePendingBadge(); return;}
+    if(!getAppsUrl()){toastSafe('Informe a URL do Apps Script antes de reenviar pendências.','err'); return;}
+    const remaining=[]; let ok=0;
+    for(const item of pending){
+      try{ await upsert(compactVendaValues((item&&item.values)||{})); ok++; }
+      catch(e){ remaining.push(Object.assign({},item,{values:compactVendaValues((item&&item.values)||{}),lastError:e&&e.message?e.message:String(e),lastTry:new Date().toISOString()})); }
+    }
+    writeJson(PENDING_KEY,remaining); updatePendingBadge();
+    toastSafe(ok+' venda(s) reenviada(s).'+(remaining.length?' '+remaining.length+' pendente(s).':''),remaining.length?'err':'');
+    try{ if(ok&&typeof syncManual==='function') setTimeout(syncManual,900); }catch(e){}
+  };
+  window.calliandraSaveAppsUrlV2826=function(){
+    const el=$('v2826AppsUrl'); const url=saveAppsUrl(el?el.value:''); toastSafe(url?'URL do Apps Script salva.':'URL vazia.',url?'':'err'); updatePendingBadge();
+  };
+  function updatePendingBadge(){const el=$('v2826PendingCount'); if(el) el.textContent=String(readJson(PENDING_KEY,[]).length);}
+  const oldRenderConfig=window.renderConfig;
+  window.renderConfig=function(){
+    if(typeof oldRenderConfig==='function') oldRenderConfig.apply(this,arguments);
+    setTimeout(function(){
+      const card=$('v2826WriteCard'); if(card){
+        const tag=card.querySelector('.b'); if(tag){tag.textContent='V28.33';}
+        const sub=card.querySelector('.sub'); if(sub){sub.textContent='Gravação por Apps Script com teste leve e envio compacto de vendas.';}
+      }
+      updatePendingBadge();
+    },60);
+  };
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(updatePendingBadge,800);});
+  window.CALLIANDRA_WRITE_BUILD=BUILD;
+})();
+</script>
+
 </body>
 </html>
