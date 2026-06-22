@@ -5184,6 +5184,44 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
   }
   window.calliandraPrecoVendaV2828=function(l){return priceInfo(l)};
 
+  function partnerOptionsV2829(selected){
+    const fixed=[
+      {nome:'House',categoria:'Prata',comissao:'4,5%'},
+      {nome:'HouseUP',categoria:'Prata',comissao:'4,5%'},
+      {nome:'Humanize',categoria:'Prata',comissao:'4,5%'},
+      {nome:'GM Imóveis',categoria:'Prata',comissao:'4,5%'},
+      {nome:'Beira-Mar',categoria:'Ouro',comissao:'5%'},
+      {nome:'Beiramar',categoria:'Ouro',comissao:'5%'},
+      {nome:'Torres Imob',categoria:'Prata',comissao:'4,5%'},
+      {nome:'MW IMOBILIÁRIA LTDA',categoria:'Prata',comissao:'4,5%'},
+      {nome:'Não informado',categoria:'',comissao:''}
+    ];
+    const state=(STATE&&Array.isArray(STATE.corretores)?STATE.corretores:[]).map(c=>({nome:c.nome||c.corretor||'',categoria:c.categoria||'',comissao:c.comissao||''}));
+    let sold=[];
+    try{sold=(typeof vendasGerenciais==='function'?vendasGerenciais():[]).map(v=>({nome:v.corretor||'',categoria:'',comissao:''}));}catch(e){sold=[];}
+    const map=new Map();
+    [...fixed,...state,...sold].forEach(c=>{
+      const nome=String(c.nome||'').trim(); if(!nome) return;
+      const k=norm(nome); if(!map.has(k)) map.set(k,c);
+    });
+    return Array.from(map.values()).sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')).map(c=>`<option value="${esc2(c.nome)}">${esc2((c.categoria?c.categoria+' · ':'')+(c.comissao||''))}</option>`).join('');
+  }
+  function partnerComissaoV2829(nome){
+    const all=[...(STATE&&Array.isArray(STATE.corretores)?STATE.corretores:[]),
+      {nome:'House',categoria:'Prata',comissao:'4,5%'},{nome:'HouseUP',categoria:'Prata',comissao:'4,5%'},{nome:'Humanize',categoria:'Prata',comissao:'4,5%'},{nome:'GM Imóveis',categoria:'Prata',comissao:'4,5%'},{nome:'Beira-Mar',categoria:'Ouro',comissao:'5%'},{nome:'Beiramar',categoria:'Ouro',comissao:'5%'},{nome:'Torres Imob',categoria:'Prata',comissao:'4,5%'},{nome:'MW IMOBILIÁRIA LTDA',categoria:'Prata',comissao:'4,5%'}];
+    const target=norm(nome);
+    const c=all.find(x=>norm(x.nome||'')===target);
+    if(!c) return null;
+    const pct=n(c.comissao||'');
+    if(pct) return pct;
+    const cat=norm(c.categoria||'');
+    if(cat.includes('platina')) return 5.5;
+    if(cat.includes('ouro')) return 5;
+    if(cat.includes('bronze')) return 4;
+    if(cat.includes('prata')) return 4.5;
+    return null;
+  }
+
   window.openContrato=function(cid=''){
     editId=cid;
     const edit=(typeof vendasGerenciais==='function'?vendasGerenciais():[]).find(c=>c.id===cid)||(STATE.contratos||[]).find(c=>c.id===cid);
@@ -5192,7 +5230,7 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
     const rows=lots.map(l=>{const p=priceInfo(l);return `<option value="${esc2(l.id)}" ${lot&&lot.id===l.id?'selected':''}>${esc2(lotName(l))} · ${area(p.area)} · ${money(p.valorTabela)} · ${esc2(l.status||'')}</option>`;}).join('');
     openModal(edit?'Editar venda':'Nova venda',
       `<div class="fr c3"><div class="field"><label>Data</label><input id="ctData" type="date" value="${esc2(edit?.data||today())}"></div><div class="field"><label>Cliente</label><input id="ctCliente" value="${esc2(edit?.cliente||'')}"></div><div class="field"><label>Status</label><select id="ctStatus">${opts(['Proposta','Reserva','Contrato','Vendido','Pago','Permutado','Cancelado','Excluído'],edit?.status||'Proposta')}</select></div></div>`+
-      `<div class="fr c2"><div class="field"><label>Lote</label><select id="ctLote" onchange="fillContratoLote();calcComissaoCampo()">${rows}</select><small id="ctFonteTabela" style="color:var(--muted)"></small></div><div class="field"><label>Corretor / imobiliária</label><select id="ctCorretor" onchange="calcComissaoCampo()">${opts((STATE.corretores||[]).map(c=>c.nome),edit?.corretor||'')}</select></div></div>`+
+      `<div class="fr c2"><div class="field"><label>Lote</label><select id="ctLote" onchange="fillContratoLote();calcComissaoCampo()">${rows}</select><small id="ctFonteTabela" style="color:var(--muted)"></small></div><div class="field"><label>Corretor / imobiliária</label><input id="ctCorretor" list="ctCorretorList" value="${esc2(edit?.corretor||'')}" oninput="calcComissaoCampo()" onchange="calcComissaoCampo()" placeholder="Digite ou selecione"><datalist id="ctCorretorList">${partnerOptionsV2829(edit?.corretor||'')}</datalist><small style="color:var(--muted)">Campo livre: selecione da lista ou digite outro parceiro.</small></div></div>`+
       `<div class="fr c4"><div class="field"><label>Área</label><input id="ctArea" disabled></div><div class="field"><label>Valor tabela</label><input id="ctTabela" disabled></div><div class="field"><label>Desconto (%)</label><input id="ctDesc" type="number" step="0.01" value="${edit?pctDescFrom(edit):0}" oninput="calcContratoValor();calcComissaoCampo()"></div><div class="field"><label>Valor negociado</label><input id="ctFinal" type="number" value="${edit?.valorFinal||0}" oninput="calcComissaoCampo()"></div></div>`+
       `<div class="fr c4"><div class="field"><label>Comissão (%)</label><input id="ctComissaoPct" type="number" step="0.01" value="${edit?comissaoPctVenda(edit):''}" oninput="calcComissaoCampo()"></div><div class="field"><label>Comissão R$</label><input id="ctComissaoValor" disabled></div><div class="field"><label>Líquido UP</label><input id="ctLiquido" disabled></div><div class="field"><label>Origem do lead</label><input id="ctOrigem" value="${esc2(edit?.origem||'')}"></div></div>`+
       `<div class="fr c4"><div class="field"><label>Receb. Maio</label><input id="ctMaio" type="number" value="${edit?.recebimentoMaio||0}"></div><div class="field"><label>Receb. Junho</label><input id="ctJunho" type="number" value="${edit?.recebimentoJunho||0}"></div><div class="field"><label>Receb. Julho</label><input id="ctJulho" type="number" value="${edit?.recebimentoJulho||0}"></div><div class="field"><label>Agosto ou posterior</label><input id="ctAgosto" type="number" value="${edit?.recebimentoAgosto||0}"></div></div>`+
@@ -5220,7 +5258,11 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
   window.calcComissaoCampo=function(){
     const l=currentSaleLot();
     const tmp={quadra:l?.quadra||'',lote:l?.lote||'',status:$('ctStatus')?$('ctStatus').value:'',formaPagamento:$('ctForma')?$('ctForma').value:'',valorFinal:n($('ctFinal')?$('ctFinal').value:0),comissaoPct:$('ctComissaoPct')?$('ctComissaoPct').value:''};
-    if($('ctComissaoPct')&&!$('ctComissaoPct').value&&typeof comissaoPctVenda==='function')$('ctComissaoPct').value=comissaoPctVenda(tmp);
+    if($('ctComissaoPct')){
+      const byPartner=partnerComissaoV2829($('ctCorretor')?$('ctCorretor').value:'');
+      if(!$('ctComissaoPct').value && byPartner!=null) $('ctComissaoPct').value=String(byPartner).replace('.',',');
+      else if(!$('ctComissaoPct').value && typeof comissaoPctVenda==='function') $('ctComissaoPct').value=comissaoPctVenda(tmp);
+    }
     const pct=n($('ctComissaoPct')?$('ctComissaoPct').value:0), vf=n($('ctFinal')?$('ctFinal').value:0), cv=vf*pct/100;
     if($('ctComissaoValor'))$('ctComissaoValor').value=money(cv);
     if($('ctLiquido'))$('ctLiquido').value=money(vf-cv);
@@ -5247,7 +5289,8 @@ window.CALLIANDRA_V285_CHECKLIST = Object.assign({}, window.CALLIANDRA_V284_CHEC
     if(typeof renderVendas==='function')renderVendas();
     if(typeof updateSide==='function')updateSide();
   };
-  window.CALLIANDRA_SALE_PRICE_BUILD=BUILD;
+  window.CALLIANDRA_SALE_PRICE_BUILD='v28.29-nova-venda-corretor-livre';
+  window.CALLIANDRA_CORRETOR_FIELD_BUILD='v28.29-datalist-livre';
 })();
 </script>
 
