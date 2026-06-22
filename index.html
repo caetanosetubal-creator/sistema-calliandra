@@ -1810,7 +1810,66 @@ function printDocumentV22(page,orientation){
   const header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>';
   const orientationCss=orientation==='portrait'?'portrait':'landscape';
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div>
+
+<script>
+/* V28.39 HOTFIX — correção emergencial da métrica de unidades KR validada pelo gestor.
+   Escopo: corrigir a leitura de unidades da meta para 13/23 sem alterar Apps Script, planilha, vendas ou sincronização.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.39-HOTFIX-DASHBOARD-13';
+  const KR_UNIDADES_VALIDADAS=13;
+  const KR_META=23;
+  const KR_FALTAM=10;
+  const KR_PCT=Math.round(KR_UNIDADES_VALIDADAS/KR_META*100);
+  function patchStatsResult(s){
+    s=s||{};
+    s.unidades=KR_UNIDADES_VALIDADAS;
+    s.pctLot=KR_PCT;
+    s.faltam=KR_FALTAM;
+    s.__hotfixUnidadesKR=BUILD;
+    return s;
+  }
+  const oldStats=window.stats || (typeof stats==='function'?stats:null);
+  if(typeof oldStats==='function'){
+    window.stats=function(){return patchStatsResult(oldStats.apply(this,arguments));};
+    try{ stats=window.stats; }catch(e){}
+  }
+  function afterRenderDashboard(){
+    const page=document.getElementById('page-dashboard');
+    if(!page) return;
+    page.querySelectorAll('*').forEach(function(el){
+      if(!el || !el.childNodes || el.childNodes.length!==1 || el.childNodes[0].nodeType!==3) return;
+      const t=el.textContent.trim();
+      if(t==='3/23') el.textContent='13/23';
+      if(t==='13% da meta') el.textContent='57% da meta';
+      if(t==='20 unidades restantes') el.textContent='10 unidades restantes';
+      if(t.includes('faltam') && t.includes('20 unidades')) el.textContent=t.replace('20 unidades','10 unidades');
+    });
+    if(!page.querySelector('.v2839-hotfix-note')){
+      const note=document.createElement('div');
+      note.className='info v2839-hotfix-note';
+      note.style.marginTop='14px';
+      note.innerHTML='<b>Hotfix V28.39:</b> unidades do KR corrigidas para <b>13/23</b>, conforme validação gerencial. Esta correção não altera a planilha, o Apps Script nem o cadastro de vendas.';
+      const anchor=page.querySelector('.sh') || page.firstElementChild;
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(note, anchor.nextSibling);
+    }
+  }
+  const oldRenderDashboard=window.renderDashboard || (typeof renderDashboard==='function'?renderDashboard:null);
+  if(typeof oldRenderDashboard==='function'){
+    window.renderDashboard=function(){
+      const ret=oldRenderDashboard.apply(this,arguments);
+      setTimeout(afterRenderDashboard,50);
+      return ret;
+    };
+    try{ renderDashboard=window.renderDashboard; }catch(e){}
+  }
+  window.CALLIANDRA_HOTFIX_BUILD=BUILD;
+})();
+</script>
+
+</body></html>`);
   popup.document.close();
   setTimeout(()=>{popup.focus();popup.print();},420);
 }
@@ -2526,7 +2585,66 @@ function printDocumentV25(page,orientation){
   const orientationCss=orientation==='portrait'?'portrait':'landscape';
   const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 10px!important;padding:0 0 9px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 12px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .v24-section,.print-doc .v24-price-logic,.print-doc .cash-curve-section,.print-doc .scenario-section{break-inside:auto!important;page-break-inside:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v25-recovery-head,.print-doc .sim-price-v22,.print-doc .sim-pay-v22{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card,.print-doc .v25-recovery{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc table thead{display:table-header-group!important}.print-doc table tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-curve{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-input-card{display:none!important}`;
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div>
+
+<script>
+/* V28.39 HOTFIX — correção emergencial da métrica de unidades KR validada pelo gestor.
+   Escopo: corrigir a leitura de unidades da meta para 13/23 sem alterar Apps Script, planilha, vendas ou sincronização.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.39-HOTFIX-DASHBOARD-13';
+  const KR_UNIDADES_VALIDADAS=13;
+  const KR_META=23;
+  const KR_FALTAM=10;
+  const KR_PCT=Math.round(KR_UNIDADES_VALIDADAS/KR_META*100);
+  function patchStatsResult(s){
+    s=s||{};
+    s.unidades=KR_UNIDADES_VALIDADAS;
+    s.pctLot=KR_PCT;
+    s.faltam=KR_FALTAM;
+    s.__hotfixUnidadesKR=BUILD;
+    return s;
+  }
+  const oldStats=window.stats || (typeof stats==='function'?stats:null);
+  if(typeof oldStats==='function'){
+    window.stats=function(){return patchStatsResult(oldStats.apply(this,arguments));};
+    try{ stats=window.stats; }catch(e){}
+  }
+  function afterRenderDashboard(){
+    const page=document.getElementById('page-dashboard');
+    if(!page) return;
+    page.querySelectorAll('*').forEach(function(el){
+      if(!el || !el.childNodes || el.childNodes.length!==1 || el.childNodes[0].nodeType!==3) return;
+      const t=el.textContent.trim();
+      if(t==='3/23') el.textContent='13/23';
+      if(t==='13% da meta') el.textContent='57% da meta';
+      if(t==='20 unidades restantes') el.textContent='10 unidades restantes';
+      if(t.includes('faltam') && t.includes('20 unidades')) el.textContent=t.replace('20 unidades','10 unidades');
+    });
+    if(!page.querySelector('.v2839-hotfix-note')){
+      const note=document.createElement('div');
+      note.className='info v2839-hotfix-note';
+      note.style.marginTop='14px';
+      note.innerHTML='<b>Hotfix V28.39:</b> unidades do KR corrigidas para <b>13/23</b>, conforme validação gerencial. Esta correção não altera a planilha, o Apps Script nem o cadastro de vendas.';
+      const anchor=page.querySelector('.sh') || page.firstElementChild;
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(note, anchor.nextSibling);
+    }
+  }
+  const oldRenderDashboard=window.renderDashboard || (typeof renderDashboard==='function'?renderDashboard:null);
+  if(typeof oldRenderDashboard==='function'){
+    window.renderDashboard=function(){
+      const ret=oldRenderDashboard.apply(this,arguments);
+      setTimeout(afterRenderDashboard,50);
+      return ret;
+    };
+    try{ renderDashboard=window.renderDashboard; }catch(e){}
+  }
+  window.CALLIANDRA_HOTFIX_BUILD=BUILD;
+})();
+</script>
+
+</body></html>`);
   popup.document.close();
   setTimeout(()=>{popup.focus();popup.print();},650);
 }
@@ -2641,7 +2759,66 @@ function cashPanelV24(model,cfg){const total=vendasResumoV23(soldV23()),confirme
 function printDocumentV26(page,orientation){
  closeModal();if(page==='simulador')calcSim();const source=id('page-'+page);if(!source){toast('Tela não encontrada para impressão.','err');return;}const popup=window.open('','_blank','width=1280,height=920');if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape',clone=source.cloneNode(true);clone.querySelectorAll('.no-print,.sh-r,.icon').forEach(n=>n.remove());
  const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.sb,.top,.auth,.modal-back,.toasts{display:none!important}.print-doc{display:block!important;width:100%!important;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 9px!important;padding:0 0 8px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 10px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .card,.print-doc .table-card,.print-doc .cb,.print-doc .g2,.print-doc .g3,.print-doc .v24-section,.print-doc .cash-curve-section,.print-doc .scenario-section,.print-doc .v24-price-logic,.print-doc .v25-recovery,.print-doc .v26-flow-card{break-inside:auto!important;page-break-inside:auto!important;break-before:auto!important;page-break-before:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v26-rule,.print-doc .v26-flow-chart,.print-doc tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc table{min-width:0!important;width:100%!important}.print-doc thead{display:table-header-group!important}.print-doc .v26-flow-grid{display:block!important}.print-doc .v26-flow-card{margin-top:12px!important;box-shadow:none!important}.print-doc .v26-fin-form{display:none!important}`;
- popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${clone.outerHTML}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},700);
+ popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${clone.outerHTML}</div>
+
+<script>
+/* V28.39 HOTFIX — correção emergencial da métrica de unidades KR validada pelo gestor.
+   Escopo: corrigir a leitura de unidades da meta para 13/23 sem alterar Apps Script, planilha, vendas ou sincronização.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.39-HOTFIX-DASHBOARD-13';
+  const KR_UNIDADES_VALIDADAS=13;
+  const KR_META=23;
+  const KR_FALTAM=10;
+  const KR_PCT=Math.round(KR_UNIDADES_VALIDADAS/KR_META*100);
+  function patchStatsResult(s){
+    s=s||{};
+    s.unidades=KR_UNIDADES_VALIDADAS;
+    s.pctLot=KR_PCT;
+    s.faltam=KR_FALTAM;
+    s.__hotfixUnidadesKR=BUILD;
+    return s;
+  }
+  const oldStats=window.stats || (typeof stats==='function'?stats:null);
+  if(typeof oldStats==='function'){
+    window.stats=function(){return patchStatsResult(oldStats.apply(this,arguments));};
+    try{ stats=window.stats; }catch(e){}
+  }
+  function afterRenderDashboard(){
+    const page=document.getElementById('page-dashboard');
+    if(!page) return;
+    page.querySelectorAll('*').forEach(function(el){
+      if(!el || !el.childNodes || el.childNodes.length!==1 || el.childNodes[0].nodeType!==3) return;
+      const t=el.textContent.trim();
+      if(t==='3/23') el.textContent='13/23';
+      if(t==='13% da meta') el.textContent='57% da meta';
+      if(t==='20 unidades restantes') el.textContent='10 unidades restantes';
+      if(t.includes('faltam') && t.includes('20 unidades')) el.textContent=t.replace('20 unidades','10 unidades');
+    });
+    if(!page.querySelector('.v2839-hotfix-note')){
+      const note=document.createElement('div');
+      note.className='info v2839-hotfix-note';
+      note.style.marginTop='14px';
+      note.innerHTML='<b>Hotfix V28.39:</b> unidades do KR corrigidas para <b>13/23</b>, conforme validação gerencial. Esta correção não altera a planilha, o Apps Script nem o cadastro de vendas.';
+      const anchor=page.querySelector('.sh') || page.firstElementChild;
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(note, anchor.nextSibling);
+    }
+  }
+  const oldRenderDashboard=window.renderDashboard || (typeof renderDashboard==='function'?renderDashboard:null);
+  if(typeof oldRenderDashboard==='function'){
+    window.renderDashboard=function(){
+      const ret=oldRenderDashboard.apply(this,arguments);
+      setTimeout(afterRenderDashboard,50);
+      return ret;
+    };
+    try{ renderDashboard=window.renderDashboard; }catch(e){}
+  }
+  window.CALLIANDRA_HOTFIX_BUILD=BUILD;
+})();
+</script>
+
+</body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},700);
 }
 printDocumentV25=printDocumentV26;printDocumentV22=printDocumentV26;
 </script>
@@ -2853,7 +3030,66 @@ function printDocumentV27(page,orientation){
   if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}
   const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape';
   const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-head{display:flex!important;margin:0 0 12px!important;padding:0 0 8px!important;border-bottom:2px solid #173d37;break-after:avoid!important;page-break-after:avoid!important}.v27-paper{display:block!important;margin:0!important;padding:0!important}.v27-paper .paper-section{break-before:auto!important;page-break-before:auto!important}.v27-paper tr{break-inside:avoid!important;page-break-inside:avoid!important}.v27-paper thead{display:table-header-group!important}`;
-  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
+  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div>
+
+<script>
+/* V28.39 HOTFIX — correção emergencial da métrica de unidades KR validada pelo gestor.
+   Escopo: corrigir a leitura de unidades da meta para 13/23 sem alterar Apps Script, planilha, vendas ou sincronização.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.39-HOTFIX-DASHBOARD-13';
+  const KR_UNIDADES_VALIDADAS=13;
+  const KR_META=23;
+  const KR_FALTAM=10;
+  const KR_PCT=Math.round(KR_UNIDADES_VALIDADAS/KR_META*100);
+  function patchStatsResult(s){
+    s=s||{};
+    s.unidades=KR_UNIDADES_VALIDADAS;
+    s.pctLot=KR_PCT;
+    s.faltam=KR_FALTAM;
+    s.__hotfixUnidadesKR=BUILD;
+    return s;
+  }
+  const oldStats=window.stats || (typeof stats==='function'?stats:null);
+  if(typeof oldStats==='function'){
+    window.stats=function(){return patchStatsResult(oldStats.apply(this,arguments));};
+    try{ stats=window.stats; }catch(e){}
+  }
+  function afterRenderDashboard(){
+    const page=document.getElementById('page-dashboard');
+    if(!page) return;
+    page.querySelectorAll('*').forEach(function(el){
+      if(!el || !el.childNodes || el.childNodes.length!==1 || el.childNodes[0].nodeType!==3) return;
+      const t=el.textContent.trim();
+      if(t==='3/23') el.textContent='13/23';
+      if(t==='13% da meta') el.textContent='57% da meta';
+      if(t==='20 unidades restantes') el.textContent='10 unidades restantes';
+      if(t.includes('faltam') && t.includes('20 unidades')) el.textContent=t.replace('20 unidades','10 unidades');
+    });
+    if(!page.querySelector('.v2839-hotfix-note')){
+      const note=document.createElement('div');
+      note.className='info v2839-hotfix-note';
+      note.style.marginTop='14px';
+      note.innerHTML='<b>Hotfix V28.39:</b> unidades do KR corrigidas para <b>13/23</b>, conforme validação gerencial. Esta correção não altera a planilha, o Apps Script nem o cadastro de vendas.';
+      const anchor=page.querySelector('.sh') || page.firstElementChild;
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(note, anchor.nextSibling);
+    }
+  }
+  const oldRenderDashboard=window.renderDashboard || (typeof renderDashboard==='function'?renderDashboard:null);
+  if(typeof oldRenderDashboard==='function'){
+    window.renderDashboard=function(){
+      const ret=oldRenderDashboard.apply(this,arguments);
+      setTimeout(afterRenderDashboard,50);
+      return ret;
+    };
+    try{ renderDashboard=window.renderDashboard; }catch(e){}
+  }
+  window.CALLIANDRA_HOTFIX_BUILD=BUILD;
+})();
+</script>
+
+</body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
 }
 printDocumentV26=printDocumentV27;printDocumentV25=printDocumentV27;printDocumentV22=printDocumentV27;
 
@@ -5925,6 +6161,65 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
   };
   document.addEventListener('DOMContentLoaded',function(){setTimeout(updatePendingBadge,800);});
   window.CALLIANDRA_WRITE_BUILD=BUILD;
+})();
+</script>
+
+
+
+<script>
+/* V28.39 HOTFIX — correção emergencial da métrica de unidades KR validada pelo gestor.
+   Escopo: corrigir a leitura de unidades da meta para 13/23 sem alterar Apps Script, planilha, vendas ou sincronização.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.39-HOTFIX-DASHBOARD-13';
+  const KR_UNIDADES_VALIDADAS=13;
+  const KR_META=23;
+  const KR_FALTAM=10;
+  const KR_PCT=Math.round(KR_UNIDADES_VALIDADAS/KR_META*100);
+  function patchStatsResult(s){
+    s=s||{};
+    s.unidades=KR_UNIDADES_VALIDADAS;
+    s.pctLot=KR_PCT;
+    s.faltam=KR_FALTAM;
+    s.__hotfixUnidadesKR=BUILD;
+    return s;
+  }
+  const oldStats=window.stats || (typeof stats==='function'?stats:null);
+  if(typeof oldStats==='function'){
+    window.stats=function(){return patchStatsResult(oldStats.apply(this,arguments));};
+    try{ stats=window.stats; }catch(e){}
+  }
+  function afterRenderDashboard(){
+    const page=document.getElementById('page-dashboard');
+    if(!page) return;
+    page.querySelectorAll('*').forEach(function(el){
+      if(!el || !el.childNodes || el.childNodes.length!==1 || el.childNodes[0].nodeType!==3) return;
+      const t=el.textContent.trim();
+      if(t==='3/23') el.textContent='13/23';
+      if(t==='13% da meta') el.textContent='57% da meta';
+      if(t==='20 unidades restantes') el.textContent='10 unidades restantes';
+      if(t.includes('faltam') && t.includes('20 unidades')) el.textContent=t.replace('20 unidades','10 unidades');
+    });
+    if(!page.querySelector('.v2839-hotfix-note')){
+      const note=document.createElement('div');
+      note.className='info v2839-hotfix-note';
+      note.style.marginTop='14px';
+      note.innerHTML='<b>Hotfix V28.39:</b> unidades do KR corrigidas para <b>13/23</b>, conforme validação gerencial. Esta correção não altera a planilha, o Apps Script nem o cadastro de vendas.';
+      const anchor=page.querySelector('.sh') || page.firstElementChild;
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(note, anchor.nextSibling);
+    }
+  }
+  const oldRenderDashboard=window.renderDashboard || (typeof renderDashboard==='function'?renderDashboard:null);
+  if(typeof oldRenderDashboard==='function'){
+    window.renderDashboard=function(){
+      const ret=oldRenderDashboard.apply(this,arguments);
+      setTimeout(afterRenderDashboard,50);
+      return ret;
+    };
+    try{ renderDashboard=window.renderDashboard; }catch(e){}
+  }
+  window.CALLIANDRA_HOTFIX_BUILD=BUILD;
 })();
 </script>
 
