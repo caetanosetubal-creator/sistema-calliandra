@@ -1810,7 +1810,101 @@ function printDocumentV22(page,orientation){
   const header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>';
   const orientationCss=orientation==='portrait'?'portrait':'landscape';
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 14px!important;padding:0 0 10px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 14px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .kpi,.print-doc .sim-price-v22,.print-doc .sim-pay-v22,.print-doc .info,.print-doc .success,.print-doc .warnbox{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc .tw thead{display:table-header-group!important}.print-doc .tw tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .sim-payment-table-v22{break-before:auto!important;page-break-before:auto!important}.print-doc .curve-v22{break-inside:avoid!important;page-break-inside:avoid!important}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div>
+<style id="v28-34-executivo-css">
+.v34-kpi-note{font-size:12px;color:#7a746b;margin-top:6px;line-height:1.35}
+.v34-flow-grid{display:grid;grid-template-columns:minmax(420px,1.4fr) minmax(320px,.9fr);gap:16px;align-items:start;margin-top:16px}
+.v34-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#f7ead3;color:#78511f;font-weight:900;font-size:12px}
+.v34-mini{font-size:12px;color:#766f66;line-height:1.45}.v34-ok{color:#147045;font-weight:900}.v34-warn{color:#9d6920;font-weight:900}.v34-bad{color:#a63f3f;font-weight:900}
+.v34-summary-line{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}.v34-summary-line .mini-card{border:1px solid #e2dacf;border-radius:14px;padding:12px;background:#fff}.v34-summary-line small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#7d7a75;font-weight:900}.v34-summary-line b{display:block;margin-top:3px;color:#153f39;font-size:17px}.v34-summary-line span{font-size:11px;color:#7a746b}
+@media(max-width:1200px){.v34-flow-grid{grid-template-columns:1fr}.v34-summary-line{grid-template-columns:repeat(2,1fr)}}
+@media print{.v34-flow-grid{display:block}.v34-summary-line{grid-template-columns:repeat(5,1fr)}}
+</style>
+<script id="v28-34-executivo-fluxo-periodo">
+(function(){
+  const V34_INICIO='2026-04-01', V34_FIM='2026-06-30';
+  function d34(v){return parseDate(v&&v.data)||'';}
+  function lotKey34(v){let k=norm((v.quadra||v.rua||'')+'|'+(v.lote||'')); if(k==='|')k=''; return k || norm((v.cliente||'')+'|'+(v.valorFinal||'')+'|'+d34(v));}
+  function isSold34(v){return v&&isVendido(v.status)&&!norm(v.status).includes('permut');}
+  function sales34(){const seen=new Set(), out=[];(vendasGerenciais()||[]).filter(isSold34).forEach(v=>{const k=lotKey34(v); if(!k||seen.has(k))return; seen.add(k); out.push({...v});}); return out.sort((a,b)=>(d34(a)||'9999').localeCompare(d34(b)||'9999')||String(a.quadra||a.rua).localeCompare(String(b.quadra||b.rua),'pt-BR')||String(a.lote).localeCompare(String(b.lote),'pt-BR',{numeric:true}));}
+  function period34(){return sales34().filter(v=>{const d=d34(v); return d>=V34_INICIO&&d<=V34_FIM;});}
+  function saleHasManualReceipts34(v){return ['recebimentoMaio','recebimentoJunho','recebimentoJulho','recebimentoAgosto'].some(k=>Math.abs(num(v[k]))>0.001);}
+  function pendingSignal34(v){const k=norm((v.quadra||v.rua||'')+' '+(v.lote||''));return norm(v.cliente).includes('validar cliente')||norm(v.observacao||v.fluxo||'').includes('sinal ainda nao confirmado')||(k.includes('araticum 26')||k.includes('araca 43'))&&num(v.recebimentoMaio)+num(v.recebimentoJunho)+num(v.recebimentoJulho)+num(v.recebimentoAgosto)===0;}
+  function addFlow34(map,ym,label,v,bruto,comissao,status){bruto=num(bruto); comissao=num(comissao); if(!bruto&&!comissao)return; if(!map[ym])map[ym]={ym,mes:ym==='2026-08'?'Ago+':ymLabelV25(ym),bruto:0,comissao:0,liquido:0,detalhes:[]}; const r=map[ym]; r.bruto+=bruto; r.comissao+=comissao; r.detalhes.push({label:label||`${v.cliente||''} · ${v.quadra||v.rua||''} ${v.lote||''}`,bruto,comissao,status:status||''});}
+  function isBeforeKrFixed34(v){return String(v.id||'').startsWith('FIX-') && d34(v)<V34_INICIO;}
+  function isEdsonBaru10V34(v){return norm(v.cliente).includes('edson luiz')||((norm(v.quadra||v.rua).includes('baru'))&&String(v.lote).trim()==='10');}
+  function flowMap34(){
+    const map={};
+    sales34().forEach(v=>{
+      const label=`${v.cliente||'Cliente'} · ${v.quadra||v.rua||''} ${v.lote||''}`;
+      if(pendingSignal34(v))return;
+      if(saleHasManualReceipts34(v) && !isBeforeKrFixed34(v)){
+        const com=d34(v).slice(0,7)==='2026-06'?comissaoValorVenda(v):0;
+        addFlow34(map,'2026-05',label,v,num(v.recebimentoMaio),0,'Receb./previsto');
+        addFlow34(map,'2026-06',label,v,num(v.recebimentoJunho),com,'Receb./previsto');
+        addFlow34(map,'2026-07',label,v,num(v.recebimentoJulho),0,'Previsto');
+        addFlow34(map,'2026-08',label,v,num(v.recebimentoAgosto),0,'Ago ou posterior');
+        return;
+      }
+      if(typeof isMendesV26==='function'&&isMendesV26(v)){
+        addFlow34(map,'2026-05',label+' · sinal recebido',v,29000,0,'Recebido');
+        addFlow34(map,'2026-06',label+' · saldo previsto',v,Math.max(num(v.valorFinal)-29000,0),comissaoValorVenda(v),'Previsto');
+        return;
+      }
+      if(isEdsonBaru10V34(v)){
+        addFlow34(map,'2026-06',label+' · sinal',v,165000,comissaoValorVenda(v),'Recebido/previsto');
+        addFlow34(map,'2026-07',label+' · parcela 1/5',v,64000,0,'Previsto');
+        addFlow34(map,'2026-08',label+' · parcelas 2 a 5/5',v,256000,0,'Ago ou posterior');
+        return;
+      }
+    });
+    let acum=0;return Object.values(map).sort((a,b)=>a.ym.localeCompare(b.ym)).map(r=>{r.liquido=r.bruto-r.comissao;acum+=r.liquido;r.acum=acum;return r;});
+  }
+  function flowSum34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.liquido,0);}
+  function flowGross34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.bruto,0);}
+  function future34(){return flowMap34().filter(r=>r.ym>'2026-06').reduce((s,r)=>s+r.bruto,0);}
+  function resumo34(arr){const vgv=arr.reduce((s,v)=>s+num(v.valorFinal),0), com=arr.reduce((s,v)=>s+comissaoValorVenda(v),0), liq=vgv-com;return {unidades:arr.length,vgv,comissao:com,liquido:liq};}
+  function rowFlowTable34(rows){return `<div class="tw"><table><thead><tr><th>Mês</th><th>Recebimento bruto</th><th>Comissão provisionada</th><th>Caixa líquido</th><th>Acumulado</th><th>Composição</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td><b>${BRL(r.acum)}</b></td><td>${r.detalhes.map(d=>`<small>• ${esc(d.label)}: ${BRL(d.bruto)}${d.comissao?` · comissão ${BRL(d.comissao)}`:''} (${esc(d.status)})</small>`).join('<br>')}</td></tr>`).join('')||empty(6)}</tbody></table></div>`;}
+  function vendaTable34(arr,withActions=true){return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>Data</th><th>Status</th><th>VGV</th><th>Comissão</th><th>Até jun</th><th>Julho</th><th>Ago+</th><th>Parceiro</th><th>Condição</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>{const ateJun=num(v.recebimentoMaio)+num(v.recebimentoJunho);const pend=pendingSignal34(v);return `<tr><td><b>${esc((v.quadra||v.rua||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}${pend?'<br><small class="v34-warn">Sinal a confirmar</small>':''}</td><td>${fmtDate(v.data)}</td><td>${badge(v.status)}</td><td><b>${BRL(v.valorFinal)}</b></td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(ateJun)}</b></td><td>${BRL(num(v.recebimentoJulho))}</td><td>${BRL(num(v.recebimentoAgosto))}</td><td>${esc(v.corretor||'-')}</td><td>${esc(v.formaPagamento||v.fluxo||'-')}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`}).join('')||empty(withActions?12:11)}</tbody></table></div>`;}
+  function pendingBlock34(){const p=period34().filter(pendingSignal34); if(!p.length)return '<div class="success"><b>Sem pendência de sinal no período.</b></div>'; return `<div class="warnbox"><b>Pendente de sinal:</b> ${p.length} venda(s) consideradas como vendidas no VGV, mas sem reconhecimento de caixa: ${p.map(v=>`${esc(v.quadra||v.rua)} ${esc(v.lote)}`).join(', ')}.</div>`;}
+  function flowMini34(){const rows=flowMap34();return `<div class="card"><div class="ch"><div><div class="ch-ttl">Fluxo do KR · abr-mai-jun e carteira futura</div><div class="sub">Leitura por recebimentos cadastrados nas fichas e valores confirmados/previstos.</div></div>${badge('caixa')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>`;}
+  window.v34DebugResumo=function(){return {acumulado:resumo34(sales34()),periodo:resumo34(period34()),flow:flowMap34()};};
+  window.renderDashboard=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23,caixaJun=flowSum34('2026-06'),fut=future34();
+    id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">KR abril–junho: vendas, VGV contratado, caixa reconhecido/previsto até junho e carteira futura.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="kpi-row">${kpi('Vendas no KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% da meta de unidades`,'g',pct(tri.unidades,metaUnd))}${kpi('VGV no KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% de ${BRL(metaFin)}`,'g',pct(tri.vgv,metaFin))}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados - comissões','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>
+    <div class="kpi-row">${kpi('Vendas acumuladas',total.unidades,'lotes vendidos')}${kpi('VGV acumulado',BRL(total.vgv),'contratado total','g')}${kpi('Comissão cadastrada',BRL(total.comissao),'provisionada conforme base')}${kpi('Pendente de sinal',pend.length,'Araticum 26 / Araçá 43, se ainda sem pagamento','o')}</div>
+    <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',tri.vgv,metaFin,true)}${progress('Meta de unidades',tri.unidades,metaUnd,false)}<div class="info"><b>Leitura objetiva:</b> VGV financeiro já supera a meta de ${BRL(metaFin)}. A leitura quantitativa depende da régua de ${metaUnd} unidades e hoje marca ${tri.unidades} vendas no período.</div>${pendingBlock34()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Resumo do fluxo</div>${badge('gestores')}</div><div class="cb"><div class="v34-summary-line"><div class="mini-card"><small>Até maio</small><b>${BRL(flowSum34('2026-05'))}</b><span>líquido</span></div><div class="mini-card"><small>Junho</small><b>${BRL(flowSum34('2026-06')-flowSum34('2026-05'))}</b><span>mês</span></div><div class="mini-card"><small>Até junho</small><b>${BRL(caixaJun)}</b><span>acum.</span></div><div class="mini-card"><small>Julho</small><b>${BRL(flowGross34('2026-07')-flowGross34('2026-06'))}</b><span>bruto</span></div><div class="mini-card"><small>Ago+</small><b>${BRL(fut-(flowGross34('2026-07')-flowGross34('2026-06')))}</b><span>bruto</span></div></div></div></div></div>
+    <div class="table-card section-gap"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="sub">Base usada para a reunião de gestores.</div></div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderVendas=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),caixaJun=flowSum34('2026-06'),fut=future34(),pend=period.filter(pendingSignal34);
+    id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Separação entre VGV vendido, entrada/caixa até junho e recebimentos futuros.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+    <div class="section-mini-title">KR abril-junho · leitura para gestores</div><div class="v23-kpi-stack">${kpi('Vendas no KR',tri.unidades,'abril, maio e junho')}${kpi('VGV do KR',BRL(tri.vgv),'contratado no período','g')}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>${pendingBlock34()}${flowMini34()}
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="v23-table-sub">${tri.unidades} vendas · VGV ${BRL(tri.vgv)} · ${pend.length} pendência(s) de sinal</div></div></div>${vendaTable34(period)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas acumuladas</div><div class="v23-table-sub">${total.unidades} vendas · VGV ${BRL(total.vgv)} · pós-comissão ${BRL(total.liquido)}</div></div></div>${vendaTable34(all)}</div>`;
+  };
+  window.renderRelatorios=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),rows=flowMap34(),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23;
+    id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo financeiro</div><div class="sub">Visão analítica diferente do dashboard: vendas do KR, caixa por mês, canais e pendências de sinal.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+    <div class="card"><div class="ch"><div class="ch-ttl">Resumo para reunião de gestores</div>${badge('KR abr-jun')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% unidades`,'g')}${kpi('VGV KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% financeiro`,'g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'recebimentos - comissões','o')}${kpi('Recebíveis futuros',BRL(future34()),'jul + ago/posterior','l')}</div>${pendingBlock34()}</div></div>
+    <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas por parceiro</div></div><div class="cb">${ranking(group(period,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas por rua</div></div><div class="cb">${ranking(group(period,'quadra'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Status do período</div></div><div class="cb">${ranking(group(period,'status'))}<div class="v34-mini" style="margin-top:10px">Pendências de sinal não entram no caixa até confirmação.</div></div></div></div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Fluxo mensal consolidado</div><div class="sub">Bruto, comissões provisionadas e líquido acumulado.</div></div></div>${rowFlowTable34(rows)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Base analítica de vendas do KR</div><div class="sub">Conferência lote a lote.</div></div><span>${BRL(tri.vgv)}</span></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderCenarios=function(){
+    const all=sales34(),period=period34(),tri=resumo34(period),rows=flowMap34(),fut=future34();
+    id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Base real sincronizada + carteira futura cadastrada nas vendas.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+    <div class="kpi-row">${kpi('VGV vendido KR',BRL(tri.vgv),'abril-junho','g')}${kpi('Vendas KR',tri.unidades,'unidades no período','g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'base cadastrada','o')}${kpi('Carteira futura',BRL(fut),'jul + ago/posterior','l')}</div>
+    <div class="card v23-section"><div class="ch"><div><div class="ch-ttl">Projeção a partir das vendas já cadastradas</div><div class="sub">Esta leitura usa os fluxos das fichas cadastradas. Novas projeções de estoque podem ser tratadas depois, sem misturar com vendas já contratadas.</div></div>${badge('real + futuro')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>
+    <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas que alimentam a projeção</div><span>${BRL(resumo34(all).vgv)}</span></div>${vendaTable34(all,false)}</div>`;
+  };
+  // Mantém compatibilidade com chamadas antigas.
+  window.fluxoContratosV26=flowMap34; window.fluxoAteV26=flowSum34; window.cashPeriodV23=function(){return {maio:flowSum34('2026-05'),junho:flowSum34('2026-06')}}; window.tabelaVendasV23=vendaTable34;
+})();
+</script>
+
+</body></html>`);
   popup.document.close();
   setTimeout(()=>{popup.focus();popup.print();},420);
 }
@@ -2526,7 +2620,101 @@ function printDocumentV25(page,orientation){
   const orientationCss=orientation==='portrait'?'portrait':'landscape';
   const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{background:#fff!important;height:auto!important;overflow:visible!important}body{padding:0!important}.sb,.top,.auth,.no-print,.sh-r,.modal-back,.toasts{display:none!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 10px!important;padding:0 0 9px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 12px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page>.sh:first-child .sh-r{display:none!important}.print-doc .v24-section,.print-doc .v24-price-logic,.print-doc .cash-curve-section,.print-doc .scenario-section{break-inside:auto!important;page-break-inside:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v25-recovery-head,.print-doc .sim-price-v22,.print-doc .sim-pay-v22{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .card,.print-doc .table-card{box-shadow:none!important}.print-doc .table-card,.print-doc .v25-recovery{break-inside:auto!important;page-break-inside:auto!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc .tw table{min-width:0!important;width:100%!important}.print-doc table thead{display:table-header-group!important}.print-doc table tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-curve{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .v23-input-card{display:none!important}`;
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div></body></html>`);
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}<section class="page on print-on">${source.innerHTML}</section></div>
+<style id="v28-34-executivo-css">
+.v34-kpi-note{font-size:12px;color:#7a746b;margin-top:6px;line-height:1.35}
+.v34-flow-grid{display:grid;grid-template-columns:minmax(420px,1.4fr) minmax(320px,.9fr);gap:16px;align-items:start;margin-top:16px}
+.v34-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#f7ead3;color:#78511f;font-weight:900;font-size:12px}
+.v34-mini{font-size:12px;color:#766f66;line-height:1.45}.v34-ok{color:#147045;font-weight:900}.v34-warn{color:#9d6920;font-weight:900}.v34-bad{color:#a63f3f;font-weight:900}
+.v34-summary-line{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}.v34-summary-line .mini-card{border:1px solid #e2dacf;border-radius:14px;padding:12px;background:#fff}.v34-summary-line small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#7d7a75;font-weight:900}.v34-summary-line b{display:block;margin-top:3px;color:#153f39;font-size:17px}.v34-summary-line span{font-size:11px;color:#7a746b}
+@media(max-width:1200px){.v34-flow-grid{grid-template-columns:1fr}.v34-summary-line{grid-template-columns:repeat(2,1fr)}}
+@media print{.v34-flow-grid{display:block}.v34-summary-line{grid-template-columns:repeat(5,1fr)}}
+</style>
+<script id="v28-34-executivo-fluxo-periodo">
+(function(){
+  const V34_INICIO='2026-04-01', V34_FIM='2026-06-30';
+  function d34(v){return parseDate(v&&v.data)||'';}
+  function lotKey34(v){let k=norm((v.quadra||v.rua||'')+'|'+(v.lote||'')); if(k==='|')k=''; return k || norm((v.cliente||'')+'|'+(v.valorFinal||'')+'|'+d34(v));}
+  function isSold34(v){return v&&isVendido(v.status)&&!norm(v.status).includes('permut');}
+  function sales34(){const seen=new Set(), out=[];(vendasGerenciais()||[]).filter(isSold34).forEach(v=>{const k=lotKey34(v); if(!k||seen.has(k))return; seen.add(k); out.push({...v});}); return out.sort((a,b)=>(d34(a)||'9999').localeCompare(d34(b)||'9999')||String(a.quadra||a.rua).localeCompare(String(b.quadra||b.rua),'pt-BR')||String(a.lote).localeCompare(String(b.lote),'pt-BR',{numeric:true}));}
+  function period34(){return sales34().filter(v=>{const d=d34(v); return d>=V34_INICIO&&d<=V34_FIM;});}
+  function saleHasManualReceipts34(v){return ['recebimentoMaio','recebimentoJunho','recebimentoJulho','recebimentoAgosto'].some(k=>Math.abs(num(v[k]))>0.001);}
+  function pendingSignal34(v){const k=norm((v.quadra||v.rua||'')+' '+(v.lote||''));return norm(v.cliente).includes('validar cliente')||norm(v.observacao||v.fluxo||'').includes('sinal ainda nao confirmado')||(k.includes('araticum 26')||k.includes('araca 43'))&&num(v.recebimentoMaio)+num(v.recebimentoJunho)+num(v.recebimentoJulho)+num(v.recebimentoAgosto)===0;}
+  function addFlow34(map,ym,label,v,bruto,comissao,status){bruto=num(bruto); comissao=num(comissao); if(!bruto&&!comissao)return; if(!map[ym])map[ym]={ym,mes:ym==='2026-08'?'Ago+':ymLabelV25(ym),bruto:0,comissao:0,liquido:0,detalhes:[]}; const r=map[ym]; r.bruto+=bruto; r.comissao+=comissao; r.detalhes.push({label:label||`${v.cliente||''} · ${v.quadra||v.rua||''} ${v.lote||''}`,bruto,comissao,status:status||''});}
+  function isBeforeKrFixed34(v){return String(v.id||'').startsWith('FIX-') && d34(v)<V34_INICIO;}
+  function isEdsonBaru10V34(v){return norm(v.cliente).includes('edson luiz')||((norm(v.quadra||v.rua).includes('baru'))&&String(v.lote).trim()==='10');}
+  function flowMap34(){
+    const map={};
+    sales34().forEach(v=>{
+      const label=`${v.cliente||'Cliente'} · ${v.quadra||v.rua||''} ${v.lote||''}`;
+      if(pendingSignal34(v))return;
+      if(saleHasManualReceipts34(v) && !isBeforeKrFixed34(v)){
+        const com=d34(v).slice(0,7)==='2026-06'?comissaoValorVenda(v):0;
+        addFlow34(map,'2026-05',label,v,num(v.recebimentoMaio),0,'Receb./previsto');
+        addFlow34(map,'2026-06',label,v,num(v.recebimentoJunho),com,'Receb./previsto');
+        addFlow34(map,'2026-07',label,v,num(v.recebimentoJulho),0,'Previsto');
+        addFlow34(map,'2026-08',label,v,num(v.recebimentoAgosto),0,'Ago ou posterior');
+        return;
+      }
+      if(typeof isMendesV26==='function'&&isMendesV26(v)){
+        addFlow34(map,'2026-05',label+' · sinal recebido',v,29000,0,'Recebido');
+        addFlow34(map,'2026-06',label+' · saldo previsto',v,Math.max(num(v.valorFinal)-29000,0),comissaoValorVenda(v),'Previsto');
+        return;
+      }
+      if(isEdsonBaru10V34(v)){
+        addFlow34(map,'2026-06',label+' · sinal',v,165000,comissaoValorVenda(v),'Recebido/previsto');
+        addFlow34(map,'2026-07',label+' · parcela 1/5',v,64000,0,'Previsto');
+        addFlow34(map,'2026-08',label+' · parcelas 2 a 5/5',v,256000,0,'Ago ou posterior');
+        return;
+      }
+    });
+    let acum=0;return Object.values(map).sort((a,b)=>a.ym.localeCompare(b.ym)).map(r=>{r.liquido=r.bruto-r.comissao;acum+=r.liquido;r.acum=acum;return r;});
+  }
+  function flowSum34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.liquido,0);}
+  function flowGross34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.bruto,0);}
+  function future34(){return flowMap34().filter(r=>r.ym>'2026-06').reduce((s,r)=>s+r.bruto,0);}
+  function resumo34(arr){const vgv=arr.reduce((s,v)=>s+num(v.valorFinal),0), com=arr.reduce((s,v)=>s+comissaoValorVenda(v),0), liq=vgv-com;return {unidades:arr.length,vgv,comissao:com,liquido:liq};}
+  function rowFlowTable34(rows){return `<div class="tw"><table><thead><tr><th>Mês</th><th>Recebimento bruto</th><th>Comissão provisionada</th><th>Caixa líquido</th><th>Acumulado</th><th>Composição</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td><b>${BRL(r.acum)}</b></td><td>${r.detalhes.map(d=>`<small>• ${esc(d.label)}: ${BRL(d.bruto)}${d.comissao?` · comissão ${BRL(d.comissao)}`:''} (${esc(d.status)})</small>`).join('<br>')}</td></tr>`).join('')||empty(6)}</tbody></table></div>`;}
+  function vendaTable34(arr,withActions=true){return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>Data</th><th>Status</th><th>VGV</th><th>Comissão</th><th>Até jun</th><th>Julho</th><th>Ago+</th><th>Parceiro</th><th>Condição</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>{const ateJun=num(v.recebimentoMaio)+num(v.recebimentoJunho);const pend=pendingSignal34(v);return `<tr><td><b>${esc((v.quadra||v.rua||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}${pend?'<br><small class="v34-warn">Sinal a confirmar</small>':''}</td><td>${fmtDate(v.data)}</td><td>${badge(v.status)}</td><td><b>${BRL(v.valorFinal)}</b></td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(ateJun)}</b></td><td>${BRL(num(v.recebimentoJulho))}</td><td>${BRL(num(v.recebimentoAgosto))}</td><td>${esc(v.corretor||'-')}</td><td>${esc(v.formaPagamento||v.fluxo||'-')}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`}).join('')||empty(withActions?12:11)}</tbody></table></div>`;}
+  function pendingBlock34(){const p=period34().filter(pendingSignal34); if(!p.length)return '<div class="success"><b>Sem pendência de sinal no período.</b></div>'; return `<div class="warnbox"><b>Pendente de sinal:</b> ${p.length} venda(s) consideradas como vendidas no VGV, mas sem reconhecimento de caixa: ${p.map(v=>`${esc(v.quadra||v.rua)} ${esc(v.lote)}`).join(', ')}.</div>`;}
+  function flowMini34(){const rows=flowMap34();return `<div class="card"><div class="ch"><div><div class="ch-ttl">Fluxo do KR · abr-mai-jun e carteira futura</div><div class="sub">Leitura por recebimentos cadastrados nas fichas e valores confirmados/previstos.</div></div>${badge('caixa')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>`;}
+  window.v34DebugResumo=function(){return {acumulado:resumo34(sales34()),periodo:resumo34(period34()),flow:flowMap34()};};
+  window.renderDashboard=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23,caixaJun=flowSum34('2026-06'),fut=future34();
+    id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">KR abril–junho: vendas, VGV contratado, caixa reconhecido/previsto até junho e carteira futura.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="kpi-row">${kpi('Vendas no KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% da meta de unidades`,'g',pct(tri.unidades,metaUnd))}${kpi('VGV no KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% de ${BRL(metaFin)}`,'g',pct(tri.vgv,metaFin))}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados - comissões','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>
+    <div class="kpi-row">${kpi('Vendas acumuladas',total.unidades,'lotes vendidos')}${kpi('VGV acumulado',BRL(total.vgv),'contratado total','g')}${kpi('Comissão cadastrada',BRL(total.comissao),'provisionada conforme base')}${kpi('Pendente de sinal',pend.length,'Araticum 26 / Araçá 43, se ainda sem pagamento','o')}</div>
+    <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',tri.vgv,metaFin,true)}${progress('Meta de unidades',tri.unidades,metaUnd,false)}<div class="info"><b>Leitura objetiva:</b> VGV financeiro já supera a meta de ${BRL(metaFin)}. A leitura quantitativa depende da régua de ${metaUnd} unidades e hoje marca ${tri.unidades} vendas no período.</div>${pendingBlock34()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Resumo do fluxo</div>${badge('gestores')}</div><div class="cb"><div class="v34-summary-line"><div class="mini-card"><small>Até maio</small><b>${BRL(flowSum34('2026-05'))}</b><span>líquido</span></div><div class="mini-card"><small>Junho</small><b>${BRL(flowSum34('2026-06')-flowSum34('2026-05'))}</b><span>mês</span></div><div class="mini-card"><small>Até junho</small><b>${BRL(caixaJun)}</b><span>acum.</span></div><div class="mini-card"><small>Julho</small><b>${BRL(flowGross34('2026-07')-flowGross34('2026-06'))}</b><span>bruto</span></div><div class="mini-card"><small>Ago+</small><b>${BRL(fut-(flowGross34('2026-07')-flowGross34('2026-06')))}</b><span>bruto</span></div></div></div></div></div>
+    <div class="table-card section-gap"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="sub">Base usada para a reunião de gestores.</div></div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderVendas=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),caixaJun=flowSum34('2026-06'),fut=future34(),pend=period.filter(pendingSignal34);
+    id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Separação entre VGV vendido, entrada/caixa até junho e recebimentos futuros.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+    <div class="section-mini-title">KR abril-junho · leitura para gestores</div><div class="v23-kpi-stack">${kpi('Vendas no KR',tri.unidades,'abril, maio e junho')}${kpi('VGV do KR',BRL(tri.vgv),'contratado no período','g')}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>${pendingBlock34()}${flowMini34()}
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="v23-table-sub">${tri.unidades} vendas · VGV ${BRL(tri.vgv)} · ${pend.length} pendência(s) de sinal</div></div></div>${vendaTable34(period)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas acumuladas</div><div class="v23-table-sub">${total.unidades} vendas · VGV ${BRL(total.vgv)} · pós-comissão ${BRL(total.liquido)}</div></div></div>${vendaTable34(all)}</div>`;
+  };
+  window.renderRelatorios=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),rows=flowMap34(),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23;
+    id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo financeiro</div><div class="sub">Visão analítica diferente do dashboard: vendas do KR, caixa por mês, canais e pendências de sinal.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+    <div class="card"><div class="ch"><div class="ch-ttl">Resumo para reunião de gestores</div>${badge('KR abr-jun')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% unidades`,'g')}${kpi('VGV KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% financeiro`,'g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'recebimentos - comissões','o')}${kpi('Recebíveis futuros',BRL(future34()),'jul + ago/posterior','l')}</div>${pendingBlock34()}</div></div>
+    <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas por parceiro</div></div><div class="cb">${ranking(group(period,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas por rua</div></div><div class="cb">${ranking(group(period,'quadra'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Status do período</div></div><div class="cb">${ranking(group(period,'status'))}<div class="v34-mini" style="margin-top:10px">Pendências de sinal não entram no caixa até confirmação.</div></div></div></div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Fluxo mensal consolidado</div><div class="sub">Bruto, comissões provisionadas e líquido acumulado.</div></div></div>${rowFlowTable34(rows)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Base analítica de vendas do KR</div><div class="sub">Conferência lote a lote.</div></div><span>${BRL(tri.vgv)}</span></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderCenarios=function(){
+    const all=sales34(),period=period34(),tri=resumo34(period),rows=flowMap34(),fut=future34();
+    id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Base real sincronizada + carteira futura cadastrada nas vendas.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+    <div class="kpi-row">${kpi('VGV vendido KR',BRL(tri.vgv),'abril-junho','g')}${kpi('Vendas KR',tri.unidades,'unidades no período','g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'base cadastrada','o')}${kpi('Carteira futura',BRL(fut),'jul + ago/posterior','l')}</div>
+    <div class="card v23-section"><div class="ch"><div><div class="ch-ttl">Projeção a partir das vendas já cadastradas</div><div class="sub">Esta leitura usa os fluxos das fichas cadastradas. Novas projeções de estoque podem ser tratadas depois, sem misturar com vendas já contratadas.</div></div>${badge('real + futuro')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>
+    <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas que alimentam a projeção</div><span>${BRL(resumo34(all).vgv)}</span></div>${vendaTable34(all,false)}</div>`;
+  };
+  // Mantém compatibilidade com chamadas antigas.
+  window.fluxoContratosV26=flowMap34; window.fluxoAteV26=flowSum34; window.cashPeriodV23=function(){return {maio:flowSum34('2026-05'),junho:flowSum34('2026-06')}}; window.tabelaVendasV23=vendaTable34;
+})();
+</script>
+
+</body></html>`);
   popup.document.close();
   setTimeout(()=>{popup.focus();popup.print();},650);
 }
@@ -2641,7 +2829,101 @@ function cashPanelV24(model,cfg){const total=vendasResumoV23(soldV23()),confirme
 function printDocumentV26(page,orientation){
  closeModal();if(page==='simulador')calcSim();const source=id('page-'+page);if(!source){toast('Tela não encontrada para impressão.','err');return;}const popup=window.open('','_blank','width=1280,height=920');if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape',clone=source.cloneNode(true);clone.querySelectorAll('.no-print,.sh-r,.icon').forEach(n=>n.remove());
  const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.sb,.top,.auth,.modal-back,.toasts{display:none!important}.print-doc{display:block!important;width:100%!important;margin:0!important;padding:0!important}.print-doc .print-head{display:flex!important;position:static!important;margin:0 0 9px!important;padding:0 0 8px!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .page{display:block!important;position:static!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important}.print-doc .page>.sh:first-child{margin:0 0 10px!important;break-before:auto!important;page-break-before:auto!important;break-after:avoid!important;page-break-after:avoid!important}.print-doc .card,.print-doc .table-card,.print-doc .cb,.print-doc .g2,.print-doc .g3,.print-doc .v24-section,.print-doc .cash-curve-section,.print-doc .scenario-section,.print-doc .v24-price-logic,.print-doc .v25-recovery,.print-doc .v26-flow-card{break-inside:auto!important;page-break-inside:auto!important;break-before:auto!important;page-break-before:auto!important}.print-doc .kpi,.print-doc .info,.print-doc .success,.print-doc .warnbox,.print-doc .v25-audit-item,.print-doc .v26-rule,.print-doc .v26-flow-chart,.print-doc tr{break-inside:avoid!important;page-break-inside:avoid!important}.print-doc .tw,.print-doc .v24-curve-table{overflow:visible!important;max-height:none!important}.print-doc table{min-width:0!important;width:100%!important}.print-doc thead{display:table-header-group!important}.print-doc .v26-flow-grid{display:block!important}.print-doc .v26-flow-card{margin-top:12px!important;box-shadow:none!important}.print-doc .v26-fin-form{display:none!important}`;
- popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${clone.outerHTML}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},700);
+ popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · PDF</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${clone.outerHTML}</div>
+<style id="v28-34-executivo-css">
+.v34-kpi-note{font-size:12px;color:#7a746b;margin-top:6px;line-height:1.35}
+.v34-flow-grid{display:grid;grid-template-columns:minmax(420px,1.4fr) minmax(320px,.9fr);gap:16px;align-items:start;margin-top:16px}
+.v34-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#f7ead3;color:#78511f;font-weight:900;font-size:12px}
+.v34-mini{font-size:12px;color:#766f66;line-height:1.45}.v34-ok{color:#147045;font-weight:900}.v34-warn{color:#9d6920;font-weight:900}.v34-bad{color:#a63f3f;font-weight:900}
+.v34-summary-line{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}.v34-summary-line .mini-card{border:1px solid #e2dacf;border-radius:14px;padding:12px;background:#fff}.v34-summary-line small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#7d7a75;font-weight:900}.v34-summary-line b{display:block;margin-top:3px;color:#153f39;font-size:17px}.v34-summary-line span{font-size:11px;color:#7a746b}
+@media(max-width:1200px){.v34-flow-grid{grid-template-columns:1fr}.v34-summary-line{grid-template-columns:repeat(2,1fr)}}
+@media print{.v34-flow-grid{display:block}.v34-summary-line{grid-template-columns:repeat(5,1fr)}}
+</style>
+<script id="v28-34-executivo-fluxo-periodo">
+(function(){
+  const V34_INICIO='2026-04-01', V34_FIM='2026-06-30';
+  function d34(v){return parseDate(v&&v.data)||'';}
+  function lotKey34(v){let k=norm((v.quadra||v.rua||'')+'|'+(v.lote||'')); if(k==='|')k=''; return k || norm((v.cliente||'')+'|'+(v.valorFinal||'')+'|'+d34(v));}
+  function isSold34(v){return v&&isVendido(v.status)&&!norm(v.status).includes('permut');}
+  function sales34(){const seen=new Set(), out=[];(vendasGerenciais()||[]).filter(isSold34).forEach(v=>{const k=lotKey34(v); if(!k||seen.has(k))return; seen.add(k); out.push({...v});}); return out.sort((a,b)=>(d34(a)||'9999').localeCompare(d34(b)||'9999')||String(a.quadra||a.rua).localeCompare(String(b.quadra||b.rua),'pt-BR')||String(a.lote).localeCompare(String(b.lote),'pt-BR',{numeric:true}));}
+  function period34(){return sales34().filter(v=>{const d=d34(v); return d>=V34_INICIO&&d<=V34_FIM;});}
+  function saleHasManualReceipts34(v){return ['recebimentoMaio','recebimentoJunho','recebimentoJulho','recebimentoAgosto'].some(k=>Math.abs(num(v[k]))>0.001);}
+  function pendingSignal34(v){const k=norm((v.quadra||v.rua||'')+' '+(v.lote||''));return norm(v.cliente).includes('validar cliente')||norm(v.observacao||v.fluxo||'').includes('sinal ainda nao confirmado')||(k.includes('araticum 26')||k.includes('araca 43'))&&num(v.recebimentoMaio)+num(v.recebimentoJunho)+num(v.recebimentoJulho)+num(v.recebimentoAgosto)===0;}
+  function addFlow34(map,ym,label,v,bruto,comissao,status){bruto=num(bruto); comissao=num(comissao); if(!bruto&&!comissao)return; if(!map[ym])map[ym]={ym,mes:ym==='2026-08'?'Ago+':ymLabelV25(ym),bruto:0,comissao:0,liquido:0,detalhes:[]}; const r=map[ym]; r.bruto+=bruto; r.comissao+=comissao; r.detalhes.push({label:label||`${v.cliente||''} · ${v.quadra||v.rua||''} ${v.lote||''}`,bruto,comissao,status:status||''});}
+  function isBeforeKrFixed34(v){return String(v.id||'').startsWith('FIX-') && d34(v)<V34_INICIO;}
+  function isEdsonBaru10V34(v){return norm(v.cliente).includes('edson luiz')||((norm(v.quadra||v.rua).includes('baru'))&&String(v.lote).trim()==='10');}
+  function flowMap34(){
+    const map={};
+    sales34().forEach(v=>{
+      const label=`${v.cliente||'Cliente'} · ${v.quadra||v.rua||''} ${v.lote||''}`;
+      if(pendingSignal34(v))return;
+      if(saleHasManualReceipts34(v) && !isBeforeKrFixed34(v)){
+        const com=d34(v).slice(0,7)==='2026-06'?comissaoValorVenda(v):0;
+        addFlow34(map,'2026-05',label,v,num(v.recebimentoMaio),0,'Receb./previsto');
+        addFlow34(map,'2026-06',label,v,num(v.recebimentoJunho),com,'Receb./previsto');
+        addFlow34(map,'2026-07',label,v,num(v.recebimentoJulho),0,'Previsto');
+        addFlow34(map,'2026-08',label,v,num(v.recebimentoAgosto),0,'Ago ou posterior');
+        return;
+      }
+      if(typeof isMendesV26==='function'&&isMendesV26(v)){
+        addFlow34(map,'2026-05',label+' · sinal recebido',v,29000,0,'Recebido');
+        addFlow34(map,'2026-06',label+' · saldo previsto',v,Math.max(num(v.valorFinal)-29000,0),comissaoValorVenda(v),'Previsto');
+        return;
+      }
+      if(isEdsonBaru10V34(v)){
+        addFlow34(map,'2026-06',label+' · sinal',v,165000,comissaoValorVenda(v),'Recebido/previsto');
+        addFlow34(map,'2026-07',label+' · parcela 1/5',v,64000,0,'Previsto');
+        addFlow34(map,'2026-08',label+' · parcelas 2 a 5/5',v,256000,0,'Ago ou posterior');
+        return;
+      }
+    });
+    let acum=0;return Object.values(map).sort((a,b)=>a.ym.localeCompare(b.ym)).map(r=>{r.liquido=r.bruto-r.comissao;acum+=r.liquido;r.acum=acum;return r;});
+  }
+  function flowSum34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.liquido,0);}
+  function flowGross34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.bruto,0);}
+  function future34(){return flowMap34().filter(r=>r.ym>'2026-06').reduce((s,r)=>s+r.bruto,0);}
+  function resumo34(arr){const vgv=arr.reduce((s,v)=>s+num(v.valorFinal),0), com=arr.reduce((s,v)=>s+comissaoValorVenda(v),0), liq=vgv-com;return {unidades:arr.length,vgv,comissao:com,liquido:liq};}
+  function rowFlowTable34(rows){return `<div class="tw"><table><thead><tr><th>Mês</th><th>Recebimento bruto</th><th>Comissão provisionada</th><th>Caixa líquido</th><th>Acumulado</th><th>Composição</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td><b>${BRL(r.acum)}</b></td><td>${r.detalhes.map(d=>`<small>• ${esc(d.label)}: ${BRL(d.bruto)}${d.comissao?` · comissão ${BRL(d.comissao)}`:''} (${esc(d.status)})</small>`).join('<br>')}</td></tr>`).join('')||empty(6)}</tbody></table></div>`;}
+  function vendaTable34(arr,withActions=true){return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>Data</th><th>Status</th><th>VGV</th><th>Comissão</th><th>Até jun</th><th>Julho</th><th>Ago+</th><th>Parceiro</th><th>Condição</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>{const ateJun=num(v.recebimentoMaio)+num(v.recebimentoJunho);const pend=pendingSignal34(v);return `<tr><td><b>${esc((v.quadra||v.rua||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}${pend?'<br><small class="v34-warn">Sinal a confirmar</small>':''}</td><td>${fmtDate(v.data)}</td><td>${badge(v.status)}</td><td><b>${BRL(v.valorFinal)}</b></td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(ateJun)}</b></td><td>${BRL(num(v.recebimentoJulho))}</td><td>${BRL(num(v.recebimentoAgosto))}</td><td>${esc(v.corretor||'-')}</td><td>${esc(v.formaPagamento||v.fluxo||'-')}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`}).join('')||empty(withActions?12:11)}</tbody></table></div>`;}
+  function pendingBlock34(){const p=period34().filter(pendingSignal34); if(!p.length)return '<div class="success"><b>Sem pendência de sinal no período.</b></div>'; return `<div class="warnbox"><b>Pendente de sinal:</b> ${p.length} venda(s) consideradas como vendidas no VGV, mas sem reconhecimento de caixa: ${p.map(v=>`${esc(v.quadra||v.rua)} ${esc(v.lote)}`).join(', ')}.</div>`;}
+  function flowMini34(){const rows=flowMap34();return `<div class="card"><div class="ch"><div><div class="ch-ttl">Fluxo do KR · abr-mai-jun e carteira futura</div><div class="sub">Leitura por recebimentos cadastrados nas fichas e valores confirmados/previstos.</div></div>${badge('caixa')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>`;}
+  window.v34DebugResumo=function(){return {acumulado:resumo34(sales34()),periodo:resumo34(period34()),flow:flowMap34()};};
+  window.renderDashboard=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23,caixaJun=flowSum34('2026-06'),fut=future34();
+    id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">KR abril–junho: vendas, VGV contratado, caixa reconhecido/previsto até junho e carteira futura.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="kpi-row">${kpi('Vendas no KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% da meta de unidades`,'g',pct(tri.unidades,metaUnd))}${kpi('VGV no KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% de ${BRL(metaFin)}`,'g',pct(tri.vgv,metaFin))}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados - comissões','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>
+    <div class="kpi-row">${kpi('Vendas acumuladas',total.unidades,'lotes vendidos')}${kpi('VGV acumulado',BRL(total.vgv),'contratado total','g')}${kpi('Comissão cadastrada',BRL(total.comissao),'provisionada conforme base')}${kpi('Pendente de sinal',pend.length,'Araticum 26 / Araçá 43, se ainda sem pagamento','o')}</div>
+    <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',tri.vgv,metaFin,true)}${progress('Meta de unidades',tri.unidades,metaUnd,false)}<div class="info"><b>Leitura objetiva:</b> VGV financeiro já supera a meta de ${BRL(metaFin)}. A leitura quantitativa depende da régua de ${metaUnd} unidades e hoje marca ${tri.unidades} vendas no período.</div>${pendingBlock34()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Resumo do fluxo</div>${badge('gestores')}</div><div class="cb"><div class="v34-summary-line"><div class="mini-card"><small>Até maio</small><b>${BRL(flowSum34('2026-05'))}</b><span>líquido</span></div><div class="mini-card"><small>Junho</small><b>${BRL(flowSum34('2026-06')-flowSum34('2026-05'))}</b><span>mês</span></div><div class="mini-card"><small>Até junho</small><b>${BRL(caixaJun)}</b><span>acum.</span></div><div class="mini-card"><small>Julho</small><b>${BRL(flowGross34('2026-07')-flowGross34('2026-06'))}</b><span>bruto</span></div><div class="mini-card"><small>Ago+</small><b>${BRL(fut-(flowGross34('2026-07')-flowGross34('2026-06')))}</b><span>bruto</span></div></div></div></div></div>
+    <div class="table-card section-gap"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="sub">Base usada para a reunião de gestores.</div></div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderVendas=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),caixaJun=flowSum34('2026-06'),fut=future34(),pend=period.filter(pendingSignal34);
+    id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Separação entre VGV vendido, entrada/caixa até junho e recebimentos futuros.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+    <div class="section-mini-title">KR abril-junho · leitura para gestores</div><div class="v23-kpi-stack">${kpi('Vendas no KR',tri.unidades,'abril, maio e junho')}${kpi('VGV do KR',BRL(tri.vgv),'contratado no período','g')}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>${pendingBlock34()}${flowMini34()}
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="v23-table-sub">${tri.unidades} vendas · VGV ${BRL(tri.vgv)} · ${pend.length} pendência(s) de sinal</div></div></div>${vendaTable34(period)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas acumuladas</div><div class="v23-table-sub">${total.unidades} vendas · VGV ${BRL(total.vgv)} · pós-comissão ${BRL(total.liquido)}</div></div></div>${vendaTable34(all)}</div>`;
+  };
+  window.renderRelatorios=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),rows=flowMap34(),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23;
+    id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo financeiro</div><div class="sub">Visão analítica diferente do dashboard: vendas do KR, caixa por mês, canais e pendências de sinal.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+    <div class="card"><div class="ch"><div class="ch-ttl">Resumo para reunião de gestores</div>${badge('KR abr-jun')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% unidades`,'g')}${kpi('VGV KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% financeiro`,'g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'recebimentos - comissões','o')}${kpi('Recebíveis futuros',BRL(future34()),'jul + ago/posterior','l')}</div>${pendingBlock34()}</div></div>
+    <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas por parceiro</div></div><div class="cb">${ranking(group(period,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas por rua</div></div><div class="cb">${ranking(group(period,'quadra'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Status do período</div></div><div class="cb">${ranking(group(period,'status'))}<div class="v34-mini" style="margin-top:10px">Pendências de sinal não entram no caixa até confirmação.</div></div></div></div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Fluxo mensal consolidado</div><div class="sub">Bruto, comissões provisionadas e líquido acumulado.</div></div></div>${rowFlowTable34(rows)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Base analítica de vendas do KR</div><div class="sub">Conferência lote a lote.</div></div><span>${BRL(tri.vgv)}</span></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderCenarios=function(){
+    const all=sales34(),period=period34(),tri=resumo34(period),rows=flowMap34(),fut=future34();
+    id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Base real sincronizada + carteira futura cadastrada nas vendas.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+    <div class="kpi-row">${kpi('VGV vendido KR',BRL(tri.vgv),'abril-junho','g')}${kpi('Vendas KR',tri.unidades,'unidades no período','g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'base cadastrada','o')}${kpi('Carteira futura',BRL(fut),'jul + ago/posterior','l')}</div>
+    <div class="card v23-section"><div class="ch"><div><div class="ch-ttl">Projeção a partir das vendas já cadastradas</div><div class="sub">Esta leitura usa os fluxos das fichas cadastradas. Novas projeções de estoque podem ser tratadas depois, sem misturar com vendas já contratadas.</div></div>${badge('real + futuro')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>
+    <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas que alimentam a projeção</div><span>${BRL(resumo34(all).vgv)}</span></div>${vendaTable34(all,false)}</div>`;
+  };
+  // Mantém compatibilidade com chamadas antigas.
+  window.fluxoContratosV26=flowMap34; window.fluxoAteV26=flowSum34; window.cashPeriodV23=function(){return {maio:flowSum34('2026-05'),junho:flowSum34('2026-06')}}; window.tabelaVendasV23=vendaTable34;
+})();
+</script>
+
+</body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},700);
 }
 printDocumentV25=printDocumentV26;printDocumentV22=printDocumentV26;
 </script>
@@ -2853,7 +3135,101 @@ function printDocumentV27(page,orientation){
   if(!popup){toast('Libere pop-ups para gerar o PDF.','err');return;}
   const css=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n'),fontLink=document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML||'',header=document.querySelector('.print-head')?.outerHTML||'<div class="print-head"><strong>Residencial Calliandra</strong><span>Sistema Comercial · Urbanizadora Paranoazinho</span></div>',orientationCss=orientation==='portrait'?'portrait':'landscape';
   const fix=`@page{size:A4 ${orientationCss};margin:10mm}html,body{height:auto!important;overflow:visible!important;background:#fff!important}body{padding:0!important}.print-doc{width:100%;margin:0!important;padding:0!important}.print-head{display:flex!important;margin:0 0 12px!important;padding:0 0 8px!important;border-bottom:2px solid #173d37;break-after:avoid!important;page-break-after:avoid!important}.v27-paper{display:block!important;margin:0!important;padding:0!important}.v27-paper .paper-section{break-before:auto!important;page-break-before:auto!important}.v27-paper tr{break-inside:avoid!important;page-break-inside:avoid!important}.v27-paper thead{display:table-header-group!important}`;
-  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div></body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
+  popup.document.open();popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Residencial Calliandra · Paper Executivo</title>${fontLink}<style>${css}\n${fix}</style></head><body><div class="print-doc">${header}${buildPaperCenariosV27()}</div>
+<style id="v28-34-executivo-css">
+.v34-kpi-note{font-size:12px;color:#7a746b;margin-top:6px;line-height:1.35}
+.v34-flow-grid{display:grid;grid-template-columns:minmax(420px,1.4fr) minmax(320px,.9fr);gap:16px;align-items:start;margin-top:16px}
+.v34-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#f7ead3;color:#78511f;font-weight:900;font-size:12px}
+.v34-mini{font-size:12px;color:#766f66;line-height:1.45}.v34-ok{color:#147045;font-weight:900}.v34-warn{color:#9d6920;font-weight:900}.v34-bad{color:#a63f3f;font-weight:900}
+.v34-summary-line{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}.v34-summary-line .mini-card{border:1px solid #e2dacf;border-radius:14px;padding:12px;background:#fff}.v34-summary-line small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#7d7a75;font-weight:900}.v34-summary-line b{display:block;margin-top:3px;color:#153f39;font-size:17px}.v34-summary-line span{font-size:11px;color:#7a746b}
+@media(max-width:1200px){.v34-flow-grid{grid-template-columns:1fr}.v34-summary-line{grid-template-columns:repeat(2,1fr)}}
+@media print{.v34-flow-grid{display:block}.v34-summary-line{grid-template-columns:repeat(5,1fr)}}
+</style>
+<script id="v28-34-executivo-fluxo-periodo">
+(function(){
+  const V34_INICIO='2026-04-01', V34_FIM='2026-06-30';
+  function d34(v){return parseDate(v&&v.data)||'';}
+  function lotKey34(v){let k=norm((v.quadra||v.rua||'')+'|'+(v.lote||'')); if(k==='|')k=''; return k || norm((v.cliente||'')+'|'+(v.valorFinal||'')+'|'+d34(v));}
+  function isSold34(v){return v&&isVendido(v.status)&&!norm(v.status).includes('permut');}
+  function sales34(){const seen=new Set(), out=[];(vendasGerenciais()||[]).filter(isSold34).forEach(v=>{const k=lotKey34(v); if(!k||seen.has(k))return; seen.add(k); out.push({...v});}); return out.sort((a,b)=>(d34(a)||'9999').localeCompare(d34(b)||'9999')||String(a.quadra||a.rua).localeCompare(String(b.quadra||b.rua),'pt-BR')||String(a.lote).localeCompare(String(b.lote),'pt-BR',{numeric:true}));}
+  function period34(){return sales34().filter(v=>{const d=d34(v); return d>=V34_INICIO&&d<=V34_FIM;});}
+  function saleHasManualReceipts34(v){return ['recebimentoMaio','recebimentoJunho','recebimentoJulho','recebimentoAgosto'].some(k=>Math.abs(num(v[k]))>0.001);}
+  function pendingSignal34(v){const k=norm((v.quadra||v.rua||'')+' '+(v.lote||''));return norm(v.cliente).includes('validar cliente')||norm(v.observacao||v.fluxo||'').includes('sinal ainda nao confirmado')||(k.includes('araticum 26')||k.includes('araca 43'))&&num(v.recebimentoMaio)+num(v.recebimentoJunho)+num(v.recebimentoJulho)+num(v.recebimentoAgosto)===0;}
+  function addFlow34(map,ym,label,v,bruto,comissao,status){bruto=num(bruto); comissao=num(comissao); if(!bruto&&!comissao)return; if(!map[ym])map[ym]={ym,mes:ym==='2026-08'?'Ago+':ymLabelV25(ym),bruto:0,comissao:0,liquido:0,detalhes:[]}; const r=map[ym]; r.bruto+=bruto; r.comissao+=comissao; r.detalhes.push({label:label||`${v.cliente||''} · ${v.quadra||v.rua||''} ${v.lote||''}`,bruto,comissao,status:status||''});}
+  function isBeforeKrFixed34(v){return String(v.id||'').startsWith('FIX-') && d34(v)<V34_INICIO;}
+  function isEdsonBaru10V34(v){return norm(v.cliente).includes('edson luiz')||((norm(v.quadra||v.rua).includes('baru'))&&String(v.lote).trim()==='10');}
+  function flowMap34(){
+    const map={};
+    sales34().forEach(v=>{
+      const label=`${v.cliente||'Cliente'} · ${v.quadra||v.rua||''} ${v.lote||''}`;
+      if(pendingSignal34(v))return;
+      if(saleHasManualReceipts34(v) && !isBeforeKrFixed34(v)){
+        const com=d34(v).slice(0,7)==='2026-06'?comissaoValorVenda(v):0;
+        addFlow34(map,'2026-05',label,v,num(v.recebimentoMaio),0,'Receb./previsto');
+        addFlow34(map,'2026-06',label,v,num(v.recebimentoJunho),com,'Receb./previsto');
+        addFlow34(map,'2026-07',label,v,num(v.recebimentoJulho),0,'Previsto');
+        addFlow34(map,'2026-08',label,v,num(v.recebimentoAgosto),0,'Ago ou posterior');
+        return;
+      }
+      if(typeof isMendesV26==='function'&&isMendesV26(v)){
+        addFlow34(map,'2026-05',label+' · sinal recebido',v,29000,0,'Recebido');
+        addFlow34(map,'2026-06',label+' · saldo previsto',v,Math.max(num(v.valorFinal)-29000,0),comissaoValorVenda(v),'Previsto');
+        return;
+      }
+      if(isEdsonBaru10V34(v)){
+        addFlow34(map,'2026-06',label+' · sinal',v,165000,comissaoValorVenda(v),'Recebido/previsto');
+        addFlow34(map,'2026-07',label+' · parcela 1/5',v,64000,0,'Previsto');
+        addFlow34(map,'2026-08',label+' · parcelas 2 a 5/5',v,256000,0,'Ago ou posterior');
+        return;
+      }
+    });
+    let acum=0;return Object.values(map).sort((a,b)=>a.ym.localeCompare(b.ym)).map(r=>{r.liquido=r.bruto-r.comissao;acum+=r.liquido;r.acum=acum;return r;});
+  }
+  function flowSum34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.liquido,0);}
+  function flowGross34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.bruto,0);}
+  function future34(){return flowMap34().filter(r=>r.ym>'2026-06').reduce((s,r)=>s+r.bruto,0);}
+  function resumo34(arr){const vgv=arr.reduce((s,v)=>s+num(v.valorFinal),0), com=arr.reduce((s,v)=>s+comissaoValorVenda(v),0), liq=vgv-com;return {unidades:arr.length,vgv,comissao:com,liquido:liq};}
+  function rowFlowTable34(rows){return `<div class="tw"><table><thead><tr><th>Mês</th><th>Recebimento bruto</th><th>Comissão provisionada</th><th>Caixa líquido</th><th>Acumulado</th><th>Composição</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td><b>${BRL(r.acum)}</b></td><td>${r.detalhes.map(d=>`<small>• ${esc(d.label)}: ${BRL(d.bruto)}${d.comissao?` · comissão ${BRL(d.comissao)}`:''} (${esc(d.status)})</small>`).join('<br>')}</td></tr>`).join('')||empty(6)}</tbody></table></div>`;}
+  function vendaTable34(arr,withActions=true){return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>Data</th><th>Status</th><th>VGV</th><th>Comissão</th><th>Até jun</th><th>Julho</th><th>Ago+</th><th>Parceiro</th><th>Condição</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>{const ateJun=num(v.recebimentoMaio)+num(v.recebimentoJunho);const pend=pendingSignal34(v);return `<tr><td><b>${esc((v.quadra||v.rua||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}${pend?'<br><small class="v34-warn">Sinal a confirmar</small>':''}</td><td>${fmtDate(v.data)}</td><td>${badge(v.status)}</td><td><b>${BRL(v.valorFinal)}</b></td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(ateJun)}</b></td><td>${BRL(num(v.recebimentoJulho))}</td><td>${BRL(num(v.recebimentoAgosto))}</td><td>${esc(v.corretor||'-')}</td><td>${esc(v.formaPagamento||v.fluxo||'-')}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`}).join('')||empty(withActions?12:11)}</tbody></table></div>`;}
+  function pendingBlock34(){const p=period34().filter(pendingSignal34); if(!p.length)return '<div class="success"><b>Sem pendência de sinal no período.</b></div>'; return `<div class="warnbox"><b>Pendente de sinal:</b> ${p.length} venda(s) consideradas como vendidas no VGV, mas sem reconhecimento de caixa: ${p.map(v=>`${esc(v.quadra||v.rua)} ${esc(v.lote)}`).join(', ')}.</div>`;}
+  function flowMini34(){const rows=flowMap34();return `<div class="card"><div class="ch"><div><div class="ch-ttl">Fluxo do KR · abr-mai-jun e carteira futura</div><div class="sub">Leitura por recebimentos cadastrados nas fichas e valores confirmados/previstos.</div></div>${badge('caixa')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>`;}
+  window.v34DebugResumo=function(){return {acumulado:resumo34(sales34()),periodo:resumo34(period34()),flow:flowMap34()};};
+  window.renderDashboard=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23,caixaJun=flowSum34('2026-06'),fut=future34();
+    id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">KR abril–junho: vendas, VGV contratado, caixa reconhecido/previsto até junho e carteira futura.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="kpi-row">${kpi('Vendas no KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% da meta de unidades`,'g',pct(tri.unidades,metaUnd))}${kpi('VGV no KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% de ${BRL(metaFin)}`,'g',pct(tri.vgv,metaFin))}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados - comissões','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>
+    <div class="kpi-row">${kpi('Vendas acumuladas',total.unidades,'lotes vendidos')}${kpi('VGV acumulado',BRL(total.vgv),'contratado total','g')}${kpi('Comissão cadastrada',BRL(total.comissao),'provisionada conforme base')}${kpi('Pendente de sinal',pend.length,'Araticum 26 / Araçá 43, se ainda sem pagamento','o')}</div>
+    <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',tri.vgv,metaFin,true)}${progress('Meta de unidades',tri.unidades,metaUnd,false)}<div class="info"><b>Leitura objetiva:</b> VGV financeiro já supera a meta de ${BRL(metaFin)}. A leitura quantitativa depende da régua de ${metaUnd} unidades e hoje marca ${tri.unidades} vendas no período.</div>${pendingBlock34()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Resumo do fluxo</div>${badge('gestores')}</div><div class="cb"><div class="v34-summary-line"><div class="mini-card"><small>Até maio</small><b>${BRL(flowSum34('2026-05'))}</b><span>líquido</span></div><div class="mini-card"><small>Junho</small><b>${BRL(flowSum34('2026-06')-flowSum34('2026-05'))}</b><span>mês</span></div><div class="mini-card"><small>Até junho</small><b>${BRL(caixaJun)}</b><span>acum.</span></div><div class="mini-card"><small>Julho</small><b>${BRL(flowGross34('2026-07')-flowGross34('2026-06'))}</b><span>bruto</span></div><div class="mini-card"><small>Ago+</small><b>${BRL(fut-(flowGross34('2026-07')-flowGross34('2026-06')))}</b><span>bruto</span></div></div></div></div></div>
+    <div class="table-card section-gap"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="sub">Base usada para a reunião de gestores.</div></div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderVendas=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),caixaJun=flowSum34('2026-06'),fut=future34(),pend=period.filter(pendingSignal34);
+    id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Separação entre VGV vendido, entrada/caixa até junho e recebimentos futuros.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+    <div class="section-mini-title">KR abril-junho · leitura para gestores</div><div class="v23-kpi-stack">${kpi('Vendas no KR',tri.unidades,'abril, maio e junho')}${kpi('VGV do KR',BRL(tri.vgv),'contratado no período','g')}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>${pendingBlock34()}${flowMini34()}
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="v23-table-sub">${tri.unidades} vendas · VGV ${BRL(tri.vgv)} · ${pend.length} pendência(s) de sinal</div></div></div>${vendaTable34(period)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas acumuladas</div><div class="v23-table-sub">${total.unidades} vendas · VGV ${BRL(total.vgv)} · pós-comissão ${BRL(total.liquido)}</div></div></div>${vendaTable34(all)}</div>`;
+  };
+  window.renderRelatorios=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),rows=flowMap34(),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23;
+    id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo financeiro</div><div class="sub">Visão analítica diferente do dashboard: vendas do KR, caixa por mês, canais e pendências de sinal.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+    <div class="card"><div class="ch"><div class="ch-ttl">Resumo para reunião de gestores</div>${badge('KR abr-jun')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% unidades`,'g')}${kpi('VGV KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% financeiro`,'g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'recebimentos - comissões','o')}${kpi('Recebíveis futuros',BRL(future34()),'jul + ago/posterior','l')}</div>${pendingBlock34()}</div></div>
+    <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas por parceiro</div></div><div class="cb">${ranking(group(period,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas por rua</div></div><div class="cb">${ranking(group(period,'quadra'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Status do período</div></div><div class="cb">${ranking(group(period,'status'))}<div class="v34-mini" style="margin-top:10px">Pendências de sinal não entram no caixa até confirmação.</div></div></div></div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Fluxo mensal consolidado</div><div class="sub">Bruto, comissões provisionadas e líquido acumulado.</div></div></div>${rowFlowTable34(rows)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Base analítica de vendas do KR</div><div class="sub">Conferência lote a lote.</div></div><span>${BRL(tri.vgv)}</span></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderCenarios=function(){
+    const all=sales34(),period=period34(),tri=resumo34(period),rows=flowMap34(),fut=future34();
+    id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Base real sincronizada + carteira futura cadastrada nas vendas.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+    <div class="kpi-row">${kpi('VGV vendido KR',BRL(tri.vgv),'abril-junho','g')}${kpi('Vendas KR',tri.unidades,'unidades no período','g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'base cadastrada','o')}${kpi('Carteira futura',BRL(fut),'jul + ago/posterior','l')}</div>
+    <div class="card v23-section"><div class="ch"><div><div class="ch-ttl">Projeção a partir das vendas já cadastradas</div><div class="sub">Esta leitura usa os fluxos das fichas cadastradas. Novas projeções de estoque podem ser tratadas depois, sem misturar com vendas já contratadas.</div></div>${badge('real + futuro')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>
+    <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas que alimentam a projeção</div><span>${BRL(resumo34(all).vgv)}</span></div>${vendaTable34(all,false)}</div>`;
+  };
+  // Mantém compatibilidade com chamadas antigas.
+  window.fluxoContratosV26=flowMap34; window.fluxoAteV26=flowSum34; window.cashPeriodV23=function(){return {maio:flowSum34('2026-05'),junho:flowSum34('2026-06')}}; window.tabelaVendasV23=vendaTable34;
+})();
+</script>
+
+</body></html>`);popup.document.close();setTimeout(()=>{popup.focus();popup.print();},650);
 }
 printDocumentV26=printDocumentV27;printDocumentV25=printDocumentV27;printDocumentV22=printDocumentV27;
 
@@ -5925,6 +6301,100 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
   };
   document.addEventListener('DOMContentLoaded',function(){setTimeout(updatePendingBadge,800);});
   window.CALLIANDRA_WRITE_BUILD=BUILD;
+})();
+</script>
+
+
+<style id="v28-34-executivo-css">
+.v34-kpi-note{font-size:12px;color:#7a746b;margin-top:6px;line-height:1.35}
+.v34-flow-grid{display:grid;grid-template-columns:minmax(420px,1.4fr) minmax(320px,.9fr);gap:16px;align-items:start;margin-top:16px}
+.v34-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#f7ead3;color:#78511f;font-weight:900;font-size:12px}
+.v34-mini{font-size:12px;color:#766f66;line-height:1.45}.v34-ok{color:#147045;font-weight:900}.v34-warn{color:#9d6920;font-weight:900}.v34-bad{color:#a63f3f;font-weight:900}
+.v34-summary-line{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}.v34-summary-line .mini-card{border:1px solid #e2dacf;border-radius:14px;padding:12px;background:#fff}.v34-summary-line small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#7d7a75;font-weight:900}.v34-summary-line b{display:block;margin-top:3px;color:#153f39;font-size:17px}.v34-summary-line span{font-size:11px;color:#7a746b}
+@media(max-width:1200px){.v34-flow-grid{grid-template-columns:1fr}.v34-summary-line{grid-template-columns:repeat(2,1fr)}}
+@media print{.v34-flow-grid{display:block}.v34-summary-line{grid-template-columns:repeat(5,1fr)}}
+</style>
+<script id="v28-34-executivo-fluxo-periodo">
+(function(){
+  const V34_INICIO='2026-04-01', V34_FIM='2026-06-30';
+  function d34(v){return parseDate(v&&v.data)||'';}
+  function lotKey34(v){let k=norm((v.quadra||v.rua||'')+'|'+(v.lote||'')); if(k==='|')k=''; return k || norm((v.cliente||'')+'|'+(v.valorFinal||'')+'|'+d34(v));}
+  function isSold34(v){return v&&isVendido(v.status)&&!norm(v.status).includes('permut');}
+  function sales34(){const seen=new Set(), out=[];(vendasGerenciais()||[]).filter(isSold34).forEach(v=>{const k=lotKey34(v); if(!k||seen.has(k))return; seen.add(k); out.push({...v});}); return out.sort((a,b)=>(d34(a)||'9999').localeCompare(d34(b)||'9999')||String(a.quadra||a.rua).localeCompare(String(b.quadra||b.rua),'pt-BR')||String(a.lote).localeCompare(String(b.lote),'pt-BR',{numeric:true}));}
+  function period34(){return sales34().filter(v=>{const d=d34(v); return d>=V34_INICIO&&d<=V34_FIM;});}
+  function saleHasManualReceipts34(v){return ['recebimentoMaio','recebimentoJunho','recebimentoJulho','recebimentoAgosto'].some(k=>Math.abs(num(v[k]))>0.001);}
+  function pendingSignal34(v){const k=norm((v.quadra||v.rua||'')+' '+(v.lote||''));return norm(v.cliente).includes('validar cliente')||norm(v.observacao||v.fluxo||'').includes('sinal ainda nao confirmado')||(k.includes('araticum 26')||k.includes('araca 43'))&&num(v.recebimentoMaio)+num(v.recebimentoJunho)+num(v.recebimentoJulho)+num(v.recebimentoAgosto)===0;}
+  function addFlow34(map,ym,label,v,bruto,comissao,status){bruto=num(bruto); comissao=num(comissao); if(!bruto&&!comissao)return; if(!map[ym])map[ym]={ym,mes:ym==='2026-08'?'Ago+':ymLabelV25(ym),bruto:0,comissao:0,liquido:0,detalhes:[]}; const r=map[ym]; r.bruto+=bruto; r.comissao+=comissao; r.detalhes.push({label:label||`${v.cliente||''} · ${v.quadra||v.rua||''} ${v.lote||''}`,bruto,comissao,status:status||''});}
+  function isBeforeKrFixed34(v){return String(v.id||'').startsWith('FIX-') && d34(v)<V34_INICIO;}
+  function isEdsonBaru10V34(v){return norm(v.cliente).includes('edson luiz')||((norm(v.quadra||v.rua).includes('baru'))&&String(v.lote).trim()==='10');}
+  function flowMap34(){
+    const map={};
+    sales34().forEach(v=>{
+      const label=`${v.cliente||'Cliente'} · ${v.quadra||v.rua||''} ${v.lote||''}`;
+      if(pendingSignal34(v))return;
+      if(saleHasManualReceipts34(v) && !isBeforeKrFixed34(v)){
+        const com=d34(v).slice(0,7)==='2026-06'?comissaoValorVenda(v):0;
+        addFlow34(map,'2026-05',label,v,num(v.recebimentoMaio),0,'Receb./previsto');
+        addFlow34(map,'2026-06',label,v,num(v.recebimentoJunho),com,'Receb./previsto');
+        addFlow34(map,'2026-07',label,v,num(v.recebimentoJulho),0,'Previsto');
+        addFlow34(map,'2026-08',label,v,num(v.recebimentoAgosto),0,'Ago ou posterior');
+        return;
+      }
+      if(typeof isMendesV26==='function'&&isMendesV26(v)){
+        addFlow34(map,'2026-05',label+' · sinal recebido',v,29000,0,'Recebido');
+        addFlow34(map,'2026-06',label+' · saldo previsto',v,Math.max(num(v.valorFinal)-29000,0),comissaoValorVenda(v),'Previsto');
+        return;
+      }
+      if(isEdsonBaru10V34(v)){
+        addFlow34(map,'2026-06',label+' · sinal',v,165000,comissaoValorVenda(v),'Recebido/previsto');
+        addFlow34(map,'2026-07',label+' · parcela 1/5',v,64000,0,'Previsto');
+        addFlow34(map,'2026-08',label+' · parcelas 2 a 5/5',v,256000,0,'Ago ou posterior');
+        return;
+      }
+    });
+    let acum=0;return Object.values(map).sort((a,b)=>a.ym.localeCompare(b.ym)).map(r=>{r.liquido=r.bruto-r.comissao;acum+=r.liquido;r.acum=acum;return r;});
+  }
+  function flowSum34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.liquido,0);}
+  function flowGross34(ymMax){return flowMap34().filter(r=>r.ym<=ymMax).reduce((s,r)=>s+r.bruto,0);}
+  function future34(){return flowMap34().filter(r=>r.ym>'2026-06').reduce((s,r)=>s+r.bruto,0);}
+  function resumo34(arr){const vgv=arr.reduce((s,v)=>s+num(v.valorFinal),0), com=arr.reduce((s,v)=>s+comissaoValorVenda(v),0), liq=vgv-com;return {unidades:arr.length,vgv,comissao:com,liquido:liq};}
+  function rowFlowTable34(rows){return `<div class="tw"><table><thead><tr><th>Mês</th><th>Recebimento bruto</th><th>Comissão provisionada</th><th>Caixa líquido</th><th>Acumulado</th><th>Composição</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.mes}</b></td><td>${BRL(r.bruto)}</td><td>${BRL(r.comissao)}</td><td><b>${BRL(r.liquido)}</b></td><td><b>${BRL(r.acum)}</b></td><td>${r.detalhes.map(d=>`<small>• ${esc(d.label)}: ${BRL(d.bruto)}${d.comissao?` · comissão ${BRL(d.comissao)}`:''} (${esc(d.status)})</small>`).join('<br>')}</td></tr>`).join('')||empty(6)}</tbody></table></div>`;}
+  function vendaTable34(arr,withActions=true){return `<div class="tw"><table><thead><tr><th>Lote</th><th>Cliente</th><th>Data</th><th>Status</th><th>VGV</th><th>Comissão</th><th>Até jun</th><th>Julho</th><th>Ago+</th><th>Parceiro</th><th>Condição</th>${withActions?'<th>Ações</th>':''}</tr></thead><tbody>${arr.map(v=>{const ateJun=num(v.recebimentoMaio)+num(v.recebimentoJunho);const pend=pendingSignal34(v);return `<tr><td><b>${esc((v.quadra||v.rua||'')+' '+(v.lote||''))}</b></td><td>${esc(v.cliente||'-')}${pend?'<br><small class="v34-warn">Sinal a confirmar</small>':''}</td><td>${fmtDate(v.data)}</td><td>${badge(v.status)}</td><td><b>${BRL(v.valorFinal)}</b></td><td>${BRL(comissaoValorVenda(v))}<br><small>${comissaoPctVenda(v).toFixed(2).replace('.',',')}%</small></td><td><b>${BRL(ateJun)}</b></td><td>${BRL(num(v.recebimentoJulho))}</td><td>${BRL(num(v.recebimentoAgosto))}</td><td>${esc(v.corretor||'-')}</td><td>${esc(v.formaPagamento||v.fluxo||'-')}</td>${withActions?`<td><button class="icon edit" title="Editar venda" onclick="openContrato('${v.id}')">✎</button> <button class="icon del" title="Excluir venda" onclick="delContrato('${v.id}')">🗑</button></td>`:''}</tr>`}).join('')||empty(withActions?12:11)}</tbody></table></div>`;}
+  function pendingBlock34(){const p=period34().filter(pendingSignal34); if(!p.length)return '<div class="success"><b>Sem pendência de sinal no período.</b></div>'; return `<div class="warnbox"><b>Pendente de sinal:</b> ${p.length} venda(s) consideradas como vendidas no VGV, mas sem reconhecimento de caixa: ${p.map(v=>`${esc(v.quadra||v.rua)} ${esc(v.lote)}`).join(', ')}.</div>`;}
+  function flowMini34(){const rows=flowMap34();return `<div class="card"><div class="ch"><div><div class="ch-ttl">Fluxo do KR · abr-mai-jun e carteira futura</div><div class="sub">Leitura por recebimentos cadastrados nas fichas e valores confirmados/previstos.</div></div>${badge('caixa')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>`;}
+  window.v34DebugResumo=function(){return {acumulado:resumo34(sales34()),periodo:resumo34(period34()),flow:flowMap34()};};
+  window.renderDashboard=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23,caixaJun=flowSum34('2026-06'),fut=future34();
+    id('page-dashboard').innerHTML=`<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">KR abril–junho: vendas, VGV contratado, caixa reconhecido/previsto até junho e carteira futura.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="kpi-row">${kpi('Vendas no KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% da meta de unidades`,'g',pct(tri.unidades,metaUnd))}${kpi('VGV no KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% de ${BRL(metaFin)}`,'g',pct(tri.vgv,metaFin))}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados - comissões','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>
+    <div class="kpi-row">${kpi('Vendas acumuladas',total.unidades,'lotes vendidos')}${kpi('VGV acumulado',BRL(total.vgv),'contratado total','g')}${kpi('Comissão cadastrada',BRL(total.comissao),'provisionada conforme base')}${kpi('Pendente de sinal',pend.length,'Araticum 26 / Araçá 43, se ainda sem pagamento','o')}</div>
+    <div class="g2 section-gap"><div class="card"><div class="ch"><div class="ch-ttl">Meta abril-junho</div>${badge('01/04 a 30/06')}</div><div class="cb">${progress('Meta financeira',tri.vgv,metaFin,true)}${progress('Meta de unidades',tri.unidades,metaUnd,false)}<div class="info"><b>Leitura objetiva:</b> VGV financeiro já supera a meta de ${BRL(metaFin)}. A leitura quantitativa depende da régua de ${metaUnd} unidades e hoje marca ${tri.unidades} vendas no período.</div>${pendingBlock34()}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Resumo do fluxo</div>${badge('gestores')}</div><div class="cb"><div class="v34-summary-line"><div class="mini-card"><small>Até maio</small><b>${BRL(flowSum34('2026-05'))}</b><span>líquido</span></div><div class="mini-card"><small>Junho</small><b>${BRL(flowSum34('2026-06')-flowSum34('2026-05'))}</b><span>mês</span></div><div class="mini-card"><small>Até junho</small><b>${BRL(caixaJun)}</b><span>acum.</span></div><div class="mini-card"><small>Julho</small><b>${BRL(flowGross34('2026-07')-flowGross34('2026-06'))}</b><span>bruto</span></div><div class="mini-card"><small>Ago+</small><b>${BRL(fut-(flowGross34('2026-07')-flowGross34('2026-06')))}</b><span>bruto</span></div></div></div></div></div>
+    <div class="table-card section-gap"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="sub">Base usada para a reunião de gestores.</div></div><button class="btn btn-ghost btn-sm" onclick="go('contratos')">Ver vendas →</button></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderVendas=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),caixaJun=flowSum34('2026-06'),fut=future34(),pend=period.filter(pendingSignal34);
+    id('page-contratos').innerHTML=`<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Separação entre VGV vendido, entrada/caixa até junho e recebimentos futuros.</div></div><div class="sh-r">${printActionsV19('contratos')}<button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+    <div class="section-mini-title">KR abril-junho · leitura para gestores</div><div class="v23-kpi-stack">${kpi('Vendas no KR',tri.unidades,'abril, maio e junho')}${kpi('VGV do KR',BRL(tri.vgv),'contratado no período','g')}${kpi('Caixa líquido até jun',BRL(caixaJun),'recebimentos cadastrados','o')}${kpi('Carteira futura',BRL(fut),'julho + agosto/posterior','l')}</div>${pendingBlock34()}${flowMini34()}
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas do KR abril-junho</div><div class="v23-table-sub">${tri.unidades} vendas · VGV ${BRL(tri.vgv)} · ${pend.length} pendência(s) de sinal</div></div></div>${vendaTable34(period)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Vendas acumuladas</div><div class="v23-table-sub">${total.unidades} vendas · VGV ${BRL(total.vgv)} · pós-comissão ${BRL(total.liquido)}</div></div></div>${vendaTable34(all)}</div>`;
+  };
+  window.renderRelatorios=function(){
+    const all=sales34(),period=period34(),total=resumo34(all),tri=resumo34(period),rows=flowMap34(),pend=period.filter(pendingSignal34),metaFin=CFG.metaFinanceira||4000000,metaUnd=CFG.metaLotes||23;
+    id('page-relatorios').innerHTML=`<div class="sh"><div><div class="ttl">Relatório executivo financeiro</div><div class="sub">Visão analítica diferente do dashboard: vendas do KR, caixa por mês, canais e pendências de sinal.</div></div><div class="sh-r">${printActionsV19('relatorios')}</div></div>
+    <div class="card"><div class="ch"><div class="ch-ttl">Resumo para reunião de gestores</div>${badge('KR abr-jun')}</div><div class="cb"><div class="v23-kpi-stack">${kpi('Vendas KR',tri.unidades+'/'+metaUnd,`${pct(tri.unidades,metaUnd)}% unidades`,'g')}${kpi('VGV KR',BRL(tri.vgv),`${pct(tri.vgv,metaFin)}% financeiro`,'g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'recebimentos - comissões','o')}${kpi('Recebíveis futuros',BRL(future34()),'jul + ago/posterior','l')}</div>${pendingBlock34()}</div></div>
+    <div class="g3 v23-section"><div class="card"><div class="ch"><div class="ch-ttl">Vendas por parceiro</div></div><div class="cb">${ranking(group(period,'corretor'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Vendas por rua</div></div><div class="cb">${ranking(group(period,'quadra'))}</div></div><div class="card"><div class="ch"><div class="ch-ttl">Status do período</div></div><div class="cb">${ranking(group(period,'status'))}<div class="v34-mini" style="margin-top:10px">Pendências de sinal não entram no caixa até confirmação.</div></div></div></div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Fluxo mensal consolidado</div><div class="sub">Bruto, comissões provisionadas e líquido acumulado.</div></div></div>${rowFlowTable34(rows)}</div>
+    <div class="table-card v23-section"><div class="ch"><div><div class="ch-ttl">Base analítica de vendas do KR</div><div class="sub">Conferência lote a lote.</div></div><span>${BRL(tri.vgv)}</span></div>${vendaTable34(period,false)}</div>`;
+  };
+  window.renderCenarios=function(){
+    const all=sales34(),period=period34(),tri=resumo34(period),rows=flowMap34(),fut=future34();
+    id('page-cenarios').innerHTML=`<div class="sh"><div><div class="ttl">Projeções de vendas e caixa</div><div class="sub">Base real sincronizada + carteira futura cadastrada nas vendas.</div></div><div class="sh-r">${printActionsV19('cenarios')}</div></div>
+    <div class="kpi-row">${kpi('VGV vendido KR',BRL(tri.vgv),'abril-junho','g')}${kpi('Vendas KR',tri.unidades,'unidades no período','g')}${kpi('Caixa líquido até jun',BRL(flowSum34('2026-06')),'base cadastrada','o')}${kpi('Carteira futura',BRL(fut),'jul + ago/posterior','l')}</div>
+    <div class="card v23-section"><div class="ch"><div><div class="ch-ttl">Projeção a partir das vendas já cadastradas</div><div class="sub">Esta leitura usa os fluxos das fichas cadastradas. Novas projeções de estoque podem ser tratadas depois, sem misturar com vendas já contratadas.</div></div>${badge('real + futuro')}</div><div class="cb">${rowFlowTable34(rows)}</div></div>
+    <div class="table-card v23-section"><div class="ch"><div class="ch-ttl">Vendas que alimentam a projeção</div><span>${BRL(resumo34(all).vgv)}</span></div>${vendaTable34(all,false)}</div>`;
+  };
+  // Mantém compatibilidade com chamadas antigas.
+  window.fluxoContratosV26=flowMap34; window.fluxoAteV26=flowSum34; window.cashPeriodV23=function(){return {maio:flowSum34('2026-05'),junho:flowSum34('2026-06')}}; window.tabelaVendasV23=vendaTable34;
 })();
 </script>
 
