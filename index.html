@@ -6628,5 +6628,219 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){style();try{if((document.querySelector('.sb-item.on')||{}).dataset?.page==='simulador')renderCafe48Simulador()}catch(e){console.error('V28.48 simulador',e);}},500);});
 })();
 </script>
+
+<script>
+/* V28.49 — SIMULADOR CAFÉ COM CALLIANDRA · DATAS, RODAPÉ E LAYOUT CLIENTE
+   Patch de apresentação e impressão: substitui somente a tela do Simulador.
+   Mantém a tabela Café com Calliandra e cálculos PRICE/SAC/Giro 12 sem alterar planilha, Apps Script ou demais módulos.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.49 · Simulador Cliente com Datas';
+  const PREV = window.CALLIANDRA_CAFE_V2848 || window.CALLIANDRA_CAFE_V2847 || window.CALLIANDRA_CAFE_V2845 || {};
+  const CAFE_TABLE = Array.isArray(PREV.tabela) ? PREV.tabela : [];
+  const META = Object.assign({precoBaseM2:1472.47,jurosAA:0.12,taxaMensal:Math.pow(1.12,1/12)-1,entradaMinima:15,prazoMax:240,validade:'02/08/2026'}, PREV.meta||{});
+  META.entradaMinima = 15;
+  META.prazoMax = 240;
+  META.jurosAA = Number(META.jurosAA || 0.12);
+  META.taxaMensal = Math.pow(1 + META.jurosAA, 1/12) - 1;
+  const STORE='CALLIANDRA_SIM_CAFE_V2849';
+  const OLD_STORES=['CALLIANDRA_SIM_CAFE_V2848','CALLIANDRA_SIM_CAFE_V2847','CALLIANDRA_SIM_CAFE_V2845'];
+  const $=(id)=>document.getElementById(id);
+  const esc=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const brl=(v)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const nfmt=(v,d=2)=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pct=(v,d=2)=>`${nfmt(v,d)}%`;
+  const round2=(v)=>Math.round((Number(v||0)+Number.EPSILON)*100)/100;
+  function parseBR(v){
+    if(typeof v==='number')return isFinite(v)?v:0;
+    let s=String(v??'').trim();
+    if(!s)return 0;
+    s=s.replace(/R\$|%|\s/g,'');
+    if(s.includes(',') && s.includes('.'))s=s.replace(/\./g,'').replace(',', '.');
+    else if(s.includes(','))s=s.replace(',', '.');
+    const x=Number(s); return isFinite(x)?x:0;
+  }
+  function moneyText(v){return String(round2(v)).replace('.',',');}
+  function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();}
+  function userName(){try{const u=JSON.parse(localStorage.getItem('USER')||'{}');return u.nome||u.name||'Administrador';}catch(e){return 'Administrador';}}
+  function isoToday(){const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`;}
+  function parseISODate(v){
+    const s=String(v||'').trim();
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12,0,0,0);}
+    const now=new Date(); return new Date(now.getFullYear(),now.getMonth(),now.getDate(),12,0,0,0);
+  }
+  function fmtDate(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+  function lastDay(y,m){return new Date(y,m+1,0).getDate();}
+  function addMonthsForDue(baseIso,dia,offset){
+    const base=parseISODate(baseIso);
+    let y=base.getFullYear(), m=base.getMonth();
+    const dday=Math.max(1,Math.min(31,Math.round(parseBR(dia)||5)));
+    if(base.getDate()>dday)m += 1;
+    m += Number(offset||0);
+    y += Math.floor(m/12);
+    m = ((m%12)+12)%12;
+    const d=Math.min(dday,lastDay(y,m));
+    return new Date(y,m,d,12,0,0,0);
+  }
+  function tableRow(code){return CAFE_TABLE.find(r=>String(r.codigo)===String(code)) || CAFE_TABLE[0] || {codigo:'',rua:'',lote:'',area:0,precoM2:META.precoBaseM2,valorTabela:0,tipo:'Padrão'};}
+  function loteLabel(r){return `Rua ${r.rua} · Lote ${r.lote}`;}
+  function optionText(r){return `${loteLabel(r)} · ${nfmt(r.area,2)} m² · ${brl(r.valorTabela)}${r.tipo && r.tipo!=='Padrão'?' · '+r.tipo:''}${r.garantia?' · Garantia GDF':''}`;}
+  function defaultState(){const r=tableRow();return {build:BUILD,cliente:'',responsavel:userName(),codigo:r.codigo,entradaPct:'30',parcelas:'120',desconto:'0',modo:'entrada',dataSimulacao:isoToday(),diaVencimento:'10',observacao:`Proposta válida até ${META.validade}, conforme Tabela Café com Calliandra.`};}
+  function readJSON(k){try{return JSON.parse(localStorage.getItem(k)||'{}')||{};}catch(e){return {};}}
+  function readState(){
+    let s=readJSON(STORE);
+    if(!s || !s.codigo){for(const key of OLD_STORES){const t=readJSON(key);if(t && t.codigo){s=t;break;}}}
+    s=Object.assign(defaultState(),s||{}, {build:BUILD});
+    if(!s.dataSimulacao)s.dataSimulacao=isoToday();
+    if(!s.diaVencimento)s.diaVencimento='10';
+    if(!CAFE_TABLE.some(r=>r.codigo===s.codigo))s.codigo=tableRow().codigo;
+    return s;
+  }
+  function saveState(s){try{localStorage.setItem(STORE,JSON.stringify(Object.assign({},s,{build:BUILD})))}catch(e){}return s;}
+  function stateFromDom(){
+    const s=readState();
+    const map={cliente:'cafe49_cliente',responsavel:'cafe49_responsavel',codigo:'cafe49_codigo',entradaPct:'cafe49_entradaPct',parcelas:'cafe49_parcelas',desconto:'cafe49_desconto',observacao:'cafe49_observacao',dataSimulacao:'cafe49_dataSimulacao',diaVencimento:'cafe49_diaVencimento'};
+    Object.keys(map).forEach(k=>{const el=$(map[k]); if(el)s[k]=el.value;});
+    return s;
+  }
+  function pmt(pv,n,i){if(!pv||!n)return 0;if(!i)return pv/n;return pv*i/(1-Math.pow(1+i,-n));}
+  function priceSeries(pv,n,i,parcela){let saldo=pv;const rows=[];for(let k=1;k<=n;k++){const juros=saldo*i;let amort=parcela-juros;if(k===n){amort=saldo;}saldo=Math.max(0,saldo-amort);rows.push({k,parcela,juros,amort,saldo});}return rows;}
+  function sacSeries(pv,n,i){let saldo=pv;const amort=n?pv/n:0;const rows=[];for(let k=1;k<=n;k++){const juros=saldo*i;const parcela=amort+juros;if(k===n)saldo=0;else saldo=Math.max(0,saldo-amort);rows.push({k,parcela,juros,amort,saldo});}return rows;}
+  function buildModel(){
+    const s=stateFromDom();
+    const r=tableRow(s.codigo);
+    const precoM2=Number(r.precoM2 || META.precoBaseM2);
+    let modo=s.modo||'entrada';
+    let desc=Math.max(0,Math.min(100,parseBR(s.desconto)));
+    let entradaPct=parseBR(s.entradaPct);
+    let parcelas=Math.round(parseBR(s.parcelas));
+    if(modo==='avista'){entradaPct=100;parcelas=0;}
+    else if(modo==='giro12'){entradaPct=50;parcelas=12;}
+    else{entradaPct=Math.max(META.entradaMinima,Math.min(100,entradaPct||META.entradaMinima));parcelas=Math.max(0,Math.min(META.prazoMax,parcelas||0));}
+    const valorTabela=round2((Number(r.area)||0)*precoM2);
+    const valorNeg=round2(valorTabela*(1-desc/100));
+    const entrada=round2(valorNeg*(entradaPct/100));
+    const saldo=round2(Math.max(0,valorNeg-entrada));
+    const giro=modo==='giro12';
+    const hasFin=saldo>0 && parcelas>0;
+    const taxa=META.taxaMensal;
+    const price=hasFin ? round2(giro ? saldo/12 : pmt(saldo,parcelas,taxa)) : 0;
+    const totalPrice=hasFin ? round2(price*parcelas) : 0;
+    const jurosPrice=hasFin && !giro ? round2(totalPrice-saldo) : 0;
+    const sacRows=hasFin && !giro ? sacSeries(saldo,parcelas,taxa) : [];
+    const sacJuros=hasFin && !giro ? round2(sacRows.reduce((a,x)=>a+x.juros,0)) : 0;
+    const priceRows=hasFin && !giro ? priceSeries(saldo,parcelas,taxa,price) : [];
+    const giroRows=hasFin && giro ? Array.from({length:12},(_,idx)=>({k:idx+1,price:saldo/12,sac:saldo/12,saldoPrice:Math.max(0,saldo-(saldo/12)*(idx+1)),saldoSac:Math.max(0,saldo-(saldo/12)*(idx+1))})) : [];
+    const diaVencimento=String(Math.max(1,Math.min(31,Math.round(parseBR(s.diaVencimento)||10))));
+    const dataSimulacao=s.dataSimulacao||isoToday();
+    const firstDue=fmtDate(addMonthsForDue(dataSimulacao,diaVencimento,0));
+    const ipca=hasFin && !giro && parcelas>36;
+    return {s,r,modo,precoM2,desc,entradaPct,parcelas,valorTabela,valorNeg,entrada,saldo,giro,hasFin,taxa,price,totalPrice,jurosPrice,sacRows,sacJuros,priceRows,giroRows,ipca,dataSimulacao,diaVencimento,firstDue};
+  }
+  function metric(label,value,help,cls){return `<div class="cafe49-metric ${cls||''}"><span>${esc(label)}</span><b>${value}</b>${help?`<small>${help}</small>`:''}</div>`;}
+  function paymentSummary(m){
+    if(m.modo==='avista')return 'pagamento à vista';
+    if(m.giro)return '50% de entrada + 12 parcelas Giro 12';
+    return `${pct(m.entradaPct,2)} de entrada + ${m.parcelas} parcelas`;
+  }
+  function observations(m){
+    const lines=[];
+    if(m.modo==='avista')lines.push('Pagamento integral à vista, sem saldo financiado.');
+    else if(m.giro)lines.push(`Giro 12: 50% de entrada e 12 parcelas fixas de ${brl(m.price)}, sem juros e sem correção.`);
+    else if(m.hasFin)lines.push(`Taxa de juros: ${pct(m.taxa*100,6)} ao mês, obtida de 12% ao ano.`);
+    if(m.ipca)lines.push('Parcelas acima de 36 meses: incidência de IPCA desde a primeira parcela. IPCA não projetado nesta simulação.');
+    if(m.s.observacao)lines.push(esc(m.s.observacao));
+    return `<section class="cafe49-card cafe49-obscard"><h3>Observações da proposta</h3><ul>${lines.map(x=>`<li>${x}</li>`).join('')}</ul></section>`;
+  }
+  function installmentTable(m){
+    if(!m.hasFin)return '';
+    let rows=[];
+    if(m.giro){rows=m.giroRows.map(x=>({k:x.k,price:x.price,saldoPrice:x.saldoPrice,sac:x.sac,saldoSac:x.saldoSac}));}
+    else{rows=m.priceRows.map((p,idx)=>{const s=m.sacRows[idx]||{};return {k:p.k,price:p.parcela,saldoPrice:p.saldo,sac:s.parcela||0,saldoSac:s.saldo||0};});}
+    const body=rows.map(row=>{const data=fmtDate(addMonthsForDue(m.dataSimulacao,m.diaVencimento,row.k-1));return `<tr><td>${row.k}</td><td>${data}</td><td>${brl(row.price)}</td><td>${brl(row.saldoPrice)}</td><td>${brl(row.sac)}</td><td>${brl(row.saldoSac)}</td></tr>`;}).join('');
+    return `<section class="cafe49-card cafe49-install"><div class="cafe49-title-row"><div><h3>${m.giro?'Série Giro 12':'Série de parcelas'}</h3><p>${m.giro?'12 parcelas sem juros e sem correção.':`${m.parcelas} parcelas · PRICE e SAC lado a lado.`}</p></div></div><div class="cafe49-table-wrap"><table><thead><tr><th>Parcela</th><th>Vencimento</th><th>PRICE</th><th>Saldo PRICE</th><th>SAC</th><th>Saldo SAC</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+  }
+  function printFooter(m){
+    const text=`Simulação Residencial Calliandra · ${loteLabel(m.r)} · ${paymentSummary(m)} · válida até ${META.validade}`;
+    return `<div class="cafe49-print-footer"><span>${esc(text)}</span></div>`;
+  }
+  function resultHtml(m){
+    const title=`${loteLabel(m.r)}`;
+    const sacFirst=m.hasFin && !m.giro && m.sacRows.length ? m.sacRows[0].parcela : 0;
+    const sacLast=m.hasFin && !m.giro && m.sacRows.length ? m.sacRows[m.sacRows.length-1].parcela : 0;
+    const precoNegM2=m.r.area?m.valorNeg/Number(m.r.area):0;
+    return `<section class="cafe49-card cafe49-result"><div class="cafe49-result-head"><div><h2>${esc(title)}</h2><p>${nfmt(m.r.area,2)} m² · ${esc(m.r.tipo||'Tabela Café com Calliandra')}${m.r.garantia?' · Garantia GDF':''}</p>${m.s.cliente?`<p><b>Cliente:</b> ${esc(m.s.cliente)}${m.s.responsavel?` · <b>Responsável:</b> ${esc(m.s.responsavel)}`:''}</p>`:''}<p><b>Data da simulação:</b> ${fmtDate(parseISODate(m.dataSimulacao))} · <b>1º vencimento:</b> ${m.firstDue}</p></div><div class="cafe49-total"><span>Valor negociado</span><strong>${brl(m.valorNeg)}</strong>${m.desc?`<small>${pct(m.desc,2)} de desconto</small>`:'<small>sem desconto</small>'}</div></div><div class="cafe49-metrics">
+      ${metric('Valor de tabela',brl(m.valorTabela),`${brl(m.precoM2)}/m²`,'green')}
+      ${metric('Preço m² negociado',brl(precoNegM2),'após desconto','')}
+      ${metric('Entrada',brl(m.entrada),pct(m.entradaPct,2),'green')}
+      ${metric('Saldo financiado',m.saldo?brl(m.saldo):'Não se aplica',m.parcelas?`${m.parcelas} parcelas`:'pagamento integral','')}
+      ${metric('Parcela PRICE',m.hasFin?brl(m.price):'Não se aplica',m.giro?'sem juros':m.hasFin?'parcela fixa':'','orange')}
+      ${metric('SAC',m.hasFin?(m.giro?brl(m.price):`${brl(sacFirst)} → ${brl(sacLast)}`):'Não se aplica',m.giro?'parcela fixa':'1ª e última parcela','orange')}
+      ${metric('Juros PRICE',m.giro||!m.hasFin?'R$ 0,00':brl(m.jurosPrice),m.giro?'sem juros':'total estimado','')}
+      ${metric('Juros SAC',m.giro||!m.hasFin?'R$ 0,00':brl(m.sacJuros),m.giro?'sem juros':'total estimado','')}
+    </div>${m.saldo>0 && !m.parcelas && m.modo==='entrada'?`<div class="cafe49-warn">Informe o número de parcelas para simular o saldo financiado.</div>`:''}</section>${installmentTable(m)}${observations(m)}${printFooter(m)}`;
+  }
+  function calcCafe49(){
+    const m=buildModel();
+    const el=$('cafe49_result'); if(el)el.innerHTML=resultHtml(m);
+    saveState(Object.assign({},m.s,{entradaPct:String(m.entradaPct).replace('.',','),parcelas:String(m.parcelas),desconto:String(m.desc).replace('.',','),modo:m.modo,dataSimulacao:m.dataSimulacao,diaVencimento:m.diaVencimento}));
+  }
+  function setField(field,value,recalc){const s=readState();s[field]=value;saveState(s);if(recalc)calcCafe49();}
+  function setLote(code){const s=stateFromDom();s.codigo=code;saveState(s);renderCafe49Simulador();}
+  function setMode(mode){const s=stateFromDom();s.modo=mode;if(mode==='avista'){s.entradaPct='100';s.parcelas='0';}if(mode==='giro12'){s.entradaPct='50';s.parcelas='12';}if(mode==='entrada'){if(parseBR(s.entradaPct)<META.entradaMinima)s.entradaPct=String(META.entradaMinima);if(parseBR(s.parcelas)<=0)s.parcelas='120';}saveState(s);renderCafe49Simulador();}
+  function normalize(){const s=stateFromDom();let ent=parseBR(s.entradaPct);let parc=Math.round(parseBR(s.parcelas));let desc=parseBR(s.desconto);if(s.modo==='avista'){ent=100;parc=0;}else if(s.modo==='giro12'){ent=50;parc=12;}else{ent=Math.max(META.entradaMinima,Math.min(100,ent||META.entradaMinima));parc=Math.max(0,Math.min(META.prazoMax,parc||0));}desc=Math.max(0,Math.min(100,desc||0));s.entradaPct=String(ent).replace('.',',');s.parcelas=String(parc);s.desconto=String(desc).replace('.',',');if(!s.dataSimulacao)s.dataSimulacao=isoToday();if(!s.diaVencimento)s.diaVencimento='10';saveState(s);renderCafe49Simulador();}
+  function renderCafe49Simulador(selected){
+    style();
+    const page=$('page-simulador'); if(!page)return;
+    const s=readState();
+    if(selected){const maybe=CAFE_TABLE.find(r=>norm(r.codigo)===norm(selected)||norm(loteLabel(r)).includes(norm(selected)));if(maybe)s.codigo=maybe.codigo;}
+    if(!CAFE_TABLE.some(r=>r.codigo===s.codigo))s.codigo=tableRow().codigo;
+    saveState(s);
+    const r=tableRow(s.codigo);
+    const printBtn=(typeof printActionsV19==='function')?printActionsV19('simulador'):`<button class="btn btn-ghost" onclick="printPage('simulador')">🖨 Imprimir / PDF</button>`;
+    const av=s.modo==='avista', giro=s.modo==='giro12', entrada=!av&&!giro;
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div></div><div class="sh-r">${printBtn}</div></div>
+      <section class="cafe49-card no-print cafe49-form">
+        <div class="cafe49-grid cafe49-top">
+          <label>Nome do cliente<input id="cafe49_cliente" value="${esc(s.cliente)}" oninput="setCafe49Field('cliente',this.value,true)"></label>
+          <label>Responsável<input id="cafe49_responsavel" value="${esc(s.responsavel)}" oninput="setCafe49Field('responsavel',this.value,true)"></label>
+          <label>Lote<select id="cafe49_codigo" onchange="setCafe49Lote(this.value)">${CAFE_TABLE.map(x=>`<option value="${esc(x.codigo)}" ${x.codigo===s.codigo?'selected':''}>${esc(optionText(x))}</option>`).join('')}</select></label>
+        </div>
+        <div class="cafe49-grid cafe49-fin">
+          <label>Valor do m²<input class="readonly" value="${esc(moneyText(r.precoM2||META.precoBaseM2))}" readonly></label>
+          <label>Forma de pagamento<div class="cafe49-switch"><button type="button" class="${av?'on':''}" onclick="setCafe49Modo('avista')"><span>À vista</span></button><button type="button" class="${entrada?'on':''}" onclick="setCafe49Modo('entrada')"><span>Com<br>entrada</span></button><button type="button" class="${giro?'on':''}" onclick="setCafe49Modo('giro12')"><span>Giro 12</span></button></div></label>
+          <label>Entrada (%)<input id="cafe49_entradaPct" inputmode="decimal" value="${esc(av?'100':giro?'50':s.entradaPct)}" ${av||giro?'readonly':''} oninput="setCafe49Field('entradaPct',this.value,true)" onblur="normalizeCafe49()"></label>
+          <label>Nº parcelas<input id="cafe49_parcelas" inputmode="numeric" value="${esc(av?'0':giro?'12':s.parcelas)}" ${av||giro?'readonly':''} oninput="setCafe49Field('parcelas',this.value,true)" onblur="normalizeCafe49()"></label>
+          <label>Desconto (%)<input id="cafe49_desconto" inputmode="decimal" value="${esc(s.desconto)}" oninput="setCafe49Field('desconto',this.value,true)" onblur="normalizeCafe49()"></label>
+        </div>
+        <div class="cafe49-grid cafe49-dates">
+          <label>Data da simulação<input id="cafe49_dataSimulacao" type="date" value="${esc(s.dataSimulacao||isoToday())}" onchange="setCafe49Field('dataSimulacao',this.value,true)"></label>
+          <label>Vencimento<select id="cafe49_diaVencimento" onchange="setCafe49Field('diaVencimento',this.value,true)">${[5,10,15,25,30].map(d=>`<option value="${d}" ${String(s.diaVencimento||'10')===String(d)?'selected':''}>Dia ${d}</option>`).join('')}</select></label>
+          <label class="cafe49-observacao">Observação da proposta<input id="cafe49_observacao" value="${esc(s.observacao)}" oninput="setCafe49Field('observacao',this.value,true)"></label>
+        </div>
+        <div class="cafe49-footer"><button type="button" class="btn btn-terra" onclick="normalizeCafe49()">Atualizar simulação</button></div>
+      </section><div id="cafe49_result"></div>`;
+    calcCafe49();
+  }
+  function style(){
+    if($('cafe49-style'))return;
+    const css=`.cafe49-card{background:#fff;border:1px solid var(--borda,#e3ddd3);border-radius:22px;padding:24px;margin:18px 0;box-shadow:0 10px 28px rgba(0,0,0,.035);overflow:hidden}.cafe49-form{padding-top:22px}.cafe49-grid{display:grid;gap:14px;margin-bottom:16px}.cafe49-top{grid-template-columns:1fr 1fr 2.2fr}.cafe49-fin{grid-template-columns:.85fr 1.18fr .7fr .7fr .7fr;align-items:end}.cafe49-dates{grid-template-columns:.75fr .65fr minmax(420px,1fr);align-items:end}.cafe49-card label{display:flex;flex-direction:column;gap:8px;text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:900;color:#073b35}.cafe49-card input,.cafe49-card select{height:52px;border:1px solid #d9ddd8;border-radius:14px;padding:0 14px;font-size:16px;font-weight:700;background:#fff;color:#062e2b;text-transform:none;letter-spacing:0;min-width:0}.cafe49-card select{font-weight:600}.cafe49-card input.readonly,.cafe49-card input[readonly]{background:#f7f5f0;color:#073b35}.cafe49-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:52px;border:1px solid #d9ddd8;border-radius:14px;overflow:hidden;background:#fff}.cafe49-switch button{border:0;background:#fff;font-weight:900;color:#073b35;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;min-width:0}.cafe49-switch button+button{border-left:1px solid #e7e1d8}.cafe49-switch button.on{background:#12443c;color:#fff}.cafe49-observacao{grid-column:auto}.cafe49-footer{display:flex;justify-content:flex-end;margin-top:10px}.cafe49-result-head{display:flex;justify-content:space-between;gap:22px;align-items:flex-start;border-bottom:1px solid #eee6d9;padding-bottom:15px;margin-bottom:18px}.cafe49-result-head h2{margin:0;color:#073b35}.cafe49-result-head p{margin:5px 0 0;color:#777}.cafe49-total{text-align:right;min-width:260px}.cafe49-total span{display:block;text-transform:uppercase;letter-spacing:.09em;color:#777;font-size:12px;font-weight:900}.cafe49-total strong{display:block;font-size:clamp(28px,3vw,42px);line-height:1.02;color:#073b35;word-break:normal}.cafe49-total small{display:block;color:#777}.cafe49-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.cafe49-metric{background:#fbf7ef;border:1px solid #eee3d2;border-radius:16px;padding:14px;min-height:101px;overflow:hidden}.cafe49-metric.green{border-top:4px solid #178c54}.cafe49-metric.orange{border-top:4px solid #f28c3a}.cafe49-metric span{display:block;text-transform:uppercase;letter-spacing:.09em;font-size:11px;color:#777;font-weight:900;margin-bottom:8px}.cafe49-metric b{display:block;font-size:clamp(18px,1.45vw,27px);color:#073b35;line-height:1.06;white-space:normal;word-break:normal}.cafe49-metric small{display:block;color:#777;margin-top:7px}.cafe49-obscard h3{margin:0 0 10px;color:#073b35}.cafe49-obscard ul{margin:0;padding-left:20px;color:#5b3c13}.cafe49-obscard li{margin:6px 0}.cafe49-warn{border-radius:14px;padding:13px 16px;margin:12px 0;background:#fff1e8;border:1px solid #f2c7a7;color:#8a4211}.cafe49-title-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid #eee6d9;padding-bottom:15px;margin-bottom:18px}.cafe49-title-row h3{margin:0;color:#073b35}.cafe49-title-row p{margin:5px 0 0;color:#777}.cafe49-table-wrap{overflow:auto;border-radius:14px;border:1px solid #e8e1d8;max-height:560px}.cafe49-table-wrap table{width:100%;border-collapse:collapse;font-size:14px}.cafe49-table-wrap th{background:#12443c;color:#fff;text-align:left;padding:12px;white-space:nowrap;position:sticky;top:0;z-index:1}.cafe49-table-wrap td{padding:10px 12px;border-bottom:1px solid #eee6d9;white-space:nowrap}.cafe49-table-wrap tbody tr:nth-child(even){background:#fbf7ef}.cafe49-print-footer{margin-top:18px;border-top:1px solid #e6ded3;padding-top:12px;color:#5f5a52;font-size:12px;text-align:center}@media(max-width:1200px){.cafe49-top{grid-template-columns:1fr 1fr}.cafe49-top label:last-child{grid-column:1/-1}.cafe49-fin{grid-template-columns:1fr 1.3fr 1fr}.cafe49-dates{grid-template-columns:1fr 1fr}.cafe49-observacao{grid-column:1/-1}.cafe49-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.cafe49-result-head{flex-direction:column}.cafe49-total{text-align:left}}@media(max-width:780px){.cafe49-top,.cafe49-fin,.cafe49-dates,.cafe49-metrics{grid-template-columns:1fr}.cafe49-switch{height:auto;grid-template-columns:1fr}.cafe49-switch button{padding:14px 10px}.cafe49-switch button+button{border-left:0;border-top:1px solid #e7e1d8}.cafe49-footer{justify-content:stretch}.cafe49-footer .btn{width:100%}}@media print{.cafe49-card{box-shadow:none;break-inside:avoid}.cafe49-form.no-print{display:none!important}.cafe49-install{break-inside:auto}.cafe49-table-wrap{overflow:visible;max-height:none}.cafe49-table-wrap th{position:static}.cafe49-table-wrap table{font-size:9.4px}.cafe49-table-wrap th,.cafe49-table-wrap td{padding:5px 5px}.cafe49-metrics{grid-template-columns:repeat(4,1fr)}.cafe49-print-footer{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:6px 16px;border-top:1px solid #ddd;font-size:10px}body{padding-bottom:28px}}`;
+    const st=document.createElement('style');st.id='cafe49-style';st.textContent=css;document.head.appendChild(st);
+  }
+  window.setCafe49Field=setField;
+  window.setCafe49Lote=setLote;
+  window.setCafe49Modo=setMode;
+  window.normalizeCafe49=normalize;
+  window.renderCafe49Simulador=renderCafe49Simulador;
+  window.calcCafe49=calcCafe49;
+  window.renderSimulador=renderCafe49Simulador;
+  window.calcSim=calcCafe49;
+  window.CALLIANDRA_CAFE_V2849={build:BUILD,meta:META,tabela:CAFE_TABLE,calc:calcCafe49};
+  try{renderSimulador=window.renderSimulador;calcSim=window.calcSim}catch(e){}
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){style();try{if((document.querySelector('.sb-item.on')||{}).dataset?.page==='simulador')renderCafe49Simulador()}catch(e){console.error('V28.49 simulador',e);}},500);});
+})();
+</script>
+
 </body>
 </html>
