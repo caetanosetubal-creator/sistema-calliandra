@@ -6444,5 +6444,189 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){style();try{if((document.querySelector('.sb-item.on')||{}).dataset?.page==='simulador')renderCafe47Simulador()}catch(e){}},450)});
 })();
 </script>
+
+
+<script>
+/* V28.48 — SIMULADOR CAFÉ COM CALLIANDRA · VERSÃO CLIENTE FINAL
+   Patch de apresentação: substitui somente a tela do Simulador.
+   Mantém a tabela oficial Café com Calliandra, cálculos PRICE/SAC/Giro 12 e não altera planilha, Apps Script ou demais módulos.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.48 · Simulador Cliente Final';
+  const PREV = window.CALLIANDRA_CAFE_V2847 || window.CALLIANDRA_CAFE_V2845 || {};
+  const CAFE_TABLE = Array.isArray(PREV.tabela) ? PREV.tabela : [];
+  const META = Object.assign({precoBaseM2:1472.47,jurosAA:0.12,taxaMensal:Math.pow(1.12,1/12)-1,entradaMinima:15,prazoMax:240,validade:'02/08/2026'}, PREV.meta||{});
+  META.entradaMinima = 15;
+  META.prazoMax = 240;
+  META.jurosAA = Number(META.jurosAA || 0.12);
+  META.taxaMensal = Math.pow(1 + META.jurosAA, 1/12) - 1;
+  const STORE='CALLIANDRA_SIM_CAFE_V2848';
+  const OLD_STORES=['CALLIANDRA_SIM_CAFE_V2847','CALLIANDRA_SIM_CAFE_V2845'];
+  const $=(id)=>document.getElementById(id);
+  const esc=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const brl=(v)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const nfmt=(v,d=2)=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pct=(v,d=2)=>`${nfmt(v,d)}%`;
+  const round2=(v)=>Math.round((Number(v||0)+Number.EPSILON)*100)/100;
+  function parseBR(v){
+    if(typeof v==='number')return isFinite(v)?v:0;
+    let s=String(v??'').trim();
+    if(!s)return 0;
+    s=s.replace(/R\$|%|\s/g,'');
+    if(s.includes(',') && s.includes('.'))s=s.replace(/\./g,'').replace(',', '.');
+    else if(s.includes(','))s=s.replace(',', '.');
+    const x=Number(s);
+    return isFinite(x)?x:0;
+  }
+  function moneyText(v){return String(round2(v)).replace('.',',');}
+  function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();}
+  function userName(){try{const u=JSON.parse(localStorage.getItem('USER')||'{}');return u.nome||u.name||'Administrador';}catch(e){return 'Administrador';}}
+  function tableRow(code){return CAFE_TABLE.find(r=>String(r.codigo)===String(code)) || CAFE_TABLE[0] || {codigo:'',rua:'',lote:'',area:0,precoM2:META.precoBaseM2,valorTabela:0,tipo:'Padrão'};}
+  function loteLabel(r){return `Rua ${r.rua} · Lote ${r.lote}`;}
+  function optionText(r){return `${loteLabel(r)} · ${nfmt(r.area,2)} m² · ${brl(r.valorTabela)}${r.tipo && r.tipo!=='Padrão'?' · '+r.tipo:''}${r.garantia?' · Garantia GDF':''}`;}
+  function defaultState(){const r=tableRow();return {build:BUILD,cliente:'',responsavel:userName(),codigo:r.codigo,entradaPct:'30',parcelas:'120',desconto:'0',modo:'entrada',observacao:`Proposta válida até ${META.validade}, conforme Tabela Café com Calliandra.`};}
+  function readJSON(k){try{return JSON.parse(localStorage.getItem(k)||'{}')||{};}catch(e){return {};}}
+  function readState(){
+    let s=readJSON(STORE);
+    if(!s || !s.codigo){for(const key of OLD_STORES){const t=readJSON(key);if(t && t.codigo){s=t;break;}}}
+    s=Object.assign(defaultState(),s||{}, {build:BUILD});
+    if(!CAFE_TABLE.some(r=>r.codigo===s.codigo))s.codigo=tableRow().codigo;
+    return s;
+  }
+  function saveState(s){try{localStorage.setItem(STORE,JSON.stringify(Object.assign({},s,{build:BUILD})))}catch(e){}return s;}
+  function stateFromDom(){
+    const s=readState();
+    const map={cliente:'cafe48_cliente',responsavel:'cafe48_responsavel',codigo:'cafe48_codigo',entradaPct:'cafe48_entradaPct',parcelas:'cafe48_parcelas',desconto:'cafe48_desconto',observacao:'cafe48_observacao'};
+    Object.keys(map).forEach(k=>{const el=$(map[k]); if(el)s[k]=el.value;});
+    return s;
+  }
+  function pmt(pv,n,i){if(!pv||!n)return 0;if(!i)return pv/n;return pv*i/(1-Math.pow(1+i,-n));}
+  function priceSeries(pv,n,i,parcela){
+    let saldo=pv;const rows=[];
+    for(let k=1;k<=n;k++){
+      const juros=saldo*i;let amort=parcela-juros;
+      if(k===n){amort=saldo;}
+      saldo=Math.max(0,saldo-amort);
+      rows.push({k,parcela,juros,amort,saldo});
+    }
+    return rows;
+  }
+  function sacSeries(pv,n,i){
+    let saldo=pv;const amort=n?pv/n:0;const rows=[];
+    for(let k=1;k<=n;k++){
+      const juros=saldo*i;const parcela=amort+juros;
+      if(k===n)saldo=0;else saldo=Math.max(0,saldo-amort);
+      rows.push({k,parcela,juros,amort,saldo});
+    }
+    return rows;
+  }
+  function buildModel(){
+    const s=stateFromDom();
+    const r=tableRow(s.codigo);
+    const precoM2=Number(r.precoM2 || META.precoBaseM2);
+    let modo=s.modo||'entrada';
+    let desc=Math.max(0,Math.min(100,parseBR(s.desconto)));
+    let entradaPct=parseBR(s.entradaPct);
+    let parcelas=Math.round(parseBR(s.parcelas));
+    if(modo==='avista'){entradaPct=100;parcelas=0;}
+    else if(modo==='giro12'){entradaPct=50;parcelas=12;}
+    else{entradaPct=Math.max(META.entradaMinima,Math.min(100,entradaPct||META.entradaMinima));parcelas=Math.max(0,Math.min(META.prazoMax,parcelas||0));}
+    const valorTabela=round2((Number(r.area)||0)*precoM2);
+    const valorNeg=round2(valorTabela*(1-desc/100));
+    const entrada=round2(valorNeg*(entradaPct/100));
+    const saldo=round2(Math.max(0,valorNeg-entrada));
+    const giro=modo==='giro12';
+    const hasFin=saldo>0 && parcelas>0;
+    const taxa=META.taxaMensal;
+    const price=hasFin ? round2(giro ? saldo/12 : pmt(saldo,parcelas,taxa)) : 0;
+    const totalPrice=hasFin ? round2(price*parcelas) : 0;
+    const jurosPrice=hasFin && !giro ? round2(totalPrice-saldo) : 0;
+    const sacRows=hasFin && !giro ? sacSeries(saldo,parcelas,taxa) : [];
+    const sacJuros=hasFin && !giro ? round2(sacRows.reduce((a,x)=>a+x.juros,0)) : 0;
+    const priceRows=hasFin && !giro ? priceSeries(saldo,parcelas,taxa,price) : [];
+    const giroRows=hasFin && giro ? Array.from({length:12},(_,idx)=>({k:idx+1,price:saldo/12,sac:saldo/12,saldoPrice:Math.max(0,saldo-(saldo/12)*(idx+1)),saldoSac:Math.max(0,saldo-(saldo/12)*(idx+1))})) : [];
+    const ipca=hasFin && !giro && parcelas>36;
+    return {s,r,modo,precoM2,desc,entradaPct,parcelas,valorTabela,valorNeg,entrada,saldo,giro,hasFin,taxa,price,totalPrice,jurosPrice,sacRows,sacJuros,priceRows,giroRows,ipca};
+  }
+  function metric(label,value,help,cls){return `<div class="cafe48-metric ${cls||''}"><span>${esc(label)}</span><b>${value}</b>${help?`<small>${help}</small>`:''}</div>`;}
+  function observations(m){
+    const lines=[];
+    if(m.modo==='avista')lines.push('Pagamento integral à vista, sem saldo financiado.');
+    else if(m.giro)lines.push(`Giro 12: 50% de entrada e 12 parcelas fixas de ${brl(m.price)}, sem juros e sem correção.`);
+    else if(m.hasFin)lines.push(`Taxa de juros: ${pct(m.taxa*100,6)} ao mês, obtida de 12% ao ano.`);
+    if(m.ipca)lines.push('Parcelas acima de 36 meses têm incidência de IPCA desde a primeira parcela; IPCA não projetado nesta simulação.');
+    if(m.s.observacao)lines.push(esc(m.s.observacao));
+    return `<div class="cafe48-obs">${lines.map(x=>`<p>${x}</p>`).join('')}</div>`;
+  }
+  function installmentTable(m){
+    if(!m.hasFin)return '';
+    let rows=[];
+    if(m.giro){rows=m.giroRows.map(x=>({k:x.k,price:x.price,saldoPrice:x.saldoPrice,sac:x.sac,saldoSac:x.saldoSac}));}
+    else{rows=m.priceRows.map((p,idx)=>{const s=m.sacRows[idx]||{};return {k:p.k,price:p.parcela,saldoPrice:p.saldo,sac:s.parcela||0,saldoSac:s.saldo||0};});}
+    const body=rows.map(row=>`<tr><td>${row.k}</td><td>${brl(row.price)}</td><td>${brl(row.saldoPrice)}</td><td>${brl(row.sac)}</td><td>${brl(row.saldoSac)}</td></tr>`).join('');
+    return `<section class="cafe48-card cafe48-install"><div class="cafe48-title-row"><div><h3>${m.giro?'Série Giro 12':'Série de parcelas'}</h3><p>${m.giro?'12 parcelas sem juros e sem correção.':`${m.parcelas} parcelas · PRICE e SAC lado a lado.`}</p></div></div><div class="cafe48-table-wrap"><table><thead><tr><th>Parcela</th><th>PRICE</th><th>Saldo PRICE</th><th>SAC</th><th>Saldo SAC</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+  }
+  function resultHtml(m){
+    const title=`${loteLabel(m.r)}`;
+    const sacFirst=m.hasFin && !m.giro && m.sacRows.length ? m.sacRows[0].parcela : 0;
+    const sacLast=m.hasFin && !m.giro && m.sacRows.length ? m.sacRows[m.sacRows.length-1].parcela : 0;
+    const precoNegM2=m.r.area?m.valorNeg/Number(m.r.area):0;
+    return `<section class="cafe48-card cafe48-result"><div class="cafe48-result-head"><div><h2>${esc(title)}</h2><p>${nfmt(m.r.area,2)} m² · ${esc(m.r.tipo||'Tabela Café com Calliandra')}${m.r.garantia?' · Garantia GDF':''}</p>${m.s.cliente?`<p><b>Cliente:</b> ${esc(m.s.cliente)}${m.s.responsavel?` · <b>Responsável:</b> ${esc(m.s.responsavel)}`:''}</p>`:''}</div><div class="cafe48-total"><span>Valor negociado</span><strong>${brl(m.valorNeg)}</strong>${m.desc?`<small>${pct(m.desc,2)} de desconto</small>`:'<small>sem desconto</small>'}</div></div><div class="cafe48-metrics">
+      ${metric('Valor de tabela',brl(m.valorTabela),`${brl(m.precoM2)}/m²`,'green')}
+      ${metric('Preço m² negociado',brl(precoNegM2),'após desconto','')}
+      ${metric('Entrada',brl(m.entrada),pct(m.entradaPct,2),'green')}
+      ${metric('Saldo financiado',m.saldo?brl(m.saldo):'Não se aplica',m.parcelas?`${m.parcelas} parcelas`:'pagamento integral','')}
+      ${metric('Parcela PRICE',m.hasFin?brl(m.price):'Não se aplica',m.giro?'sem juros':m.hasFin?'parcela fixa':'','orange')}
+      ${metric('SAC',m.hasFin?(m.giro?brl(m.price):`${brl(sacFirst)} → ${brl(sacLast)}`):'Não se aplica',m.giro?'parcela fixa':'1ª e última parcela','orange')}
+      ${metric('Juros PRICE',m.giro||!m.hasFin?'R$ 0,00':brl(m.jurosPrice),m.giro?'sem juros':'total estimado','')}
+      ${metric('Juros SAC',m.giro||!m.hasFin?'R$ 0,00':brl(m.sacJuros),m.giro?'sem juros':'total estimado','')}
+    </div>${observations(m)}${m.saldo>0 && !m.parcelas && m.modo==='entrada'?`<div class="cafe48-warn">Informe o número de parcelas para simular o saldo financiado.</div>`:''}</section>${installmentTable(m)}`;
+  }
+  function calcCafe48(){
+    const m=buildModel();
+    const el=$('cafe48_result'); if(el)el.innerHTML=resultHtml(m);
+    saveState(Object.assign({},m.s,{entradaPct:String(m.entradaPct).replace('.',','),parcelas:String(m.parcelas),desconto:String(m.desc).replace('.',','),modo:m.modo}));
+  }
+  function setField(field,value,recalc){const s=readState();s[field]=value;saveState(s);if(recalc)calcCafe48();}
+  function setLote(code){const s=stateFromDom();s.codigo=code;saveState(s);renderCafe48Simulador();}
+  function setMode(mode){const s=stateFromDom();s.modo=mode;if(mode==='avista'){s.entradaPct='100';s.parcelas='0';}if(mode==='giro12'){s.entradaPct='50';s.parcelas='12';}if(mode==='entrada'){if(parseBR(s.entradaPct)<META.entradaMinima)s.entradaPct=String(META.entradaMinima);if(parseBR(s.parcelas)<=0)s.parcelas='120';}saveState(s);renderCafe48Simulador();}
+  function normalize(){const s=stateFromDom();let ent=parseBR(s.entradaPct);let parc=Math.round(parseBR(s.parcelas));let desc=parseBR(s.desconto);if(s.modo==='avista'){ent=100;parc=0;}else if(s.modo==='giro12'){ent=50;parc=12;}else{ent=Math.max(META.entradaMinima,Math.min(100,ent||META.entradaMinima));parc=Math.max(0,Math.min(META.prazoMax,parc||0));}desc=Math.max(0,Math.min(100,desc||0));s.entradaPct=String(ent).replace('.',',');s.parcelas=String(parc);s.desconto=String(desc).replace('.',',');saveState(s);renderCafe48Simulador();}
+  function renderCafe48Simulador(selected){
+    style();
+    const page=$('page-simulador'); if(!page)return;
+    const s=readState();
+    if(selected){const maybe=CAFE_TABLE.find(r=>norm(r.codigo)===norm(selected)||norm(loteLabel(r)).includes(norm(selected)));if(maybe)s.codigo=maybe.codigo;}
+    if(!CAFE_TABLE.some(r=>r.codigo===s.codigo))s.codigo=tableRow().codigo;
+    saveState(s);
+    const r=tableRow(s.codigo);
+    const printBtn=(typeof printActionsV19==='function')?printActionsV19('simulador'):`<button class="btn btn-ghost" onclick="printPage('simulador')">🖨 Imprimir / PDF</button>`;
+    const av=s.modo==='avista', giro=s.modo==='giro12', entrada=!av&&!giro;
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div></div><div class="sh-r">${printBtn}</div></div>
+      <section class="cafe48-card no-print cafe48-form"><div class="cafe48-grid cafe48-top"><label>Nome do cliente<input id="cafe48_cliente" value="${esc(s.cliente)}" oninput="setCafe48Field('cliente',this.value,true)"></label><label>Responsável<input id="cafe48_responsavel" value="${esc(s.responsavel)}" oninput="setCafe48Field('responsavel',this.value,true)"></label><label>Lote<select id="cafe48_codigo" onchange="setCafe48Lote(this.value)">${CAFE_TABLE.map(x=>`<option value="${esc(x.codigo)}" ${x.codigo===s.codigo?'selected':''}>${esc(optionText(x))}</option>`).join('')}</select></label></div>
+        <div class="cafe48-grid cafe48-fin"><label>Valor do m²<input class="readonly" value="${esc(moneyText(r.precoM2||META.precoBaseM2))}" readonly></label><label>Forma de pagamento<div class="cafe48-switch"><button type="button" class="${av?'on':''}" onclick="setCafe48Modo('avista')">À vista</button><button type="button" class="${entrada?'on':''}" onclick="setCafe48Modo('entrada')">Com entrada</button><button type="button" class="${giro?'on':''}" onclick="setCafe48Modo('giro12')">Giro 12</button></div></label><label>Entrada (%)<input id="cafe48_entradaPct" inputmode="decimal" value="${esc(av?'100':giro?'50':s.entradaPct)}" ${av||giro?'readonly':''} oninput="setCafe48Field('entradaPct',this.value,true)" onblur="normalizeCafe48()"></label><label>Número de parcelas<input id="cafe48_parcelas" inputmode="numeric" value="${esc(av?'0':giro?'12':s.parcelas)}" ${av||giro?'readonly':''} oninput="setCafe48Field('parcelas',this.value,true)" onblur="normalizeCafe48()"></label><label>Desconto (%)<input id="cafe48_desconto" inputmode="decimal" value="${esc(s.desconto)}" oninput="setCafe48Field('desconto',this.value,true)" onblur="normalizeCafe48()"></label></div>
+        <label class="cafe48-full">Observação da proposta<input id="cafe48_observacao" value="${esc(s.observacao)}" oninput="setCafe48Field('observacao',this.value,true)"></label>
+        <div class="cafe48-footer"><button type="button" class="btn btn-terra" onclick="normalizeCafe48()">Atualizar simulação</button></div>
+      </section><div id="cafe48_result"></div>`;
+    calcCafe48();
+  }
+  function style(){
+    if($('cafe48-style'))return;
+    const css=`.cafe48-card{background:#fff;border:1px solid var(--borda,#e3ddd3);border-radius:22px;padding:24px;margin:18px 0;box-shadow:0 10px 28px rgba(0,0,0,.035);overflow:hidden}.cafe48-form{padding-top:22px}.cafe48-grid{display:grid;gap:14px;margin-bottom:16px}.cafe48-top{grid-template-columns:1fr 1fr 2.2fr}.cafe48-fin{grid-template-columns:.95fr 1.12fr .65fr .75fr .65fr;align-items:end}.cafe48-card label{display:flex;flex-direction:column;gap:8px;text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:900;color:#073b35}.cafe48-card input,.cafe48-card select{height:52px;border:1px solid #d9ddd8;border-radius:14px;padding:0 14px;font-size:16px;font-weight:700;background:#fff;color:#062e2b;text-transform:none;letter-spacing:0;min-width:0}.cafe48-card select{font-weight:600}.cafe48-card input.readonly,.cafe48-card input[readonly]{background:#f7f5f0;color:#073b35}.cafe48-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:52px;border:1px solid #d9ddd8;border-radius:14px;overflow:hidden;background:#fff}.cafe48-switch button{border:0;background:#fff;font-weight:900;color:#073b35;cursor:pointer;white-space:nowrap;padding:0 10px}.cafe48-switch button.on{background:#12443c;color:#fff}.cafe48-full{margin-top:2px}.cafe48-footer{display:flex;justify-content:flex-end;margin-top:10px}.cafe48-result-head{display:flex;justify-content:space-between;gap:22px;align-items:flex-start;border-bottom:1px solid #eee6d9;padding-bottom:15px;margin-bottom:18px}.cafe48-result-head h2{margin:0;color:#073b35}.cafe48-result-head p{margin:5px 0 0;color:#777}.cafe48-total{text-align:right;min-width:260px}.cafe48-total span{display:block;text-transform:uppercase;letter-spacing:.09em;color:#777;font-size:12px;font-weight:900}.cafe48-total strong{display:block;font-size:clamp(28px,3vw,42px);line-height:1.02;color:#073b35;word-break:normal}.cafe48-total small{display:block;color:#777}.cafe48-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.cafe48-metric{background:#fbf7ef;border:1px solid #eee3d2;border-radius:16px;padding:14px;min-height:101px;overflow:hidden}.cafe48-metric.green{border-top:4px solid #178c54}.cafe48-metric.orange{border-top:4px solid #f28c3a}.cafe48-metric span{display:block;text-transform:uppercase;letter-spacing:.09em;font-size:11px;color:#777;font-weight:900;margin-bottom:8px}.cafe48-metric b{display:block;font-size:clamp(18px,1.45vw,27px);color:#073b35;line-height:1.06;white-space:normal;word-break:normal}.cafe48-metric small{display:block;color:#777;margin-top:7px}.cafe48-obs,.cafe48-warn{border-radius:14px;padding:13px 16px;margin:12px 0}.cafe48-obs{background:#f7f1e6;border:1px solid #ead9bf;color:#5b3c13}.cafe48-obs p{margin:4px 0}.cafe48-warn{background:#fff1e8;border:1px solid #f2c7a7;color:#8a4211}.cafe48-title-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid #eee6d9;padding-bottom:15px;margin-bottom:18px}.cafe48-title-row h3{margin:0;color:#073b35}.cafe48-title-row p{margin:5px 0 0;color:#777}.cafe48-table-wrap{overflow:auto;border-radius:14px;border:1px solid #e8e1d8;max-height:520px}.cafe48-table-wrap table{width:100%;border-collapse:collapse;font-size:14px}.cafe48-table-wrap th{background:#12443c;color:#fff;text-align:left;padding:12px;white-space:nowrap;position:sticky;top:0;z-index:1}.cafe48-table-wrap td{padding:10px 12px;border-bottom:1px solid #eee6d9;white-space:nowrap}.cafe48-table-wrap tbody tr:nth-child(even){background:#fbf7ef}@media(max-width:1200px){.cafe48-top{grid-template-columns:1fr 1fr}.cafe48-top label:last-child{grid-column:1/-1}.cafe48-fin{grid-template-columns:1fr 1fr 1fr}.cafe48-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.cafe48-result-head{flex-direction:column}.cafe48-total{text-align:left}}@media(max-width:780px){.cafe48-top,.cafe48-fin,.cafe48-metrics{grid-template-columns:1fr}.cafe48-switch{height:auto;grid-template-columns:1fr}.cafe48-switch button{padding:14px 10px}.cafe48-footer{justify-content:stretch}.cafe48-footer .btn{width:100%}}@media print{.cafe48-card{box-shadow:none;break-inside:avoid}.cafe48-form.no-print{display:none!important}.cafe48-install{break-inside:auto}.cafe48-table-wrap{overflow:visible;max-height:none}.cafe48-table-wrap th{position:static}.cafe48-table-wrap table{font-size:10px}.cafe48-table-wrap th,.cafe48-table-wrap td{padding:5px 6px}.cafe48-metrics{grid-template-columns:repeat(4,1fr)}}`;
+    const st=document.createElement('style');st.id='cafe48-style';st.textContent=css;document.head.appendChild(st);
+  }
+  window.setCafe48Field=setField;
+  window.setCafe48Lote=setLote;
+  window.setCafe48Modo=setMode;
+  window.normalizeCafe48=normalize;
+  window.renderCafe48Simulador=renderCafe48Simulador;
+  window.calcCafe48=calcCafe48;
+  window.renderSimulador=renderCafe48Simulador;
+  window.calcSim=calcCafe48;
+  window.CALLIANDRA_CAFE_V2848={build:BUILD,meta:META,tabela:CAFE_TABLE,calc:calcCafe48};
+  try{renderSimulador=window.renderSimulador;calcSim=window.calcSim}catch(e){}
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){style();try{if((document.querySelector('.sb-item.on')||{}).dataset?.page==='simulador')renderCafe48Simulador()}catch(e){console.error('V28.48 simulador',e);}},500);});
+})();
+</script>
 </body>
 </html>
