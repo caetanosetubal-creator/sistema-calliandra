@@ -6283,5 +6283,166 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
 })();
 </script>
 
+
+
+<script>
+/* V28.47 — SIMULADOR CAFÉ COM CALLIANDRA · PARCELAS PRICE/SAC
+   Correção controlada: substitui somente a página Simulador.
+   Mantém a tabela Café com Calliandra da camada V28.46 e devolve a série completa de parcelas.
+*/
+(function(){
+  'use strict';
+  const BUILD='V28.47 · Simulador Café com Calliandra · Price/SAC';
+  const PREV = window.CALLIANDRA_CAFE_V2845 || {};
+  const CAFE_TABLE = Array.isArray(PREV.tabela) ? PREV.tabela : [];
+  const CAFE_META = Object.assign({precoBaseM2:1472.47,jurosAA:0.12,taxaMensal:Math.pow(1.12,1/12)-1,entradaMinima:15,prazoMax:240,validade:'02/08/2026',fonte:'Tabela_Calliandra_Verificada_Impressao-CaféComCalliandra.xlsx'}, PREV.meta||{});
+  CAFE_META.entradaMinima = 15;
+  CAFE_META.prazoMax = 240;
+  CAFE_META.taxaMensal = Math.pow(1 + Number(CAFE_META.jurosAA||0.12), 1/12) - 1;
+  const STORE='CALLIANDRA_SIM_CAFE_V2847';
+  const OLD_STORE='CALLIANDRA_SIM_CAFE_V2845';
+  const $=(id)=>document.getElementById(id);
+  const esc=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const norm=(s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  const brl=(v)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const nfmt=(v,d=2)=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pct=(v,d=2)=>`${nfmt(v,d)}%`;
+  const round2=(v)=>Math.round((Number(v||0)+Number.EPSILON)*100)/100;
+  function parseBR(v){
+    if(typeof v==='number')return isFinite(v)?v:0;
+    let s=String(v??'').trim();
+    if(!s)return 0;
+    s=s.replace(/R\$|%|\s/g,'');
+    if(s.includes(',') && s.includes('.'))s=s.replace(/\./g,'').replace(',', '.');
+    else if(s.includes(','))s=s.replace(',', '.');
+    const x=Number(s);
+    return isFinite(x)?x:0;
+  }
+  function moneyText(v){return String(round2(v)).replace('.',',')}
+  function tableRow(code){return CAFE_TABLE.find(r=>String(r.codigo)===String(code)) || CAFE_TABLE[0] || {codigo:'',rua:'',lote:'',area:0,precoM2:CAFE_META.precoBaseM2,valorTabela:0,tipo:'Padrão'};}
+  function loteLabel(r){return `Rua ${r.rua} · Lote ${r.lote}`;}
+  function optionText(r){return `${loteLabel(r)} · ${nfmt(r.area,3)} m² · ${brl(r.valorTabela)} · ${r.tipo}${r.garantia?' · Garantia GDF':''}`;}
+  function userName(){try{const u=JSON.parse(localStorage.getItem('USER')||'{}');return u.nome||u.name||'Administrador'}catch(e){return 'Administrador'}}
+  function defaultState(){const r=tableRow();return {build:BUILD,cliente:'',responsavel:userName(),codigo:r.codigo,precoM2:moneyText(r.precoM2||CAFE_META.precoBaseM2),entradaPct:'30',parcelas:'120',desconto:'0',modo:'entrada',observacao:'Proposta válida até 02/08/2026, conforme Tabela Café com Calliandra.'};}
+  function readState(){
+    let s={};
+    try{s=JSON.parse(localStorage.getItem(STORE)||'{}')}catch(e){s={}}
+    if(!s || !s.codigo){try{s=JSON.parse(localStorage.getItem(OLD_STORE)||'{}')}catch(e){s={}}}
+    s=Object.assign(defaultState(),s||{}, {build:BUILD});
+    if(!CAFE_TABLE.some(r=>r.codigo===s.codigo))s.codigo=tableRow().codigo;
+    const r=tableRow(s.codigo);
+    if(!parseBR(s.precoM2))s.precoM2=moneyText(r.precoM2||CAFE_META.precoBaseM2);
+    return s;
+  }
+  function saveState(s){try{localStorage.setItem(STORE,JSON.stringify(Object.assign({},s,{build:BUILD})))}catch(e){} return s;}
+  function stateFromDom(){
+    const s=readState();
+    const map={cliente:'cafe47_cliente',responsavel:'cafe47_responsavel',codigo:'cafe47_codigo',precoM2:'cafe47_precoM2',entradaPct:'cafe47_entradaPct',parcelas:'cafe47_parcelas',desconto:'cafe47_desconto',observacao:'cafe47_observacao'};
+    Object.keys(map).forEach(k=>{const el=$(map[k]); if(el)s[k]=el.value;});
+    return s;
+  }
+  function pmt(pv,n,i){if(!pv||!n)return 0;if(!i)return pv/n;return pv*i/(1-Math.pow(1+i,-n));}
+  function sacSummary(pv,n,i){if(!pv||!n)return {amort:0,primeira:0,ultima:0,total:0,juros:0};const amort=pv/n;let saldo=pv,total=0,first=0,last=0;for(let k=1;k<=n;k++){const juros=saldo*i;const parcela=amort+juros;if(k===1)first=parcela;if(k===n)last=parcela;total+=parcela;saldo=Math.max(0,saldo-amort);}return {amort,primeira:first,ultima:last,total,juros:total-pv};}
+  function priceSeries(pv,n,i,parcela){let saldo=pv;const rows=[];for(let k=1;k<=n;k++){const juros=saldo*i;let amort=parcela-juros;if(k===n){amort=saldo;}saldo=Math.max(0,saldo-amort);rows.push({k,parcela,juros,amort,saldo});}return rows;}
+  function sacSeries(pv,n,i){let saldo=pv;const amort=n?pv/n:0;const rows=[];for(let k=1;k<=n;k++){const juros=saldo*i;const parcela=amort+juros;if(k===n)saldo=0;else saldo=Math.max(0,saldo-amort);rows.push({k,parcela,juros,amort,saldo});}return rows;}
+  function giroSeries(saldo){const parcela=saldo/12;return Array.from({length:12},(_,idx)=>({k:idx+1,price:parcela,sac:parcela,diff:0,saldoPrice:Math.max(0,saldo-parcela*(idx+1)),saldoSac:Math.max(0,saldo-parcela*(idx+1))}));}
+  function buildModel(){
+    const s=stateFromDom();
+    const r=tableRow(s.codigo);
+    let modo=s.modo||'entrada';
+    let precoM2=parseBR(s.precoM2)||Number(r.precoM2||CAFE_META.precoBaseM2);
+    let desc=Math.max(0,Math.min(100,parseBR(s.desconto)));
+    let entradaPct=parseBR(s.entradaPct);
+    let parcelas=Math.round(parseBR(s.parcelas));
+    if(modo==='avista'){entradaPct=100;parcelas=0;}
+    else if(modo==='giro12'){entradaPct=50;parcelas=12;}
+    else {entradaPct=Math.max(CAFE_META.entradaMinima,Math.min(100,entradaPct||CAFE_META.entradaMinima));parcelas=Math.max(0,Math.min(CAFE_META.prazoMax,parcelas||0));}
+    const valorTabela=round2((Number(r.area)||0)*precoM2);
+    const valorNeg=round2(valorTabela*(1-desc/100));
+    const entrada=round2(valorNeg*(entradaPct/100));
+    const saldo=round2(Math.max(0,valorNeg-entrada));
+    const hasFin=saldo>0 && parcelas>0;
+    const giro=modo==='giro12';
+    const taxa=CAFE_META.taxaMensal;
+    const price=hasFin ? round2(giro ? saldo/12 : pmt(saldo,parcelas,taxa)) : 0;
+    const totalPrice=hasFin ? round2(price*parcelas) : 0;
+    const jurosPrice=hasFin && !giro ? round2(totalPrice-saldo) : 0;
+    const sac=hasFin && !giro ? sacSummary(saldo,parcelas,taxa) : null;
+    const ipca = hasFin && !giro && parcelas>36;
+    return {s,r,modo,giro,precoM2,desc,entradaPct,parcelas,valorTabela,valorNeg,entrada,saldo,hasFin,taxa,price,totalPrice,jurosPrice,sac,ipca};
+  }
+  function metric(label,value,help,kind){return `<div class="cafe47-metric ${kind||''}"><span>${esc(label)}</span><b>${value}</b>${help?`<small>${help}</small>`:''}</div>`;}
+  function auditLine(m){
+    if(m.modo==='avista')return `<div class="cafe47-ok"><b>Auditoria financeira:</b> pagamento integral à vista. Sem saldo financiado e sem parcelas.</div>`;
+    if(m.giro)return `<div class="cafe47-ok"><b>Auditoria financeira:</b> Giro 12 = 50% de entrada + 12 parcelas fixas de ${brl(m.price)}, sem juros e sem correção.</div>`;
+    if(!m.hasFin && m.saldo>0)return `<div class="cafe47-warn"><b>Atenção:</b> há saldo de ${brl(m.saldo)}, mas o número de parcelas está zerado. Informe as parcelas ou use pagamento à vista.</div>`;
+    return `<div class="${m.ipca?'cafe47-warn':'cafe47-ok'}"><b>Auditoria financeira:</b> PRICE e SAC usam taxa mensal equivalente de <b>${pct(m.taxa*100,6)} a.m.</b>, obtida de 12% a.a. por capitalização composta. ${m.ipca?'Prazo acima de 36 meses: IPCA deve constar em contrato, mas não foi projetado no valor da parcela.':'Sem projeção automática de IPCA.'}</div>`;
+  }
+  function referenceByTable(m){
+    const r=m.r;
+    const rows=[];
+    [['15%',r.entrada15,r.parcela36_e15,r.parcela120_e15,r.parcela240_e15],['30%',r.entrada30,r.parcela36_e30,r.parcela120_e30,r.parcela240_e30],['50%',r.entrada50,r.parcela36_e50,null,r.parcela240_e50]].forEach(x=>rows.push(`<tr><td>${x[0]}</td><td>${brl(x[1])}</td><td>${x[2]?brl(x[2]):'—'}</td><td>${x[3]?brl(x[3]):'—'}</td><td>${x[4]?brl(x[4]):'—'}</td></tr>`));
+    return `<section class="cafe47-card cafe47-ref"><div class="cafe47-title-row"><div><h3>Conferência rápida da tabela oficial</h3><p>Valores de referência do lote selecionado para 15%, 30% e 50% de entrada.</p></div><span>${esc(r.tipo)}</span></div><div class="cafe47-table-wrap"><table><thead><tr><th>Entrada</th><th>Entrada R$</th><th>36x</th><th>120x</th><th>240x</th></tr></thead><tbody>${rows.join('')}</tbody></table></div></section>`;
+  }
+  function installmentTable(m){
+    if(!m.hasFin)return '';
+    let series=[];
+    if(m.giro){series=giroSeries(m.saldo);}
+    else {const pRows=priceSeries(m.saldo,m.parcelas,m.taxa,m.price);const sRows=sacSeries(m.saldo,m.parcelas,m.taxa);series=pRows.map((p,idx)=>({k:p.k,price:p.parcela,sac:sRows[idx].parcela,diff:p.parcela-sRows[idx].parcela,saldoPrice:p.saldo,saldoSac:sRows[idx].saldo}));}
+    const body=series.map(row=>`<tr><td>${row.k}</td><td>${brl(row.price)}</td><td>${brl(row.sac)}</td><td>${brl(row.diff)}</td><td>${brl(row.saldoPrice)}</td><td>${brl(row.saldoSac)}</td></tr>`).join('');
+    const title=m.giro?'Série Giro 12':'Série completa de parcelas · PRICE x SAC';
+    const sub=m.giro?`12 parcelas sem juros · entrada ${pct(m.entradaPct,2)}`:`${m.parcelas} parcelas · entrada ${pct(m.entradaPct,2)} · taxa ${pct(m.taxa*100,6)} a.m.`;
+    return `<section class="cafe47-card cafe47-installments"><div class="cafe47-title-row"><div><h3>${title}</h3><p>${sub}</p></div><span>${brl(m.valorNeg/(m.r.area||1))}/m² negociado</span></div><div class="cafe47-table-wrap cafe47-scroll"><table><thead><tr><th>Parcela</th><th>PRICE</th><th>SAC</th><th>Diferença</th><th>Saldo PRICE</th><th>Saldo SAC</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+  }
+  function resultHtml(m){
+    const precoM2Neg=m.r.area?m.valorNeg/m.r.area:0;
+    const financeBlock=m.hasFin ? (m.giro ? metric('Giro 12',brl(m.price),'12 parcelas sem juros','green') : `${metric('Parcela PRICE',brl(m.price),'fixa mensal','green')}${metric('1ª SAC',brl(m.sac.primeira),'última: '+brl(m.sac.ultima),'orange')}${metric('Juros PRICE',brl(m.jurosPrice),'total no prazo')}${metric('Juros SAC',brl(m.sac.juros),'total no prazo')}`) : metric('Pagamento', 'À vista', 'sem saldo financiado','green');
+    return `<section class="cafe47-card cafe47-result"><div class="cafe47-result-head"><div><h2>${esc(loteLabel(m.r))}</h2><p>${nfmt(m.r.area,3)} m² · ${esc(m.r.tipo)}${m.r.garantia?' · Garantia GDF':''} · tabela válida até ${esc(CAFE_META.validade)}</p><p>Cliente: <b>${esc(m.s.cliente||'não informado')}</b> · Responsável: <b>${esc(m.s.responsavel||'-')}</b></p></div><div class="cafe47-total"><span>Valor negociado</span><strong>${brl(m.valorNeg)}</strong><small>${pct(m.desc,2)} de desconto adicional manual</small></div></div><div class="cafe47-metrics">${metric('Valor de tabela',brl(m.valorTabela),brl(m.precoM2)+'/m² usado')}${metric('Preço m² negociado',brl(precoM2Neg),'após desconto manual')}${metric('Entrada',brl(m.entrada),pct(m.entradaPct,2)+' do valor negociado')}${metric('Saldo financiado',m.saldo>0?brl(m.saldo):'Não se aplica',m.hasFin?m.parcelas+' parcelas':'sem parcelas')}${financeBlock}${metric('Taxa',pct(m.taxa*100,6),'equivalente a 12% a.a.')}</div>${auditLine(m)}${m.s.observacao?`<div class="cafe47-obs"><b>Observação:</b> ${esc(m.s.observacao)}</div>`:''}</section>${installmentTable(m)}${referenceByTable(m)}`;
+  }
+  function calcCafe47(){
+    const m=buildModel();
+    const box=$('cafe47_result');
+    if(box)box.innerHTML=resultHtml(m);
+    window.CALLIANDRA_CAFE_V2847.lastCalc=m;
+    return m;
+  }
+  function setField(k,v,doCalc=true){const s=stateFromDom();s[k]=v;saveState(s);if(doCalc)calcCafe47();}
+  function setLote(code){const s=stateFromDom();s.codigo=code;const r=tableRow(code);s.precoM2=moneyText(r.precoM2||CAFE_META.precoBaseM2);saveState(s);renderCafe47Simulador();}
+  function setMode(mode){const s=stateFromDom();s.modo=mode;if(mode==='avista'){s.entradaPct='100';s.parcelas='0';}else if(mode==='giro12'){s.entradaPct='50';s.parcelas='12';}else{if(parseBR(s.entradaPct)>=100)s.entradaPct='30';if(parseBR(s.entradaPct)<15)s.entradaPct='15';if(parseBR(s.parcelas)<=0)s.parcelas='120';}saveState(s);renderCafe47Simulador();}
+  function setEntrada(v){const s=stateFromDom();s.modo='entrada';s.entradaPct=String(v).replace('.',',');if(parseBR(s.parcelas)<=0)s.parcelas='120';saveState(s);renderCafe47Simulador();}
+  function normalizeFields(){const s=stateFromDom();const r=tableRow(s.codigo);let m=s.modo||'entrada';let preco=parseBR(s.precoM2)||Number(r.precoM2||CAFE_META.precoBaseM2);let entrada=parseBR(s.entradaPct);let parcelas=Math.round(parseBR(s.parcelas));let desc=Math.max(0,Math.min(100,parseBR(s.desconto)));if(m==='avista'){entrada=100;parcelas=0;}else if(m==='giro12'){entrada=50;parcelas=12;}else{entrada=Math.max(15,Math.min(100,entrada||15));parcelas=Math.max(0,Math.min(240,parcelas||0));}Object.assign(s,{precoM2:moneyText(preco),entradaPct:String(entrada).replace('.',','),parcelas:String(parcelas),desconto:String(round2(desc)).replace('.',','),modo:m});saveState(s);renderCafe47Simulador();}
+  function resetM2(){const s=stateFromDom();const r=tableRow(s.codigo);s.precoM2=moneyText(r.precoM2||CAFE_META.precoBaseM2);saveState(s);renderCafe47Simulador();}
+  function renderCafe47Simulador(selected){
+    style();
+    const page=$('page-simulador'); if(!page)return;
+    const s=readState();
+    if(selected){const maybe=CAFE_TABLE.find(r=>norm(r.codigo)===norm(selected)||norm(loteLabel(r)).includes(norm(selected))); if(maybe)s.codigo=maybe.codigo;}
+    const r=tableRow(s.codigo); if(!parseBR(s.precoM2))s.precoM2=moneyText(r.precoM2||CAFE_META.precoBaseM2); saveState(s);
+    const printBtn=(typeof printActionsV19==='function')?printActionsV19('simulador'):`<button class="btn btn-ghost" onclick="printPage('simulador')">🖨 Imprimir / PDF</button>`;
+    const av=s.modo==='avista', giro=s.modo==='giro12';
+    page.innerHTML=`<div class="sh"><div><div class="ttl">Simulador comercial</div><div class="sub">Café com Calliandra: tabela oficial, entrada mínima de 15%, PRICE/SAC e impressão para cliente.</div></div><div class="sh-r">${printBtn}</div></div>
+      <div class="cafe47-note"><b>${BUILD}</b> · fonte oficial: ${esc(CAFE_META.fonte)} · preço base ${brl(CAFE_META.precoBaseM2)}/m² · 12% a.a. = ${pct(CAFE_META.taxaMensal*100,6)} a.m. · validade até ${esc(CAFE_META.validade)}.</div>
+      <section class="cafe47-card no-print"><div class="cafe47-title-row"><div><h2>Dados da proposta</h2><p>O valor do lote vem da tabela Café com Calliandra. O m², entrada, prazo e desconto são editáveis para simulação.</p></div><span>${CAFE_TABLE.length} lotes</span></div>
+        <div class="cafe47-grid cafe47-top"><label>Nome do cliente<input id="cafe47_cliente" value="${esc(s.cliente)}" oninput="setCafe47Field('cliente',this.value,true)"></label><label>Responsável<input id="cafe47_responsavel" value="${esc(s.responsavel)}" oninput="setCafe47Field('responsavel',this.value,true)"></label><label>Lote<select id="cafe47_codigo" onchange="setCafe47Lote(this.value)">${CAFE_TABLE.map(x=>`<option value="${esc(x.codigo)}" ${x.codigo===s.codigo?'selected':''}>${esc(optionText(x))}</option>`).join('')}</select></label></div>
+        <div class="cafe47-grid cafe47-fin"><label>Valor do m²<input id="cafe47_precoM2" inputmode="decimal" value="${esc(s.precoM2)}" oninput="setCafe47Field('precoM2',this.value,true)" onblur="normalizeCafe47()"><small>inicia com a tabela; pode editar</small></label><label>Forma de pagamento<div class="cafe47-switch"><button type="button" class="${av?'on':''}" onclick="setCafe47Modo('avista')">À vista</button><button type="button" class="${(!av&&!giro)?'on':''}" onclick="setCafe47Modo('entrada')">Com entrada</button><button type="button" class="${giro?'on':''}" onclick="setCafe47Modo('giro12')">Giro 12</button></div><small>${av?'100% à vista':giro?'50% + 12 sem juros':'entrada livre + saldo'}</small></label><label>Entrada (%)<input id="cafe47_entradaPct" inputmode="decimal" value="${esc(av?'100':giro?'50':s.entradaPct)}" ${av||giro?'disabled':''} oninput="setCafe47Field('entradaPct',this.value,true)" onblur="normalizeCafe47()"><small>mínimo 15%</small></label><label>Nº parcelas<input id="cafe47_parcelas" inputmode="numeric" value="${esc(av?'0':giro?'12':s.parcelas)}" ${av||giro?'disabled':''} oninput="setCafe47Field('parcelas',this.value,true)" onblur="normalizeCafe47()"><small>0 a 240</small></label><label>Desconto adicional (%)<input id="cafe47_desconto" inputmode="decimal" value="${esc(s.desconto)}" oninput="setCafe47Field('desconto',this.value,true)" onblur="normalizeCafe47()"><small>manual, sem automático</small></label></div>
+        <div class="cafe47-actions"><button type="button" onclick="setCafe47Entrada(15)">Entrada 15%</button><button type="button" onclick="setCafe47Entrada(30)">Entrada 30%</button><button type="button" onclick="setCafe47Entrada(50)">Entrada 50%</button><button type="button" onclick="resetCafe47M2()">Restaurar m² da tabela</button></div>
+        <label class="cafe47-full">Observação da proposta<input id="cafe47_observacao" value="${esc(s.observacao)}" oninput="setCafe47Field('observacao',this.value,true)"></label>
+        <div class="cafe47-footer"><div class="cafe47-foot"><b>Regra:</b> sem desconto automático. Lotes especiais já entram com m² da tabela: +6% ou -15%, quando houver.</div><button type="button" class="btn btn-terra" onclick="normalizeCafe47()">Atualizar simulação</button></div>
+      </section><div id="cafe47_result"></div>`;
+    calcCafe47();
+  }
+  function style(){
+    if($('cafe47-style'))return;
+    const css=`.cafe47-note,.cafe47-ok,.cafe47-warn,.cafe47-obs{border-radius:14px;padding:13px 16px;margin:12px 0;border:1px solid #ead9bf;background:#fff8ec;color:#5b3c13}.cafe47-card{background:#fff;border:1px solid var(--borda,#e3ddd3);border-radius:22px;padding:22px;margin:18px 0;box-shadow:0 10px 28px rgba(0,0,0,.035);overflow:hidden}.cafe47-title-row,.cafe47-result-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid #eee6d9;padding-bottom:15px;margin-bottom:18px}.cafe47-title-row h2,.cafe47-title-row h3,.cafe47-result-head h2{margin:0;color:#073b35}.cafe47-title-row p,.cafe47-result-head p{margin:5px 0 0;color:#777}.cafe47-title-row span{background:#e6f5ec;color:#0b6b41;border-radius:999px;padding:8px 12px;font-weight:900;font-size:12px;white-space:nowrap}.cafe47-grid{display:grid;gap:14px;margin-bottom:15px}.cafe47-top{grid-template-columns:1fr 1fr 2fr}.cafe47-fin{grid-template-columns:.95fr 1.15fr .65fr .65fr .8fr}.cafe47-card label{display:flex;flex-direction:column;gap:7px;text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:900;color:#073b35}.cafe47-card input,.cafe47-card select{height:52px;border:1px solid #d9ddd8;border-radius:14px;padding:0 14px;font-size:16px;font-weight:700;background:#fff;color:#062e2b;text-transform:none;letter-spacing:0;min-width:0}.cafe47-card select{font-weight:600}.cafe47-card small{font-size:12px;text-transform:none;letter-spacing:0;font-weight:500;color:#777}.cafe47-switch{display:grid;grid-template-columns:repeat(3,1fr);height:52px;border:1px solid #d9ddd8;border-radius:14px;overflow:hidden;background:#fff}.cafe47-switch button{border:0;background:#fff;font-weight:900;color:#073b35;cursor:pointer}.cafe47-switch button.on{background:#12443c;color:#fff}.cafe47-actions{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 15px}.cafe47-actions button{border:1px solid #e1d6c8;background:#fff;border-radius:999px;padding:10px 15px;font-weight:900;color:#073b35;cursor:pointer}.cafe47-full{margin-top:6px}.cafe47-footer{display:flex;gap:16px;justify-content:space-between;align-items:center;margin-top:15px}.cafe47-foot{color:#6d6257}.cafe47-total{text-align:right;min-width:260px}.cafe47-total span{display:block;text-transform:uppercase;letter-spacing:.09em;color:#777;font-size:12px;font-weight:900}.cafe47-total strong{display:block;font-size:clamp(28px,3vw,42px);line-height:1.02;color:#073b35;word-break:normal}.cafe47-total small{display:block;color:#777}.cafe47-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.cafe47-metric{background:#fbf7ef;border:1px solid #eee3d2;border-radius:16px;padding:14px;min-height:103px;overflow:hidden}.cafe47-metric.green{border-top:4px solid #178c54}.cafe47-metric.orange{border-top:4px solid #f28c3a}.cafe47-metric span{display:block;text-transform:uppercase;letter-spacing:.09em;font-size:11px;color:#777;font-weight:900;margin-bottom:8px}.cafe47-metric b{display:block;font-size:clamp(18px,1.5vw,27px);color:#073b35;line-height:1.06;white-space:normal;word-break:normal}.cafe47-metric small{display:block;color:#777;margin-top:7px}.cafe47-ok{background:#e9f6ef;border-color:#b9e3ca;color:#145c39}.cafe47-warn{background:#fff1e8;border-color:#f2c7a7;color:#8a4211}.cafe47-table-wrap{overflow:auto;border-radius:14px;border:1px solid #e8e1d8}.cafe47-scroll{max-height:460px}.cafe47-table-wrap table{width:100%;border-collapse:collapse;font-size:14px}.cafe47-table-wrap th{background:#12443c;color:#fff;text-align:left;padding:12px;white-space:nowrap}.cafe47-table-wrap td{padding:10px 12px;border-bottom:1px solid #eee6d9;white-space:nowrap}.cafe47-table-wrap tbody tr:nth-child(even){background:#fbf7ef}.cafe47-ref .cafe47-table-wrap table{font-size:13px}@media(max-width:1200px){.cafe47-top,.cafe47-fin,.cafe47-metrics{grid-template-columns:1fr 1fr}.cafe47-result-head{flex-direction:column}.cafe47-total{text-align:left}}@media(max-width:780px){.cafe47-top,.cafe47-fin,.cafe47-metrics{grid-template-columns:1fr}.cafe47-footer{flex-direction:column;align-items:stretch}.cafe47-switch{grid-template-columns:1fr}.cafe47-switch{height:auto}.cafe47-switch button{padding:12px}.cafe47-title-row{flex-direction:column}}@media print{.cafe47-scroll{max-height:none;overflow:visible}.cafe47-card{box-shadow:none;break-inside:avoid}.cafe47-installments{break-inside:auto}.cafe47-table-wrap{overflow:visible}.cafe47-table-wrap table{font-size:10px}.cafe47-table-wrap th,.cafe47-table-wrap td{padding:5px 6px}.cafe47-metrics{grid-template-columns:repeat(3,1fr)}}`;
+    const st=document.createElement('style');st.id='cafe47-style';st.textContent=css;document.head.appendChild(st);
+  }
+  window.setCafe47Field=setField; window.setCafe47Lote=setLote; window.setCafe47Modo=setMode; window.setCafe47Entrada=setEntrada; window.normalizeCafe47=normalizeFields; window.resetCafe47M2=resetM2;
+  window.renderCafe47Simulador=renderCafe47Simulador; window.calcCafe47=calcCafe47;
+  window.renderSimulador=renderCafe47Simulador; window.calcSim=calcCafe47;
+  window.CALLIANDRA_CAFE_V2847={build:BUILD,meta:CAFE_META,tabela:CAFE_TABLE,calc:calcCafe47};
+  try{renderSimulador=window.renderSimulador;calcSim=window.calcSim}catch(e){}
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){style();try{if((document.querySelector('.sb-item.on')||{}).dataset?.page==='simulador')renderCafe47Simulador()}catch(e){}},450)});
+})();
+</script>
 </body>
 </html>
