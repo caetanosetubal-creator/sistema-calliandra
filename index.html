@@ -6842,5 +6842,160 @@ window.CALLIANDRA_PRICE_TABLE_BUILD='v28.27-tabela-lancamento-v3-simulador';
 })();
 </script>
 
+
+<script>
+/* ===== V28.51 · AUDITORIA PRESIDENTE · AJUSTES 23-08 =====
+   Correções aplicadas:
+   - Araçá 41 comissão R$ 48.400,00.
+   - Termos de intenção e Mendes Lima Group tratados como previsão 24-29/08, não caixa realizado.
+   - Preserva simulador V28.49 e não altera Apps Script, planilha, login ou integrações.
+===== */
+(function(){
+  const D = {"metrics":{"versao":"V28.51","fonte":"Painel_Executivo_Calliandra_corrigido (1).xlsx","baseData":"2026-08-23","qtdVendidas":20,"qtdTermos":2,"qtdAtivas":22,"qtdDistratos":4,"vgvVendido":10250501.77,"vgvTermos":1000000.0,"vgvAtivo":11250501.77,"comissaoVendido":347458.88,"comissaoTermos":30000,"comissaoTotal":377458.88,"vgvPosComissao":10873042.89,"fluxoTotal":13661217.93,"fluxoVendidoTotal":12661217.93,"ateJun":4118578.48,"jul":531274.61,"ago":3097092.9,"ateAgo":7746945.99,"setMais":5914271.94,"comissaoPendenteRafael":0,"comissaoTotalAjustadoSeValidar":377458.88,"posComissaoAjustadoSeValidar":10873042.89,"comissaoRafaelAraca41":48400.0,"previsaoTermosSemana":1000000.0,"previsaoMendesSemana":910000.0,"previsaoSemana2429":1910000.0,"agoRealizadoAte23":1187092.9,"ateAgoRealizadoAte23":5836945.99,"ateAgoComPrevisao":7746945.99},"activeRecords":[{"status":"Vendida","periodo":"Pré venda","data":"2026-03-14","lote":"Baru 8","cliente":"Leela (Adriana Birmann)","imobiliaria":"Urbi House","metragem":372.0,"valorTabela":516088.15,"valorContratado":438673.56,"comissaoPct":null,"comissaoValor":0,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":438673.56,"ateJun":438673.56,"jul":0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-03-14","lote":"Araçá 23","cliente":"Daniel Bittencourt","imobiliaria":"Urbi House","metragem":445.0,"valorTabela":654485.9129088,"valorContratado":578238.3,"comissaoPct":null,"comissaoValor":0,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":578238.3,"ateJun":578238.3,"jul":0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-03-14","lote":"Araçá 11","cliente":"Filipe e Isabella","imobiliaria":"Humanize","metragem":372.0,"valorTabela":516088.15,"valorContratado":456415.3,"comissaoPct":0.055,"comissaoValor":25102.84,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":456415.3,"ateJun":456415.3,"jul":0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-03-14","lote":"Araçá 25","cliente":"Mendes Lima Group (Carlos Tigre)","imobiliaria":"Urbi House","metragem":367.46,"valorTabela":540377.0492778,"valorContratado":465000.0,"comissaoPct":null,"comissaoValor":0,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":465000.0,"ateJun":0,"jul":0,"ago":465000.0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-03-14","lote":"Araçá 27","cliente":"Mendes Lima Group (Carlos Tigre)","imobiliaria":"Urbi House","metragem":372.0,"valorTabela":490283.74,"valorContratado":445000.0,"comissaoPct":null,"comissaoValor":0,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":445000.0,"ateJun":0,"jul":0,"ago":445000.0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-03-14","lote":"Baru 23","cliente":"Gustavo GM","imobiliaria":"GM Imóveis","metragem":367.0,"valorTabela":484300.1856735,"valorContratado":415215.0,"comissaoPct":null,"comissaoValor":0,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":415215.0,"ateJun":415215.0,"jul":0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-03-27","lote":"Baru 14","cliente":"Vinicius e Jaqueline","imobiliaria":"Torres Imob","metragem":372.0,"valorTabela":516088.15,"valorContratado":490444.52,"comissaoPct":0.051,"comissaoValor":25012.66,"tipoVenda":"Parcelado","plano":"20% + 40% + 36X","fluxoTotal":528755.72,"ateJun":308380.98,"jul":6481.61,"ago":6481.61,"setMais":207411.52},{"status":"Vendida","periodo":"Pré venda","data":"2026-05-27","lote":"Baru 27","cliente":"Eliana Brito","imobiliaria":"GM Imóveis","metragem":372.0,"valorTabela":523828.08,"valorContratado":480000.0,"comissaoPct":0.055,"comissaoValor":26400.0,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":480000.0,"ateJun":480000.0,"jul":0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-05-16","lote":"Araça 19","cliente":"Eric Teixeira Pena","imobiliaria":"Humanize","metragem":294.48,"valorTabela":414669.06,"valorContratado":380000.0,"comissaoPct":null,"comissaoValor":0,"tipoVenda":"Parcelado","plano":"50k+30k+30k+270k","fluxoTotal":380000.0,"ateJun":80000.0,"jul":30000.0,"ago":270000.0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-06-08","lote":"Baru 10","cliente":"Edson Monteiro","imobiliaria":"MW Imóveis","metragem":372.0,"valorTabela":523828.08,"valorContratado":485000.0,"comissaoPct":null,"comissaoValor":23475.0,"tipoVenda":"Parcelado","plano":"165k + 320k","fluxoTotal":485000.0,"ateJun":165000.0,"jul":320000.0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Pré venda","data":"2026-06-13","lote":"Baru 38","cliente":"Lúcia Vilaça","imobiliaria":"Urbi House","metragem":372.0,"valorTabela":531688.44,"valorContratado":471396.24,"comissaoPct":0.02196184255,"comissaoValor":10352.73,"tipoVenda":"Parcelado","plano":"450k+ 3x de R$ 7.132","fluxoTotal":471396.27,"ateJun":450000.0,"jul":7132.08,"ago":7132.09,"setMais":7132.1},{"status":"Vendida","periodo":"Pré venda","data":"2026-06-14","lote":"Araticum 20","cliente":"Narlo José","imobiliaria":"Urbi House","metragem":294.48,"valorTabela":420891.42,"valorContratado":373162.34,"comissaoPct":0.02199999603,"comissaoValor":8209.57,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":373162.34,"ateJun":373162.34,"jul":0,"ago":0,"setMais":0},{"status":"Vendida","periodo":"Dia Lançamento","data":"2026-06-20","lote":"Baru 24","cliente":"Karyta Bove","imobiliaria":"GM Imóveis","metragem":367.539,"valorTabela":514131.93,"valorContratado":514131.93,"comissaoPct":0.045,"comissaoValor":23135.93685,"tipoVenda":"Parcelado","plano":"Sinal 4x com juros + 120x","fluxoTotal":847610.27,"ateJun":19279.88,"jul":19646.92,"ago":19646.93,"setMais":789036.54},{"status":"Vendida","periodo":"Dia Lançamento","data":"2026-06-20","lote":"Baru 44","cliente":"Tarciana ","imobiliaria":"GM Imóveis","metragem":547.15,"valorTabela":684820.44,"valorContratado":684820.44,"comissaoPct":0.045,"comissaoValor":30816.9198,"tipoVenda":"Parcelado","plano":"Sinal 3x sem juros + 120","fluxoTotal":1098916.4400000002,"ateJun":34241.08,"jul":34241.08,"ago":34241.08,"setMais":996193.2000000001},{"status":"Vendida","periodo":"Dia Lançamento","data":"2026-06-20","lote":"Araçá 13","cliente":"Danielle Cristine","imobiliaria":"GM Imóveis","metragem":372.0,"valorTabela":547760.31,"valorContratado":547760.31,"comissaoPct":0.045,"comissaoValor":24649.21395,"tipoVenda":"Parcelado","plano":"Sinal 3x sem juros + 120","fluxoTotal":878978.2799999999,"ateJun":27388.36,"jul":27388.36,"ago":27388.36,"setMais":796813.2},{"status":"Vendida","periodo":"Pós lançamento","data":"2026-06-20","lote":"Araçá 29","cliente":"Luiza Machado","imobiliaria":"Beira Mar","metragem":372.0,"valorTabela":547760.31,"valorContratado":536804.0,"comissaoPct":0.055,"comissaoValor":29524.22,"tipoVenda":"Parcelado","plano":"200k+120x","fluxoTotal":765005.6,"ateJun":200900.0,"jul":4700.88,"ago":4700.88,"setMais":554703.84},{"status":"Vendida","periodo":"Pré venda","data":"2026-06-19","lote":"Baru 12","cliente":"Fábio Ronan","imobiliaria":"GM Imóveis","metragem":372.0,"valorTabela":531688.44,"valorContratado":518397.62,"comissaoPct":0.045,"comissaoValor":23327.8929,"tipoVenda":"Parcelado","plano":"3x 81k + 120x","fluxoTotal":691541.44,"ateJun":91683.68,"jul":81683.68,"ago":81683.68,"setMais":436490.4},{"status":"Vendida","periodo":"Pós lançamento","data":"2026-08-07","lote":"Araçá 41","cliente":"Rafael Bernardes Pradina","imobiliaria":"GM Imóveis","metragem":744.002,"valorTabela":931192.9,"valorContratado":880000.0,"comissaoPct":0.055,"comissaoValor":48400.0,"tipoVenda":"Parcelado","plano":"7x sem juros","fluxoTotal":880000.0,"ateJun":0,"jul":0,"ago":440000.0,"setMais":440000.0,"observacaoAuditoria":"Comissão corrigida conforme validação Caetano em 23/08/2026: R$ 48.400,00."},{"status":"Vendida","periodo":"Pós lançamento","data":"2026-08-08","lote":"Baru 36","cliente":"Lucas Mourthe ","imobiliaria":"Humanize","metragem":372.0,"valorTabela":547760.31,"valorContratado":547760.31,"comissaoPct":0.045,"comissaoValor":24649.21395,"tipoVenda":"Parcelado","plano":"3x sem juros + 240 meses","fluxoTotal":1253981.91,"ateJun":0,"jul":0,"ago":27388.37,"setMais":1226593.54},{"status":"Vendida","periodo":"Pós lançamento","data":"2026-08-05","lote":"Araçá 15","cliente":"Rachel Oliveira","imobiliaria":"Humanize","metragem":372.0,"valorTabela":547760.31,"valorContratado":542281.9,"comissaoPct":0.045,"comissaoValor":24402.6855,"tipoVenda":"Parcelado","plano":"Entrada  50% + 120x","fluxoTotal":728327.5,"ateJun":0,"jul":0,"ago":268429.9,"setMais":459897.6},{"status":"Termo de intenção assinado","periodo":"Pós lançamento","data":"2026-08-16","lote":"Baru 32","cliente":"CM Mendes Construções","imobiliaria":"KRS","metragem":372.0,"valorTabela":553237.91,"valorContratado":500000.0,"comissaoPct":0.03,"comissaoValor":15000,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":500000.0,"ateJun":0,"jul":0,"ago":500000.0,"setMais":0},{"status":"Termo de intenção assinado","periodo":"Pós lançamento","data":"2026-08-16","lote":"Baru 34","cliente":"CM Mendes Construções","imobiliaria":"KRS","metragem":372.0,"valorTabela":553237.91,"valorContratado":500000.0,"comissaoPct":0.03,"comissaoValor":15000,"tipoVenda":"Á vista","plano":"À vista","fluxoTotal":500000.0,"ateJun":0,"jul":0,"ago":500000.0,"setMais":0}],"monthly2026":[{"mes":"Mar/26","date":"2026-03-01","valor":1985354.95,"vendidas":1985354.95,"termos":0},{"mes":"Abr/26","date":"2026-04-01","valor":198604.97,"vendidas":198604.97,"termos":0},{"mes":"Mai/26","date":"2026-05-01","valor":536481.61,"vendidas":536481.61,"termos":0},{"mes":"Jun/26","date":"2026-06-01","valor":1398136.95,"vendidas":1398136.95,"termos":0},{"mes":"Jul/26","date":"2026-07-01","valor":531274.61,"vendidas":531274.61,"termos":0},{"mes":"Ago/26","date":"2026-08-01","valor":3097092.9,"vendidas":2097092.9,"termos":1000000.0,"realizado_ate_23":1187092.9,"previsao_24_29":1910000.0},{"mes":"Set/26","date":"2026-09-01","valor":327761.52,"vendidas":327761.52,"termos":0},{"mes":"Out/26","date":"2026-10-01","valor":217394.06,"vendidas":217394.06,"termos":0},{"mes":"Nov/26","date":"2026-11-01","valor":94888.26,"vendidas":94888.26,"termos":0},{"mes":"Dez/26","date":"2026-12-01","valor":44888.26,"vendidas":44888.26,"termos":0}],"annual":[{"ano":2026,"valor":8431878.09},{"ano":2027,"valor":538659.12},{"ano":2028,"valor":538659.12},{"ano":2029,"valor":486806.24},{"ano":2030,"valor":460879.8},{"ano":2031,"valor":460879.8},{"ano":2032,"valor":460879.8},{"ano":2033,"valor":460879.8},{"ano":2034,"valor":460879.8},{"ano":2035,"valor":460879.8},{"ano":2036,"valor":323793.3},{"ano":2037,"valor":58590.84},{"ano":2038,"valor":58590.84},{"ano":2039,"valor":58590.84},{"ano":2040,"valor":58590.84},{"ano":2041,"valor":58590.84},{"ano":2042,"valor":58590.84},{"ano":2043,"valor":58590.84},{"ano":2044,"valor":58590.84},{"ano":2045,"valor":58590.84},{"ano":2046,"valor":48825.7}],"imob":[{"nome":"GM Imóveis","count":7,"vgv":4040325.3,"comm":176729.96,"flow":5292261.43,"atejun":1067808.0,"ateago":1833728.09},{"nome":"Urbi House","count":6,"vgv":2771470.44,"comm":18562.3,"flow":2771470.47,"atejun":1840074.2,"ateago":2764338.37},{"nome":"Humanize","count":4,"vgv":1926457.51,"comm":74154.74,"flow":2818724.71,"atejun":536415.3,"ateago":1132233.57},{"nome":"KRS","count":2,"vgv":1000000.0,"comm":30000,"flow":1000000.0,"atejun":0,"ateago":1000000.0},{"nome":"Beira Mar","count":1,"vgv":536804.0,"comm":29524.22,"flow":765005.6,"atejun":200900.0,"ateago":210301.76},{"nome":"Torres Imob","count":1,"vgv":490444.52,"comm":25012.66,"flow":528755.72,"atejun":308380.98,"ateago":321344.2},{"nome":"MW Imóveis","count":1,"vgv":485000.0,"comm":23475.0,"flow":485000.0,"atejun":165000.0,"ateago":485000.0}],"period":[{"periodo":"Pré venda","count":13,"vgv":5996942.88,"flow":6208397.93},{"periodo":"Pós lançamento","count":6,"vgv":3506846.21,"flow":4627315.01},{"periodo":"Dia Lançamento","count":3,"vgv":1746712.68,"flow":2825504.99}],"status":[{"status":"Distrato","qtd":4,"vgv":0,"comissao":0,"fluxo":0},{"status":"Termo de intenção assinado","qtd":2,"vgv":1000000.0,"comissao":30000,"fluxo":1000000.0},{"status":"Vendida","qtd":20,"vgv":10250501.77,"comissao":347458.88,"fluxo":12661217.93}]};
+  const BUILD = 'V28.51 · Auditoria Presidente · caixa realizado x previsto';
+  function brl(v){return (Number(v||0)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+  function pct(v){return (Number(v||0)*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}
+  function esc(v){return String(v??'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function fmtDate(v){if(!v) return '-'; const d=new Date(String(v)+'T12:00:00'); return isNaN(d)?String(v):d.toLocaleDateString('pt-BR')}
+  function styleV2851(){
+    if(document.getElementById('style-v2851-presidente')) return;
+    const st=document.createElement('style');
+    st.id='style-v2851-presidente';
+    st.textContent = `
+      .v2851-note{background:#fff7e6;border:1px solid #ead2a6;color:#61410c;border-radius:14px;padding:14px 18px;margin:14px 0 18px;font-size:14px;line-height:1.45}
+      .v2851-success{background:#effaf3;border:1px solid #bde6c9;color:#184d2a;border-radius:14px;padding:14px 18px;margin:14px 0 18px;font-size:14px;line-height:1.45}
+      .v2851-warn{background:#fff2f2;border:1px solid #efb9b9;color:#6b1f1f;border-radius:14px;padding:14px 18px;margin:14px 0 18px;font-size:14px;line-height:1.45}
+      .v2851-grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;margin:14px 0 18px}
+      .v2851-grid-3{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:14px;margin:14px 0 18px}
+      .v2851-card{background:#fff;border:1px solid #e4ded4;border-radius:18px;padding:16px;box-shadow:0 10px 26px rgba(0,0,0,.04);min-height:110px;overflow:hidden}
+      .v2851-card.ok{border-top:5px solid #168653} .v2851-card.warn{border-top:5px solid #b64c4c} .v2851-card.info{border-top:5px solid #f08b3e} .v2851-card.dark{border-top:5px solid #234b63}
+      .v2851-card .lab{font-size:12px;color:#786d60;text-transform:uppercase;font-weight:800;letter-spacing:.06em;margin-bottom:8px}
+      .v2851-card .num{font-size:clamp(20px,2vw,28px);font-weight:900;color:#1e1c18;line-height:1.05;word-break:keep-all;overflow-wrap:normal}
+      .v2851-card .hint{font-size:12px;color:#7d746b;margin-top:8px;line-height:1.35}
+      .v2851-section{background:#fff;border:1px solid #e4ded4;border-radius:18px;padding:18px;margin:16px 0;box-shadow:0 10px 26px rgba(0,0,0,.04);overflow:hidden}
+      .v2851-title{font-weight:900;color:#1f271f;font-size:18px;margin-bottom:10px}
+      .v2851-sub{font-size:12px;color:#766d65}
+      .v2851-table-wrap{width:100%;overflow-x:auto;border-radius:14px;border:1px solid #eee4d8}
+      .v2851-table{width:100%;border-collapse:collapse;min-width:760px;font-size:13px}
+      .v2851-table th{background:#4b2e1d;color:#fff;text-align:left;padding:10px;white-space:nowrap;font-size:12px}
+      .v2851-table td{border-bottom:1px solid #eee4d8;padding:9px 10px;vertical-align:top}
+      .v2851-table tr:nth-child(even) td{background:#fbf8f3}
+      .v2851-table .money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+      .v2851-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800;border:1px solid #d6cabd;background:#fbf8f3;color:#4a382c}
+      .v2851-pill.ok{border-color:#bce3c9;background:#edf9f1;color:#176039} .v2851-pill.warn{border-color:#efc0c0;background:#fff0f0;color:#7b2222} .v2851-pill.info{border-color:#ffd6aa;background:#fff7ea;color:#824500}
+      .v2851-list{margin:0;padding-left:18px;line-height:1.55;color:#3d352d}
+      .v2851-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+      .v2851-mini{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:12px}
+      .v2851-footer{font-size:12px;color:#6e6358;margin-top:12px}
+      @media(max-width:1000px){.v2851-grid,.v2851-grid-3,.v2851-row2,.v2851-mini{grid-template-columns:1fr}}
+      @media print{.v2851-grid{grid-template-columns:repeat(2,1fr)}.v2851-table-wrap{overflow:visible}.v2851-table{min-width:0;font-size:11px}}
+    `;
+    document.head.appendChild(st);
+  }
+  function kpi(label,num,hint,type){return `<div class="v2851-card ${type||''}"><div class="lab">${esc(label)}</div><div class="num">${num}</div><div class="hint">${hint||''}</div></div>`}
+  function table(headers, rows){
+    return `<div class="v2851-table-wrap"><table class="v2851-table"><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  }
+  function rowStatus(r){
+    if(String(r.status).includes('Termo')) return '<span class="v2851-pill info">Termo · previsão</span>';
+    if(r.cliente && r.cliente.includes('Mendes Lima Group')) return '<span class="v2851-pill info">Vendido · previsão 24–29/08</span>';
+    return '<span class="v2851-pill ok">Vendida</span>';
+  }
+  function dashboardHTML(){
+    const m=D.metrics;
+    return `<div class="sh"><div><div class="ttl">Dashboard executivo</div><div class="sub">Leitura auditada para reunião de gestores · base 23/08/2026.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('dashboard')">🖨 Imprimir / PDF</button></div></div>
+    <div class="v2851-note"><b>${BUILD}:</b> números atualizados com a comissão do Araçá 41 em <b>${brl(m.comissaoRafaelAraca41)}</b>. Termos de intenção e Mendes Lima Group ficam em <b>previsão 24–29/08</b>, não como caixa realizado até hoje.</div>
+    <div class="v2851-grid">
+      ${kpi('Base ativa', `${m.qtdAtivas} lotes`, `${m.qtdVendidas} vendidos confirmados + ${m.qtdTermos} termos de intenção`, 'ok')}
+      ${kpi('VGV ativo', brl(m.vgvAtivo), `Vendido: ${brl(m.vgvVendido)} · termos: ${brl(m.vgvTermos)}`, 'ok')}
+      ${kpi('Comissão provisionada', brl(m.comissaoTotal), `Inclui Araçá 41: ${brl(m.comissaoRafaelAraca41)}`, 'info')}
+      ${kpi('VGV pós-comissão', brl(m.vgvPosComissao), 'VGV ativo menos comissão provisionada', 'dark')}
+      ${kpi('Caixa até jun/26', brl(m.ateJun), 'recebido/programado até junho', 'ok')}
+      ${kpi('Julho', brl(m.jul), 'fluxo cadastrado em julho', 'info')}
+      ${kpi('Ago realizado até 23/08', brl(m.agoRealizadoAte23), 'exclui termos e Mendes a confirmar', 'warn')}
+      ${kpi('Previsão 24–29/08', brl(m.previsaoSemana2429), `Termos: ${brl(m.previsaoTermosSemana)} · Mendes: ${brl(m.previsaoMendesSemana)}`, 'info')}
+    </div>
+    <div class="v2851-success"><b>Leitura para a reunião:</b> caixa confirmado/programado até 23/08 = <b>${brl(m.ateAgoRealizadoAte23)}</b>. Se os termos de intenção e os lotes Mendes Lima Group confirmarem entre 24 e 29/08, o acumulado de agosto passa para <b>${brl(m.ateAgoComPrevisao)}</b>.</div>
+    <div class="v2851-row2">
+      <div class="v2851-section"><div class="v2851-title">Resumo financeiro</div>
+        <div class="v2851-mini">
+          ${kpi('Fluxo bruto total', brl(m.fluxoTotal), 'todo o cronograma cadastrado', 'dark')}
+          ${kpi('A receber set/26+', brl(m.setMais), 'carteira futura após agosto', 'info')}
+        </div>
+      </div>
+      <div class="v2851-section"><div class="v2851-title">Pontos de atenção</div>
+        <ul class="v2851-list">
+          <li><b>Não reconhecer no caixa de hoje:</b> termos de intenção CM Mendes/Baru 32 e Baru 34.</li>
+          <li><b>Previsão desta semana:</b> termos de intenção + lotes Mendes Lima Group.</li>
+          <li><b>Comissão corrigida:</b> Araçá 41 em R$ 48.400,00.</li>
+        </ul>
+      </div>
+    </div>`;
+  }
+  function vendasHTML(){
+    const m=D.metrics;
+    const rows=D.activeRecords.map(r=>`<tr>
+      <td><b>${esc(r.lote)}</b><br><span class="v2851-sub">${esc(r.periodo)}</span></td>
+      <td>${esc(r.cliente)}</td>
+      <td>${fmtDate(r.data)}</td>
+      <td>${rowStatus(r)}</td>
+      <td>${esc(r.imobiliaria)}</td>
+      <td class="money">${brl(r.valorContratado)}</td>
+      <td>${r.comissaoPct==null?'-':(r.comissaoPct*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}</td>
+      <td class="money">${brl(r.comissaoValor)}</td>
+      <td class="money">${brl(r.ateJun)}</td>
+      <td class="money">${brl(r.jul)}</td>
+      <td class="money">${brl(r.ago)}</td>
+      <td class="money">${brl(r.setMais)}</td>
+      <td>${esc(r.plano)}</td>
+    </tr>`);
+    return `<div class="sh"><div><div class="ttl">Vendas e recebimentos</div><div class="sub">Base operacional auditada: vendas confirmadas, termos de intenção e fluxo cadastrado.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('contratos')">🖨 Imprimir / PDF</button><button class="btn btn-terra" onclick="openContrato()">+ Nova Venda</button></div></div>
+    <div class="v2851-grid">
+      ${kpi('Vendas confirmadas', `${m.qtdVendidas}`, brl(m.vgvVendido), 'ok')}
+      ${kpi('Termos de intenção', `${m.qtdTermos}`, `${brl(m.vgvTermos)} · previsão 24–29/08`, 'info')}
+      ${kpi('Caixa realizado até 23/08', brl(m.ateAgoRealizadoAte23), 'sem termos e sem Mendes a confirmar', 'warn')}
+      ${kpi('Previsão semana 24–29/08', brl(m.previsaoSemana2429), 'não consta como caixa realizado', 'info')}
+    </div>
+    <div class="v2851-section"><div class="v2851-title">Base ativa lote a lote</div>
+      ${table(['Lote','Cliente','Data','Status','Imobiliária','VGV','Comissão %','Comissão R$','Até Jun','Jul','Ago','Set+','Plano'], rows)}
+    </div>`;
+  }
+  function relatoriosHTML(){
+    const m=D.metrics;
+    const imobRows=D.imob.map(x=>`<tr><td><b>${esc(x.nome)}</b></td><td>${x.count}</td><td class="money">${brl(x.vgv)}</td><td class="money">${brl(x.comm)}</td><td class="money">${brl(x.flow)}</td></tr>`);
+    const periodRows=D.period.map(x=>`<tr><td><b>${esc(x.periodo)}</b></td><td>${x.count}</td><td class="money">${brl(x.vgv)}</td><td class="money">${brl(x.flow)}</td></tr>`);
+    const monthRows=D.monthly2026.map(x=>`<tr><td>${esc(x.mes)}</td><td class="money">${brl(x.valor)}</td><td class="money">${brl(x.vendidas)}</td><td class="money">${brl(x.termos)}</td><td class="money">${brl(x.realizado_ate_23||0)}</td><td class="money">${brl(x.previsao_24_29||0)}</td></tr>`);
+    return `<div class="sh"><div><div class="ttl">Relatório executivo financeiro</div><div class="sub">Auditoria gerencial consolidada para apresentação ao presidente.</div></div><div class="sh-r"><button class="btn btn-ghost" onclick="printPage('relatorios')">🖨 Imprimir / PDF</button></div></div>
+    <div class="v2851-success"><b>Resultado auditado:</b> base ativa de <b>${m.qtdAtivas} lotes</b>, com <b>${m.qtdVendidas} vendas confirmadas</b> e <b>${m.qtdTermos} termos de intenção</b>. VGV ativo: <b>${brl(m.vgvAtivo)}</b>. Comissão provisionada: <b>${brl(m.comissaoTotal)}</b>. VGV pós-comissão: <b>${brl(m.vgvPosComissao)}</b>.</div>
+    <div class="v2851-row2">
+      <div class="v2851-section"><div class="v2851-title">Performance por imobiliária</div>${table(['Imobiliária','Qtd','VGV','Comissão','Fluxo cadastrado'], imobRows)}</div>
+      <div class="v2851-section"><div class="v2851-title">Performance por período</div>${table(['Período','Qtd','VGV','Fluxo cadastrado'], periodRows)}</div>
+    </div>
+    <div class="v2851-section"><div class="v2851-title">Recebimentos 2026 · realizado x previsão</div>
+      ${table(['Mês','Fluxo total','Vendidas','Termos','Realizado até 23/08','Previsão 24–29/08'], monthRows)}
+      <div class="v2851-footer">Em agosto, a previsão 24–29/08 separa R$ 1.000.000,00 dos termos de intenção e R$ 910.000,00 dos lotes Mendes Lima Group.</div>
+    </div>
+    <div class="v2851-section"><div class="v2851-title">Checklist de confiabilidade</div><ul class="v2851-list">
+      <li>Comissão do Araçá 41 ajustada para <b>R$ 48.400,00</b>.</li>
+      <li>Termos de intenção não reconhecidos como caixa realizado; ficam como previsão 24–29/08.</li>
+      <li>Mendes Lima Group reconhecido como venda, mas com entrada prevista para 24–29/08 conforme validação do usuário.</li>
+      <li>VGV sem juros separado do fluxo financeiro com juros.</li>
+      <li>Distratos continuam fora da base ativa gerencial.</li>
+    </ul></div>`;
+  }
+  function applyV2851(){
+    styleV2851();
+    window.renderDashboard = function(){ styleV2851(); const page=document.getElementById('page-dashboard'); if(page) page.innerHTML=dashboardHTML(); };
+    window.renderVendas = function(){ styleV2851(); const page=document.getElementById('page-contratos'); if(page) page.innerHTML=vendasHTML(); };
+    window.renderRelatorios = function(){ styleV2851(); const page=document.getElementById('page-relatorios'); if(page) page.innerHTML=relatoriosHTML(); };
+    try{ renderDashboard = window.renderDashboard; renderVendas = window.renderVendas; renderRelatorios = window.renderRelatorios; }catch(e){}
+    setTimeout(function(){
+      try{ window.renderDashboard(); window.renderVendas(); window.renderRelatorios(); }catch(e){ console.error('V28.51 render error', e); }
+    }, 80);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', applyV2851); else applyV2851();
+})();
+</script>
+
 </body>
 </html>
